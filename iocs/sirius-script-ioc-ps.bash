@@ -18,6 +18,24 @@ function stop {
   bbb="bbb-tb-dclinks" && ioc_cmd $bbb $fac_passwd stop; printf "\n\n"
 }
 
+function start {
+  printf "Starting all power supply IOCs...\n"
+  read -s -r -p "fac user's password @ bbbs: " fac_passwd; echo ""
+  bbb="bbb-tb-correctors" && ioc_cmd $bbb $fac_passwd start; printf "\n\n"
+  bbb="bbb-tb-quadrupoles" && ioc_cmd $bbb $fac_passwd start; printf "\n\n"
+  bbb="bbb-tb-dipoles" && ioc_cmd $bbb $fac_passwd start; printf "\n\n"
+  bbb="bbb-tb-dclinks" && ioc_cmd $bbb $fac_passwd start; printf "\n\n"
+}
+
+function status {
+  printf "Status of all power supply IOCs...\n"
+  read -s -r -p "fac user's password @ bbbs: " fac_passwd; echo ""
+  bbb="bbb-tb-correctors" && ioc_cmd $bbb $fac_passwd status; printf "\n\n"
+  bbb="bbb-tb-quadrupoles" && ioc_cmd $bbb $fac_passwd status; printf "\n\n"
+  bbb="bbb-tb-dipoles" && ioc_cmd $bbb $fac_passwd status; printf "\n\n"
+  bbb="bbb-tb-dclinks" && ioc_cmd $bbb $fac_passwd status; printf "\n\n"
+}
+
 function print_help {
   printf "help...\n"
 }
