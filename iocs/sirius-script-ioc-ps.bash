@@ -1,19 +1,30 @@
 #!/usr/bin/env bash
 
-function stop_iocs_tb {
-  printf "function stop_iocs_tb...\n"
-  ssh root@bbb-tb-dipoles ls
+function ioc_cmd {
+  bbb=$1
+  fac_passwd=$2
+  cmd=$3
+  sshpass -p $fac_passwd ssh fac@"$bbb" "sudo systemctl $cmd sirius-bbb-ioc-ps.service"
 }
 
-function iocs_stop {
-  printf "iocs_stop...\n"
-  read -s -r -p "fac user's password @ bbb: " fac_passwd; echo ""
-  echo $fac_passwd
-  sshpass -p $fac_passwd ssh fac@bbb-tb-dipoles "sudo systemctl status sirius-bbb-ioc-ps.service"
+
+function stop {
+  printf "Stopping all power supply IOCs...\n"
+  read -s -r -p "fac user's password @ bbbs: " fac_passwd; echo ""
+  bbb="bbb-tb-correctors" && printf "$bbb" && ioc_cmd $bbb $fac_passwd stop && printf "\n"
+  bbb="bbb-tb-quadrupoles" && printf "$bbb" && ioc_cmd $bbb $fac_passwd stop && printf "\n"
+  bbb="bbb-tb-dipoles" && printf "$bbb" && ioc_cmd $bbb $fac_passwd stop && printf "\n"
+  bbb="bbb-tb-dclinks" && printf "$bbb" && ioc_cmd $bbb $fac_passwd stop && printf "\n"
 }
 
-if [ "$1" == "--help" ]; then
-  echo "help"
+function print_help {
+  printf "help...\n"
+}
+
+if [ -z "$1" ]; then
+  print_help
+elif [ "$1" == "stop" ]; then
+  stop
+else
+  print_help
 fi
-
-iocs_stop
