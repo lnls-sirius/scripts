@@ -12,14 +12,10 @@ function ioc_cmd {
 function stop {
   printf "Stopping all power supply IOCs...\n"
   read -s -r -p "fac user's password @ bbbs: " fac_passwd; echo ""
-  bbb="bbb-tb-correctors" && ioc_cmd $bbb $fac_passwd stop;
-  printf "======.\n\n"
-  bbb="bbb-tb-quadrupoles" && ioc_cmd $bbb $fac_passwd stop;
-  printf "======.\n\n"
-  bbb="bbb-tb-dipoles" && ioc_cmd $bbb $fac_passwd stop;
-  printf "======.\n\n"
-  bbb="bbb-tb-dclinks" && ioc_cmd $bbb $fac_passwd stop;
-  printf "======.\n\n"
+  bbb="bbb-tb-correctors" && ioc_cmd $bbb $fac_passwd stop; printf "\n\n"
+  bbb="bbb-tb-quadrupoles" && ioc_cmd $bbb $fac_passwd stop; printf "\n\n"
+  bbb="bbb-tb-dipoles" && ioc_cmd $bbb $fac_passwd stop; printf "\n\n"
+  bbb="bbb-tb-dclinks" && ioc_cmd $bbb $fac_passwd stop; printf "\n\n"
 }
 
 function print_help {
