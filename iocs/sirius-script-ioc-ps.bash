@@ -37,13 +37,17 @@ function status {
 }
 
 function print_help {
-  printf "help...\n"
+  printf "help not implemented!\n"
 }
 
 if [ -z "$1" ]; then
   print_help
 elif [ "$1" == "stop" ]; then
   stop
+elif [ "$1" == "start" ]; then
+  start
+elif [ "$1" == "status" ]; then
+  status
 else
   print_help
 fi
