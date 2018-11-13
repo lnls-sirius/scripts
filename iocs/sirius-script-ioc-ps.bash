@@ -2,11 +2,10 @@
 
 # --- global variables ---
 fac_passwd=
-bbbs = (
-  "bbb-tb-correctors"
-  "bbb-tb-quadrupoles"
-  "bbb-tb-dipoles"
-  "bbb-as-dclinks")
+bbbs=("bbb-tb-correctors"
+      "bbb-tb-quadrupoles"
+      "bbb-tb-dipoles"
+      "bbb-as-dclinks")
 
 # --- aux functions ---
 
@@ -24,19 +23,17 @@ function get_password {
 function stop {
   printf "Stopping all power supply IOCs...\n"
   get_password
-  bbb="bbb-tb-correctors" && ioc_cmd $bbb stop; printf "\n\n"
-  bbb="bbb-tb-quadrupoles" && ioc_cmd $bbb stop; printf "\n\n"
-  bbb="bbb-tb-dipoles" && ioc_cmd $bbb stop; printf "\n\n"
-  bbb="bbb-as-dclinks" && ioc_cmd $bbb stop; printf "\n\n"
+  for bbb in "${bbbs[@]}"; do
+    ioc_cmd $bbb stop; printf "\n\n"
+  done
 }
 
 function start {
   printf "Starting all power supply IOCs...\n"
   get_password
-  bbb="bbb-tb-correctors" && ioc_cmd $bbb $fac_passwd start; printf "\n\n"
-  bbb="bbb-tb-quadrupoles" && ioc_cmd $bbb $fac_passwd start; printf "\n\n"
-  bbb="bbb-tb-dipoles" && ioc_cmd $bbb $fac_passwd start; printf "\n\n"
-  bbb="bbb-as-dclinks" && ioc_cmd $bbb $fac_passwd start; printf "\n\n"
+  for bbb in "${bbbs[@]}"; do
+    ioc_cmd $bbb start; printf "\n\n"
+  done
 }
 
 function status {
@@ -44,7 +41,7 @@ function status {
   get_password
   for bbb in "${bbbs[@]}"; do
     ioc_cmd $bbb status; printf "\n\n"
-  fi
+  done
 }
 
 function print_help {
