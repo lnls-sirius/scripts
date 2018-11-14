@@ -2,7 +2,7 @@
 
 Installation
 
-* To install all scripts just run <code>make install</code> or <code>make develop</code>
+* To install all scripts just run <code>sudo make install</code> or <code>sudo make develop</code>
 
 IOC Scripts
 
