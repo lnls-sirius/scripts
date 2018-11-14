@@ -104,7 +104,6 @@ function run {
   arg1=$1
   arg1=${arg1/--/}
   arg1=${arg1/-/}
-  echo $arg1
   if [ -z "$arg1" ]; then
     print_help
   elif [ "$arg1" == "stop" ]; then
