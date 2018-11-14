@@ -42,6 +42,7 @@ function ping_bbb {
   for bbb in "${bbbs[@]}"; do
     printf "=== $bbb ===\n"
     ping -q -c 2 -W 1 $bbb && let "nr_oks++"
+    printf "\n"
   done
   if [ "$nr_oks" != "${#bbbs[@]}" ]; then
     printf "\e[1;31mAt least one beaglebone is not pinging!\e[0m\n"
