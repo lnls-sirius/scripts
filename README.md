@@ -7,4 +7,4 @@ Installation
 IOC Scripts
 
 * <code>sirius-script-ioc-ps.bash</code>: init power supply IOCs.
-  * for help, <code>sirius-script-ioc-ps.bash --help</code>
+  * for help, <code>sirius-script-ioc-ps.bash help</code>
