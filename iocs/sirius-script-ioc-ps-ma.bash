@@ -21,5 +21,5 @@ function get_password {
 # --- run script ---
 
 get_password
+sirius-script-ioc-ma.bash $cmd $linac_passwd
 sirius-script-ioc-ps.bash $cmd $fac_passwd
-sirius-script-ioc-ps.bash $cmd $linac_passwd
