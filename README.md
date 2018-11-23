@@ -8,3 +8,6 @@ IOC Scripts
 
 * <code>sirius-script-ioc-ps.bash</code>: init power supply IOCs.
   * for help, <code>sirius-script-ioc-ps.bash help</code>
+
+  * <code>sirius-script-ioc-ma.bash</code>: init MA power supply IOCs.
+    * for help, <code>sirius-script-ioc-ma.bash help</code>
