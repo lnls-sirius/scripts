@@ -110,7 +110,7 @@ function run {
   elif [ "$arg1" == "status" ]; then
     status
   elif [ "$arg1" == "ping" ]; then
-    ping_bbb
+    ping_desktop1
   elif [ "$arg1" == "list" ]; then
     list
   else
