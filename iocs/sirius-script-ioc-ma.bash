@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # --- global variables ---
-desktop1=sirius-dekstop1
+desktop1=sirius-desktop1
 linac_passwd=
 maiocs=("sirius-ioc-ma-tb-dipoles.service"
         "sirius-ioc-ma-tb-quadrupoles.service"
