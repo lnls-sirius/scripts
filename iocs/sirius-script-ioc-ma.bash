@@ -30,7 +30,7 @@ function ioc_cmd {
 
 function list {
   printf "Listing MA iocs...\n"
-  for macioc in "${maciocs[@]}"; do
+  for macioc in "${maiocs[@]}"; do
     printf ". $maioc\n"
   done
 }
