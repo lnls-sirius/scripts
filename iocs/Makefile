@@ -4,6 +4,7 @@ DEST_DIR = /usr/local/bin
 GENERALSCRIPTS = \
 		sirius-script-ioc-ps.bash \
 		sirius-script-ioc-ma.bash \
+		sirius-script-ioc-ps-ma.bash
 
 
 SCRIPTS = $(GENERALSCRIPTS)
