@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 
 # --- global variables ---
+
+cmd=$1
+linac_passwd=$2
 desktop1=sirius-desktop1
-linac_passwd=
 maiocs=("sirius-ioc-ma-tb-dipoles.service"
         "sirius-ioc-ma-tb-quadrupoles.service"
         "sirius-ioc-ma-tb-correctors.service")
@@ -11,7 +13,9 @@ maiocs=("sirius-ioc-ma-tb-dipoles.service"
 # --- aux functions ---
 
 function get_password {
-  read -s -r -p "linac user's password @ desktop1: " linac_passwd; echo ""
+  if [ -z "$linac_passwd" ]; then
+    read -s -r -p "linac user's password @ desktop1: " linac_passwd; echo ""
+  fi
 }
 
 function contains {
@@ -41,9 +45,9 @@ function ping_desktop1 {
   nr_oks=0
   ping -q -c 2 -W 1 $desktop1 && let "nr_oks++"
   if [ "$nr_oks" != "1" ]; then
-    printf "\e[1;31mDesktop1 is not pinging!\e[0m\n"
+    printf "\e[1;31m$desktop1 is not pinging!\e[0m\n"
   else
-    printf "\e[1;32mDesktop1 is pinging!\e[0m\n"
+    printf "\e[1;32m$desktop1 is pinging!\e[0m\n"
   fi
 }
 
@@ -118,6 +122,7 @@ function run {
   fi
 }
 
+
 # --- run script ---
 
-run "$@"
+run $cmd

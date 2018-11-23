@@ -1,17 +1,23 @@
 #!/usr/bin/env bash
 
 # --- global variables ---
-fac_passwd=
+
+cmd=$1
+fac_passwd=$2
 bbbs=("bbb-tb-correctors"
       "bbb-tb-quadrupoles"
       "bbb-tb-dipoles"
       "bbb-as-dclinks")
 
+
 # --- aux functions ---
 
 function get_password {
-  read -s -r -p "fac user's password @ bbbs: " fac_passwd; echo ""
+  if [ -z "$fac_passwd" ]; then
+    read -s -r -p "fac user's password @ bbbs: " fac_passwd; echo ""
+  fi
 }
+
 
 function contains {
   list=$1
@@ -122,6 +128,7 @@ function run {
   fi
 }
 
+
 # --- run script ---
 
-run "$@"
+run $cmd
