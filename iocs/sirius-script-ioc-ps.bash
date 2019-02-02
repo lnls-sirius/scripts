@@ -7,7 +7,20 @@ fac_passwd=$2
 bbbs=("bbb-tb-correctors"
       "bbb-tb-quadrupoles"
       "bbb-tb-dipoles"
-      "bbb-as-dclinks")
+      "bbb-as-dclinks"
+      "bbb-bo-correctors-01"
+      "bbb-bo-correctors-02"
+      "bbb-bo-correctors-03"
+      "bbb-bo-correctors-04"
+      "bbb-bo-correctors-05"
+      "bbb-bo-correctors-06"
+      "bbb-bo-correctors-07"
+      "bbb-bo-correctors-08"
+      "bbb-bo-correctors-09"
+      "bbb-bo-correctors-10"
+      "bbb-bo-correctors-11"
+      "bbb-bo-correctors-12"
+      "bbb-bo-correctors-13")
 
 
 # --- aux functions ---
@@ -17,7 +30,6 @@ function get_password {
     read -s -r -p "fac user's password @ bbbs: " fac_passwd; echo ""
   fi
 }
-
 
 function contains {
   list=$1
