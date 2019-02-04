@@ -18,6 +18,7 @@ function check_bbb_hostname {
 
 function install_fac_bashrc {
 	mkdir -p $LNLS_FAC
+	sudo chown -R fac.fac $LNLS_FAC
 	cd $LNLS_FAC
 
 	# update repository and install
@@ -35,6 +36,7 @@ function install_fac_bashrc {
 
 function install_as_ps_ioc_systemd {
 	# install systemd service files
+	sudo chown -R fac.fac $LNLS_SIRIUS
 	cd $LNLS_SIRIUS/machine-applications/as-ps/systemd
 	make install-services
 
