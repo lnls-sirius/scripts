@@ -35,7 +35,7 @@ function install_fac_bashrc {
 
 function install_as_ps_ioc_systemd {
 	# install systemd service files
-	cd $LNLS_SIRIUS/machine-applications/systemd
+	cd $LNLS_SIRIUS/machine-applications/as-ps/systemd
 	make install-services
 
 	# allow fac user to run systemctl as root without passwords
