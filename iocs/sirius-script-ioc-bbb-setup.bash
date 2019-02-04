@@ -64,5 +64,6 @@ function install_machine_applications {
 
 
 check_bbb_hostname
-# install_fac_bashrc
+install_fac_bashrc
 install_machine_applications
+install_as_ps_ioc_systemd
