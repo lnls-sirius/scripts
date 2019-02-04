@@ -40,8 +40,8 @@ function install_as_ps_ioc_systemd {
 	printf "\e[1;32mInstall AS PS IOC systemd...\e[0m\n"
 	# install systemd service files
 	sudo chown -R fac.fac $LNLS_SIRIUS
-	cd $LNLS_SIRIUS/machine-applications/as-ps/systemd
-	make install-services
+	cd $LNLS_SIRIUS/machine-applications && git checkout master
+	cd ./as-ps/systemd && make install-services
 
 	# allow fac user to run systemctl as root without passwords
 	rm -rf /tmp/sudoers-tmp
@@ -59,7 +59,7 @@ function install_machine_applications {
 	# update repository and install
 	cd $LNLS_SIRIUS
 	if [ -d "./machine-applications" ]; then
-		cd ./machine-applications && git pull
+		cd ./machine-applications && git checkout master && git pull
 	else
 		printf "\e[1;31Missing 'machine-applications' repository in default path $LNSL_SIRIUS!\e[0m\n"
 		exit
