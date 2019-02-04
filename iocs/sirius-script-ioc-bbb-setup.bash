@@ -9,6 +9,7 @@ HOSTNAME=`hostname`
 
 
 function check_bbb_hostname {
+		printf "\e[1;32mCheck BBB hostname...\e[0m\n"
 		if [[ $HOSTNAME != *"PSCtrl"* ]]; then
 			printf "\e[1;31m'$HOSTNAME' is not a valid beaglebone name!\e[0m\n"
 			exit
@@ -17,6 +18,7 @@ function check_bbb_hostname {
 
 
 function install_fac_bashrc {
+	printf "\e[1;32mInstall FAC bashrc...\e[0m\n"
 	mkdir -p $LNLS_FAC
 	sudo chown -R fac.fac $LNLS_FAC
 	cd $LNLS_FAC
@@ -35,6 +37,7 @@ function install_fac_bashrc {
 
 
 function install_as_ps_ioc_systemd {
+	printf "\e[1;32mInstall AS PS IOC systemd...\e[0m\n"
 	# install systemd service files
 	sudo chown -R fac.fac $LNLS_SIRIUS
 	cd $LNLS_SIRIUS/machine-applications/as-ps/systemd
@@ -52,6 +55,7 @@ function install_as_ps_ioc_systemd {
 
 
 function install_machine_applications {
+	printf "\e[1;32mInstall machine applications...\e[0m\n"
 	# update repository and install
 	cd $LNLS_SIRIUS
 	if [ -d "./machine-applications" ]; then
