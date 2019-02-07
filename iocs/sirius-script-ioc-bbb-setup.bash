@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
-
 ROOT_FAC=/home/fac_files
 LNLS_FAC=$ROOT_FAC/lnls-fac
 LNLS_SIRIUS=$ROOT_FAC/lnls-sirius
+SIRIUS_URL_CONSTS=10.128.254.203
 
 HOSTNAME=`hostname`
 
@@ -69,7 +69,14 @@ function install_machine_applications {
 }
 
 
+function update_hosts {
+	printf "\e[1;32mUpdate /etc/hosts...\e[0m\n"
+	cat /etc/hosts | grep -v sirius-consts.lnls.br > /etc/hosts
+	echo "$SIRIUS_URL_CONSTS sirius-consts.lnls.br" >> /etc/hosts
+}
+
 check_bbb_hostname
+update_hosts
 install_fac_bashrc
 install_machine_applications
 install_as_ps_ioc_systemd
