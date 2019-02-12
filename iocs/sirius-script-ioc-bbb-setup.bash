@@ -10,7 +10,7 @@ HOSTNAME=`hostname`
 
 function check_bbb_hostname {
 		printf "\e[1;32mCheck BBB hostname...\e[0m\n"
-		if [[ $HOSTNAME != *"PSCtrl"* ]]; then
+		if [[ $HOSTNAME != *"Ctrl"* ]]; then
 			printf "\e[1;31m'$HOSTNAME' is not a valid beaglebone name!\e[0m\n"
 			exit
 		fi
@@ -27,7 +27,7 @@ function install_fac_bashrc {
 	if [ -d "./scripts" ]; then
 		cd ./scripts && git pull
 	else
-		git clone https://github.com/lnls-fac/scripts
+		git clone https://github.com/lnls-sirius/scripts
 		cd ./scripts
 	fi
 
@@ -54,6 +54,21 @@ function install_as_ps_ioc_systemd {
 }
 
 
+function install_dev_packages {
+	printf "\e[1;32mInstall dev packages...\e[0m\n"
+	# update repository and install
+	cd $LNLS_SIRIUS
+	if [ -d "./dev-packages" ]; then
+		cd ./dev-packages && git checkout master && git pull
+	else
+		printf "\e[1;31Missing 'dev-packages' repository in default path $LNSL_SIRIUS!\e[0m\n"
+		exit
+	fi
+	cd ./siriuspy
+	./setup.py install
+}
+
+
 function install_machine_applications {
 	printf "\e[1;32mInstall machine applications...\e[0m\n"
 	# update repository and install
@@ -75,8 +90,10 @@ function update_hosts {
 	echo "$SIRIUS_URL_CONSTS sirius-consts.lnls.br" >> /etc/hosts
 }
 
+
 check_bbb_hostname
 update_hosts
 install_fac_bashrc
+install_dev_packages
 install_machine_applications
 install_as_ps_ioc_systemd
