@@ -86,7 +86,7 @@ ff02::2 ip6-allrouters
 10.128.121.101 bbb-tb-dipoles        LA-RaPS02--CO-PSCtrl-TB
 10.128.121.103 bbb-tb-quadrupoles    LA-RaCtrl--CO-PSCtrl-TB1
 10.128.121.104 bbb-tb-correctors     LA-RaCtrl--CO-PSCtrl-TB2
-10.128.121.102 bbb-as-dclinks        LA-RaCtrl--CO-DCLinkCtrl
+10.128.121.102 bbb-as-dclinks-01     LA-RaCtrl--CO-DCLinkCtrl
 # --- BO ---
 10.128.101.105 bbb-bo-correctors-01  IA-01RaCtrl--CO-PSCtrl-BO   # BO-01U:PS-CH BO-01U:PS-CV BO-02D:PS-QS
 10.128.102.105 bbb-bo-correctors-02  IA-02RaCtrl--CO-PSCtrl-BO   # BO-03U:PS-CH BO-03U:PS-CV BO-05U:PS-CH BO-05U:PS-CV
@@ -101,6 +101,20 @@ ff02::2 ip6-allrouters
 10.128.116.105 bbb-bo-correctors-11  IA-16RaCtrl--CO-PSCtrl-BO   # BO-39U:PS-CH BO-39U:PS-CV BO-41U:PS-CH BO-41U:PS-CV
 10.128.117.105 bbb-bo-correctors-12  IA-17RaCtrl--CO-PSCtrl-BO   # BO-43U:PS-CH BO-43U:PS-CV BO-45U:PS-CH BO-45U:PS-CV
 10.128.120.105 bbb-bo-correctors-13  IA-20RaCtrl--CO-PSCtrl-BO   # BO-47U:PS-CH BO-47U:PS-CV BO-49D:PS-CH BO-49U:PS-CV
+
+10.128.101.104 bbb-as-dclinks-02     IA-01RaCtrl--CO-DCLinkCtrl  # BO-01U:PS-CH BO-01U:PS-CV BO-02D:PS-QS
+10.128.102.104 bbb-as-dclinks-03     IA-02RaCtrl--CO-DCLinkCtrl  # BO-03U:PS-CH BO-03U:PS-CV BO-05U:PS-CH BO-05U:PS-CV
+10.128.104.104 bbb-as-dclinks-04     IA-04RaCtrl--CO-DCLinkCtrl  # BO-07U:PS-CH BO-07U:PS-CV BO-09U:PS-CH BO-09U:PS-CV
+10.128.105.104 bbb-as-dclinks-05     IA-05RaCtrl--CO-DCLinkCtrl  # BO-11U:PS-CH BO-11U:PS-CV BO-13U:PS-CH BO-13U:PS-CV
+10.128.107.104 bbb-as-dclinks-06     IA-07RaCtrl--CO-DCLinkCtrl  # BO-15U:PS-CH BO-15U:PS-CV BO-17U:PS-CH BO-17U:PS-CV
+10.128.108.104 bbb-as-dclinks-07     IA-08RaCtrl--CO-DCLinkCtrl  # BO-19U:PS-CH BO-19U:PS-CV BO-21U:PS-CH BO-21U:PS-CV
+10.128.110.104 bbb-as-dclinks-08     IA-10RaCtrl--CO-DCLinkCtrl  # BO-23U:PS-CH BO-23U:PS-CV BO-25U:PS-CH BO-25U:PS-CV
+10.128.111.104 bbb-as-dclinks-09     IA-11RaCtrl--CO-DCLinkCtrl  # BO-27U:PS-CH BO-27U:PS-CV BO-29U:PS-CH BO-29U:PS-CV
+10.128.113.104 bbb-as-dclinks-10     IA-13RaCtrl--CO-DCLinkCtrl  # BO-31U:PS-CH BO-31U:PS-CV BO-33U:PS-CH BO-33U:PS-CV
+10.128.114.104 bbb-as-dclinks-11     IA-14RaCtrl--CO-DCLinkCtrl  # BO-35U:PS-CH BO-35U:PS-CV BO-37U:PS-CH BO-37U:PS-CV
+10.128.116.104 bbb-as-dclinks-12     IA-16RaCtrl--CO-DCLinkCtrl  # BO-39U:PS-CH BO-39U:PS-CV BO-41U:PS-CH BO-41U:PS-CV
+10.128.117.104 bbb-as-dclinks-13     IA-17RaCtrl--CO-DCLinkCtrl  # BO-43U:PS-CH BO-43U:PS-CV BO-45U:PS-CH BO-45U:PS-CV
+10.128.120.104 bbb-as-dclinks-14     IA-20RaCtrl--CO-DCLinkCtrl  # BO-47U:PS-CH BO-47U:PS-CV BO-49D:PS-CH BO-49U:PS-CV
 
 
 # ~~~~~~~~~~~~~~~~~~ LNLS-FAC ~~~~~~~~~~~~~~~~~~

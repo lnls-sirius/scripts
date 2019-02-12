@@ -44,7 +44,17 @@ IP_BBB_BO_CORR="\
 10.128.120.105 \
 "
 
-IP_BBB_BO=$IP_BBB_BO_CORR
+IP_BBB_TB_TS_FBP_DCLINKS="\
+10.128.121.102 \
+"
+
+
+IP_BBB_BO_SI_FBP_DCLINKS="\
+10.128.101.104 10.128.102.104 10.128.104.104 10.128.105.104 \
+10.128.107.104 10.128.108.104 10.128.110.104 10.128.111.104 \
+10.128.113.104 10.128.114.104 10.128.116.104 10.128.117.104 \
+10.128.120.104 \
+"
 
 IP_BROADCAST_CROOM_NET="\
 10.128.254.255 \
@@ -75,7 +85,13 @@ fi
 export LC_NUMERIC="en_US.UTF-8"
 export EPICS_CA_AUTO_ADDR_LIST=NO
 export EPICS_CA_MAX_ARRAY_BYTES=1048576
-export EPICS_CA_ADDR_LIST="$IP_BPM$IP_BBB_TB$IP_BBB_BO$IP_BROADCAST_CROOM_NET"
+export EPICS_CA_ADDR_LIST="\
+$IP_BPM$\
+$IP_BBB_TB\
+$IP_BBB_BO_CORR\
+$IP_BBB_TB_TS_FBP_DCLINKS\
+$IP_BBB_BO_SI_FBP_DCLINKS\
+$IP_BROADCAST_CROOM_NET"
 
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$EPICS_BASE/lib/$EPICS_HOST_ARCH
 export PVDATABASE=$EV4_BASE/pvDatabaseCPP
@@ -177,9 +193,9 @@ complete -W "--path --save --help"  trackcpp-da-ma-results.py
 
 # Completion for sirius-lnls-gitall
 # =================================
-complete -W "--help --complement pull status commit branch checkout log fetch \
-                                 push clone all lnls-sirius lnls-fac lnls-ima \
-                    --repos --orgs" sirius-lnls-gitall.py
+#complete -W "--help --complement pull status commit branch checkout log fetch \
+#                                 push clone all lnls-sirius lnls-fac lnls-ima \
+#                    --repos --orgs" sirius-lnls-gitall.py
 
 
 # Aliases

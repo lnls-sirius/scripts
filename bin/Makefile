@@ -1,8 +1,9 @@
-DEST_DIR = /usr/local/bin  # destination directory
+# destination directory
+DEST_DIR = /usr/local/bin
 
 SIRIUSSCRIPTS= $(shell ls sirius-*)
 
-SCRIPTS = $(SIRIUSSCRIPTS)\
+SCRIPTS = $(SIRIUSSCRIPTS)
 
 FULLSCRIPTS = $(addprefix $(DEST_DIR)/, $(SCRIPTS))
 
@@ -13,7 +14,7 @@ uninstall:
 	-rm -rf $(FULLSCRIPTS)
 
 develop: uninstall $(SCRIPTS)
-	ln -srf $(SCRIPTS) $(DEST_DIR)
+	ln -srf $(SCRIPTS) $(DEST_DIR)/
 
 sirius: $(SIRIUSSCRIPTS)
 	install $(SIRIUSSCRIPTS) $(DEST_DIR)

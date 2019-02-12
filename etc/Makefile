@@ -12,6 +12,9 @@ FULLSCRIPTS = $(addprefix $(DEST_DIR)/, $(SCRIPTS))
 install: uninstall $(SCRIPTS)
 	cp $(SCRIPTS) $(DEST_DIR)
 
+develop: uninstall $(SCRIPTS)
+	ln -srf $(SCRIPTS) $(DEST_DIR)
+
 install-bbb: uninstall $(SCRIPTS)
 	mkdir -p $(DEST_DIR)
 	cp $(SCRIPTS) $(DEST_DIR)

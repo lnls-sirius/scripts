@@ -7,7 +7,7 @@ fac_passwd=$2
 bbbs=("bbb-tb-correctors"
       "bbb-tb-quadrupoles"
       "bbb-tb-dipoles"
-      "bbb-as-dclinks"
+      "bbb-as-dclinks-01"
       "bbb-bo-correctors-01"
       "bbb-bo-correctors-02"
       "bbb-bo-correctors-03"
@@ -20,7 +20,20 @@ bbbs=("bbb-tb-correctors"
       "bbb-bo-correctors-10"
       "bbb-bo-correctors-11"
       "bbb-bo-correctors-12"
-      "bbb-bo-correctors-13")
+      "bbb-bo-correctors-13"
+      "bbb-as-dclinks-02"
+      "bbb-as-dclinks-03"
+      "bbb-as-dclinks-04"
+      "bbb-as-dclinks-05"
+      "bbb-as-dclinks-06"
+      "bbb-as-dclinks-07"
+      "bbb-as-dclinks-08"
+      "bbb-as-dclinks-09"
+      "bbb-as-dclinks-10"
+      "bbb-as-dclinks-11"
+      "bbb-as-dclinks-12"
+      "bbb-as-dclinks-13"
+      "bbb-as-dclinks-14")
 
 
 # --- aux functions ---
