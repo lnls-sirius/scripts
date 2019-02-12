@@ -4,7 +4,7 @@
 
 cmd=$1
 linac_passwd=$2
-desktop1=sirius-desktop1
+desktop=desktop3
 maiocs=("sirius-ioc-ma-tb-dipoles.service"
         "sirius-ioc-ma-tb-quadrupoles.service"
         "sirius-ioc-ma-tb-correctors.service"
@@ -27,7 +27,7 @@ maiocs=("sirius-ioc-ma-tb-dipoles.service"
 
 function get_password {
   if [ -z "$linac_passwd" ]; then
-    read -s -r -p "linac user's password @ desktop1: " linac_passwd; echo ""
+    read -s -r -p "linac user's password @ desktop3: " linac_passwd; echo ""
   fi
 }
 
@@ -42,7 +42,7 @@ function ioc_cmd {
   maioc=$1
   cmd=$2
   printf "=== $maioc : $cmd ===\n"
-  sshpass -p $linac_passwd ssh linac@"$desktop1" "sudo systemctl $cmd $maioc"
+  sshpass -p $linac_passwd ssh linac@"$desktop" "sudo systemctl $cmd $maioc"
 }
 
 function list {
@@ -53,14 +53,14 @@ function list {
 }
 
 function ping_desktop1 {
-  printf "Pinging desktop1...\n"
+  printf "Pinging desktop3...\n"
   printf "\n\n"
   nr_oks=0
-  ping -q -c 2 -W 1 $desktop1 && let "nr_oks++"
+  ping -q -c 2 -W 1 $desktop && let "nr_oks++"
   if [ "$nr_oks" != "1" ]; then
-    printf "\e[1;31m$desktop1 is not pinging!\e[0m\n"
+    printf "\e[1;31m$desktop is not pinging!\e[0m\n"
   else
-    printf "\e[1;32m$desktop1 is pinging!\e[0m\n"
+    printf "\e[1;32m$desktop is pinging!\e[0m\n"
   fi
 }
 
