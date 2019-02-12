@@ -1,0 +1,243 @@
+# FAC Group Paths
+# ===============
+if [ -z $LNLS_FAC ] ; then
+    if [ -d /home ] ; then
+        export LNLS_FAC=/home/fac
+        export LNLS_IMA=/home/ima
+    elif [ -d /Users ] ; then
+        export LNLS_FAC=/Users/fac
+        export LNLS_IMA=/Users/ima
+    else
+        echo "LNLS_FAC not defined!"
+    fi
+fi
+
+
+# Definition of LNLS_GROUP
+# ========================
+export LNLS_SIRIUS=/home/sirius
+export LNLS_GROUP=$LNLS_FAC
+
+
+# IPs of IOCS
+# ===========
+
+IP_BPM="\
+10.128.1.255 10.128.1.230 10.128.1.231 10.128.1.232 10.128.1.233 \
+10.128.150.255 10.128.150.58 10.128.150.55 10.128.150.64 10.128.201.50 \
+10.128.201.51 10.128.202.50 10.128.202.51 10.128.203.52 10.128.204.52 \
+10.128.205.50 10.128.206.50 10.128.207.52 10.128.208.50 10.128.209.50 \
+10.128.210.52 10.128.211.50 10.128.211.51 10.128.212.50 10.128.212.51 \
+10.128.213.50 10.128.213.51 10.128.214.51 10.128.215.50 10.128.216.51 \
+10.128.217.50 10.128.218.50 10.128.219.50 10.128.220.51 10.128.221.51 \
+10.128.150.86 10.128.150.78 10.128.150.79 \
+"
+
+IP_BBB_TB="\
+10.128.121.101 10.128.121.103 10.128.121.104 10.128.121.102 \
+"
+
+IP_BBB_BO_CORR="\
+10.128.101.105 10.128.102.105 10.128.104.105 10.128.105.105 \
+10.128.107.105 10.128.108.105 10.128.110.105 10.128.111.105 \
+10.128.113.105 10.128.114.105 10.128.116.105 10.128.117.105 \
+10.128.120.105 \
+"
+
+IP_BBB_BO=$IP_BBB_BO_CORR
+
+IP_BROADCAST_CROOM_NET="\
+10.128.254.255 \
+"
+
+
+# EPICS
+# =====
+
+EPICS_DIR=/opt/epics
+
+if [ -z $EPICS_BASE ] ; then
+    export EPICS_BASE=$EPICS_DIR/base
+fi
+
+if [ -z $EPICS_HOST_ARCH ] ; then
+    export EPICS_HOST_ARCH=linux-x86_64
+fi
+
+if [ -z $EV4_BASE ] ; then
+    export EV4_BASE=$EPICS_DIR/v4
+fi
+
+if [ -z $EPICS_EXTENSIONS ] ; then
+    export EPICS_EXTENSIONS=$EPICS_DIR/extensions
+fi
+
+export LC_NUMERIC="en_US.UTF-8"
+export EPICS_CA_AUTO_ADDR_LIST=NO
+export EPICS_CA_MAX_ARRAY_BYTES=1048576
+export EPICS_CA_ADDR_LIST="$IP_BPM$IP_BBB_TB$IP_BBB_BO$IP_BROADCAST_CROOM_NET"
+
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$EPICS_BASE/lib/$EPICS_HOST_ARCH
+export PVDATABASE=$EV4_BASE/pvDatabaseCPP
+export PVASRV=$EV4_BASE/pvaSrv
+export PVACCESS=$EV4_BASE/pvAccessCPP
+export NORMATIVETYPES=$EV4_BASE/normativeTypesCPP
+export PVDATA=$EV4_BASE/pvDataCPP
+export PVCOMMON=$EV4_BASE/pvCommonCPP
+export PATH=$PATH:$EPICS_BASE/bin/$EPICS_HOST_ARCH
+export PATH=$PATH:$PVACCESS/bin/$EPICS_HOST_ARCH
+export PATH=$PATH:$EPICS_EXTENSIONS/bin/$EPICS_HOST_ARCH
+
+
+# EDM
+# ===
+
+export EDMPVOBJECTS=$EPICS_EXTENSIONS/src/edm/setup
+export EDMOBJECTS=$EPICS_EXTENSIONS/src/edm/setup
+export EDMHELPFILES=$EPICS_EXTENSIONS/src/edm/helpFiles
+export EDMFILES=$EPICS_EXTENSIONS/src/edm/edmMain
+export EDMLIBS=$EPICS_EXTENSIONS/lib/$EPICS_HOST_ARCH
+export PATH=$PATH:$EPICS_EXTENSIONS/bin/$EPICS_HOST_ARCH
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$EDMLIBS
+
+
+# EPICS Support Application Machines
+# ==================================
+
+#export VACA_PREFIX=$(whoami)-$(hostname)- # This line should be commented when in sirius computers
+export VACA_PREFIX=
+export SIRIUS_URL_RBAC_AUTH=https://sirius-rbac-auth.lnls.br
+export SIRIUS_URL_RBAC=https://rbac:8445
+export SIRIUS_URL_NS=http://naming-service-wildfly:8089
+export SIRIUS_URL_CCDB=http://ccdb:8083
+export SIRIUS_URL_CABLES=http://cable:8086
+export SIRIUS_URL_CONSTS=http://sirius-consts.lnls.br
+export SIRIUS_URL_CONFIGDB=http://sirius-configdb.lnls.br:8085
+export SIRIUS_URL_LOGBOOK=http://sirius-logbook.lnls.br:8080/Olog
+
+
+# Python
+# ======
+export PYTHONPATH=$PYTHONPATH:$ROOT_FAC/repos/job_manager/src
+#export PYTHONPATH=$PYTHONPATH:$ROOT_FAC/repos/hla/plot/src
+export PYQTDESIGNERPATH=$PYQTDESIGNERPATH:$ROOT_SIRIUS/repos/hla/pyqt-apps
+export PYEPICS_LIBCA=$EPICS_DIR/base/lib/linux-x86_64/libca.so
+
+
+# PyDM
+# ====
+export PYDM_DEFAULT_PROTOCOL="ca"
+export PYDM_EPICS_LIB="PYEPICS"  # PYEPICS, PYCA, CAPROTO
+export LC_NUMERIC=en_US.UTF-8
+
+
+# FAC scripts
+# ===========
+export PATH=$PATH:$LNLS_FAC/repos/job_manager/apps
+export PATH=$PATH:$LNLS_FAC/repos/scripts/fieldmap_analysis
+
+
+# Completion for JobManager functions
+# ===================================
+complete -W "--description --exec --inputFiles --workingDirectory --priority --possibleHosts --help"                                    pyjob_qsub.py
+complete -W "--clients --showCalendar --help"                                                                                           pyjob_configs_get.py
+complete -W "--clients --niceness --shutdown --remove --MoreJobs --defnumproc \
+             --calendar --weekday --initial --final --num_proc --help" \
+             pyjob_configs_set.py
+complete -W "--sure --help"                                                                                                             pyjob_shutdown.py
+complete -W "--jobs --status --user --description --runninghost --explicate --choose --summary --help"                                  pyjob_qstat.py
+complete -W "--jobs --status --user --description --runninghost --signal --priority --possibleHosts --help"                             pyjob_qsig.py
+complete -W "--check --wake --startVBox --stopVBox --statusVBox --help"                                                                 manage_hosts_subnet.py
+
+
+# Completion for FieldMap analysis functions
+# ==========================================
+complete -W "help clean edit run summary rawfield trajectory multipoles model summary profile multifunctional-sextupole"                fac-fma-analysis.py
+complete -W "--input-file"                                                                                                              fac-fma-rawfield.py
+
+# Completion for sirius-hla-docker
+complete -W "as-ma-launcher as-ps-cycle as-ps-launcher as-ti-control \
+             bo-ap-chromcorr bo-ap-currlt bo-ap-ramp bo-ap-tunecorr bo-config-manager bo-ma-control \
+             si-ap-chromcorr si-ap-currlt si-ap-sofb si-ap-tunecorr si-config-manager si-ma-control si-ps-control \
+             tb-ap-control tb-ap-posang tb-ma-control \
+             ts-ap-control ts-ap-posang ts-ma-control" sirius-hla-docker.sh
+
+
+# Completion for VA
+# =================
+complete -W "stop start list vaca si_current si_lifetime si_bpms si_ps si_tune topup"  sirius-va
+
+
+# Completion for binary trackcpp
+# ==============================
+complete -W "help dynap_xy dynap_ex dynap_ma dynap_pxa dynap_pya dynap_xyfmap \
+                  dynap_exfmap track_linepass tests" trackcpp
+complete -W "--path --save --help"  trackcpp-da-ma-results.py
+
+
+# Completion for sirius-lnls-gitall
+# =================================
+complete -W "--help --complement pull status commit branch checkout log fetch \
+                                 push clone all lnls-sirius lnls-fac lnls-ima \
+                    --repos --orgs" sirius-lnls-gitall.py
+
+
+# Aliases
+# =======
+
+alias g-root='cd /home'
+
+alias g-epics-base='cd $EPICS_DIR'
+alias g-data-fac='cd $LNLS_FAC/data'
+alias g-beamdynamics-data='cd $LNLS_FAC/data/sirius/beam_dynamics'
+
+# --- organizations aliases ----
+alias g-sirius-lnls='cd $LNLS_SIRIUS/repos'
+alias g-fac-lnls='cd $LNLS_FAC/repos'
+alias g-ima-lnls='cd $LNLS_IMA/repos'
+
+# --- lnls-sirius repo aliases ---
+#alias g-csslnls-sirius-lnls='cd $LNLS_SIRIUS/org.csstudio.product'
+#alias g-discs-sirius-lnls='cd $LNLS_SIRIUS/discs-management'
+#alias g-ps-tests='cd $LNLS_SIRIUS/repos/ps-tests'
+#alias g-siriusdm-sirius-lnls='cd $LNLS_SIRIUS/repos/dev-packages/siriusdm'
+#alias g-matlab-middle-layer='cd $LNLS_SIRIUS/matlab-middle-layer'
+alias g-csconstants-sirius-lnls='cd $LNLS_SIRIUS/repos/control-system-constants'
+alias g-dev-packages-sirius-lnls='cd $LNLS_SIRIUS/repos/dev-packages'
+alias g-hla-sirius-lnls='cd $LNLS_SIRIUS/repos/hla'
+alias g-pydm-sirius-lnls='cd $LNLS_SIRIUS/repos/pydm'
+alias g-siriuspy-sirius-lnls='cd $LNLS_SIRIUS/repos/dev-packages/siriuspy'
+alias g-machine-applications-sirius-lnls='cd $LNLS_SIRIUS/repos/machine-applications'
+alias g-epics-dev='cd $LNLS_SIRIUS/repos/epics-dev'
+alias g-pru-serial485='cd $LNLS_SIRIUS/repos/pru-serial485'
+alias g-linac-opi='cd $LNLS_SIRIUS/linac-opi'
+
+# --- lnls-fac repos ---
+alias g-apsuite-fac-lnls='cd $LNLS_FAC/repos/apsuite'
+alias g-va-fac-lnls='cd $LNLS_FAC/repos/va'
+alias g-lnls-fac-lnls='cd $LNLS_FAC/repos/lnls'
+alias g-pymodels-fac-lnls='cd $LNLS_FAC/repos/pymodels'
+alias g-trackcpp-fac-lnls='cd $LNLS_FAC/repos/trackcpp'
+alias g-mathphys-fac-lnls='cd $LNLS_FAC/repos/mathphys'
+alias g-scripts-fac-lnls='cd $LNLS_FAC/repos/scripts'
+alias g-pyjob-fac-lnls='cd $LNLS_FAC/repos/job_manager'
+alias g-mml-fac-lnls='cd $LNLS_FAC/repos/MatlabMiddleLayer/Release'
+alias g-pyaccel-fac-lnls='cd $LNLS_FAC/repos/pyaccel'
+alias g-pymodels-fac-lnls='cd $LNLS_FAC/repos/pymodels'
+alias g-fieldmaptrack-code-fac-lnls='cd $LNLS_FAC/repos/fieldmaptrack'
+
+# --- lnls-ima repos ---
+alias g-tb-dipoles-ima-lnls='cd $LNLS_IMA/repos/tb-dipoles'
+alias g-bo-correctors-ima-lnls='cd $LNLS_IMA/repos/bo-correctors'
+alias g-bo-dipoles-ima-lnls='cd $LNLS_IMA/repos/bo-dipoles'
+alias g-bo-qd-quadrupoles-ima-lnls='cd $LNLS_IMA/repos/bo-quadrupoles-qd'
+alias g-bo-qf-quadrupoles-ima-lnls='cd $LNLS_IMA/repos/bo-quadrupoles-qf'
+alias g-bo-qs-quadrupoles-ima-lnls='cd $LNLS_IMA/repos/bo-quadrupoles-qs'
+alias g-bo-sextupoles-ima-lnls='cd $LNLS_IMA/repos/bo-sextupoles'
+alias g-si-b1-dipoles-ima-lnls='cd $LNLS_IMA/repos/si-dipoles-b1'
+alias g-si-b2-dipoles-ima-lnls='cd $LNLS_IMA/repos/si-dipoles-b2'
+alias g-si-fast-correctors-ima-lnls='cd $LNLS_IMA/repos/si-fast-correctors'
+alias g-si-q14-quadrupoles-ima-lnls='cd $LNLS_IMA/repos/si-quadrupoles-q14'
+alias g-si-q20-quadrupoles-ima-lnls='cd $LNLS_IMA/repos/si-quadrupoles-q20'
+alias g-si-q30-quadrupoles-ima-lnls='cd $LNLS_IMA/repos/si-quadrupoles-q30'
+alias g-si-s15-sextupoles-ima-lnls='cd $LNLS_IMA/repos/si-sextupoles-s15'
