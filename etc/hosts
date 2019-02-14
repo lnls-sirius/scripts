@@ -4,7 +4,7 @@
 127.0.0.1 localhost
 
 # --- Sirius control room
-127.0.1.1  lnls452-linux # desktop3
+#127.0.1.1 lnls452-linux # desktop3
 #127.0.1.1 lnls449-linux # desktop1
 #127.0.1.1 lnls451-linux # desktop2
 #127.0.1.1 lnls454-linux # desktop4

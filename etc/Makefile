@@ -1,4 +1,5 @@
 # Destination directory
+HOSTNAME=$(shell hostname)
 DEST_DIR = /usr/local/etc
 
 GENERALSCRIPTS = \
@@ -11,6 +12,10 @@ FULLSCRIPTS = $(addprefix $(DEST_DIR)/, $(SCRIPTS))
 
 install: uninstall $(SCRIPTS)
 	cp $(SCRIPTS) $(DEST_DIR)
+
+	rm /etc/hosts
+	cp hosts /etc/hosts
+	sed -i "s/#127.0.1.1 $(HOSTNAME)/127.0.1.1 $(HOSTNAME)/g" /etc/hosts
 
 develop: uninstall $(SCRIPTS)
 	ln -srf $(SCRIPTS) $(DEST_DIR)
