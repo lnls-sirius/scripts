@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=CS\nStudio
+Icon=/opt/cs-studio/icon.png
+Exec=/bin/bash -l -c "cs-studio"
+StartupNotify=true
+Terminal=false
