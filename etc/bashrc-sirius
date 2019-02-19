@@ -191,7 +191,7 @@ export PYDM_EPICS_LIB="PYEPICS"  # PYEPICS, PYCA, CAPROTO
 export LC_NUMERIC=en_US.UTF-8
 
 
-# FAC scripts
+# FAC scriptsCalend
 # ===========
 export PATH=$PATH:$LNLS_FAC/repos/job_manager/apps
 export PATH=$PATH:$LNLS_FAC/repos/scripts/fieldmap_analysis
@@ -201,7 +201,7 @@ export PATH=$PATH:$LNLS_FAC/repos/scripts/fieldmap_analysis
 # ===================================
 complete -W "--description --exec --inputFiles --workingDirectory --priority --possibleHosts --help"                                    pyjob_qsub.py
 complete -W "--clients --showCalendar --help"                                                                                           pyjob_configs_get.py
-# complete -W "--clients --niceness --shutdown --remove --MoreJobs --defnumproc \
+complete -W "--clients --niceness --shutdown --remove --MoreJobs --defnumproc \
              --calendar --weekday --initial --final --num_proc --help" \
              pyjob_configs_set.py
 complete -W "--sure --help"                                                                                                             pyjob_shutdown.py
@@ -216,16 +216,17 @@ complete -W "help clean edit run summary rawfield trajectory multipoles model su
 complete -W "--input-file"                                                                                                              fac-fma-rawfield.py
 
 # Completion for sirius-hla-docker
-complete -W "as-ma-launcher as-ps-cycle as-ps-launcher as-ti-control \
-#              bo-ap-chromcorr bo-ap-currlt bo-ap-ramp bo-ap-tunecorr bo-config-manager bo-ma-control \
-             si-ap-chromcorr si-ap-currlt si-ap-sofb si-ap-tunecorr si-config-manager si-ma-control si-ps-control \
-             tb-ap-control tb-ap-posang tb-ma-control \
-#              ts-ap-control ts-ap-posang ts-ma-control" sirius-hla-docker.sh
+# ================================
+#complete -W "as-ma-launcher as-ps-cycle as-ps-launcher as-ti-control \
+#             bo-ap-chromcorr bo-ap-currlt bo-ap-ramp bo-ap-tunecorr bo-config-manager bo-ma-control \
+#             si-ap-chromcorr si-ap-currlt si-ap-sofb si-ap-tunecorr si-config-manager si-ma-control si-ps-control \
+#             tb-ap-control tb-ap-posang tb-ma-control \
+#             ts-ap-control ts-ap-posang ts-ma-control" sirius-hla-docker.sh
 
 
 # Completion for VA
 # =================
-complete -W "stop start list vaca si_current si_lifetime si_bpms si_ps si_tune topup"  sirius-va
+#complete -W "stop start list vaca si_current si_lifetime si_bpms si_ps si_tune topup"  sirius-va
 
 
 # Completion for binary trackcpp
@@ -246,34 +247,32 @@ complete -W "--path --save --help"  trackcpp-da-ma-results.py
 
 alias g-root='cd /home'
 
-alias g-epics-base='cd $EPICS_DIR'
-alias g-data-fac='cd $LNLS_FAC/data'
-alias g-beamdynamics-data='cd $LNLS_FAC/data/sirius/beam_dynamics'
-
 # --- organizations aliases ----
 alias g-sirius-lnls='cd $LNLS_SIRIUS/repos'
 alias g-fac-lnls='cd $LNLS_FAC/repos'
 alias g-ima-lnls='cd $LNLS_IMA/repos'
 
+alias g-epics-base='cd $EPICS_DIR'
+
 # --- lnls-sirius repo aliases ---
+alias g-csconstants-sirius-lnls='cd $LNLS_SIRIUS/repos/control-system-constants'
+alias g-dev-packages-sirius-lnls='cd $LNLS_SIRIUS/repos/dev-packages/siriuspy'
+alias g-machine-applications-sirius-lnls='cd $LNLS_SIRIUS/repos/machine-applications'
+alias g-pydm-sirius-lnls='cd $LNLS_SIRIUS/repos/pydm'
+alias g-hla-sirius-lnls='cd $LNLS_SIRIUS/repos/hla'
+#alias g-epics-dev='cd $LNLS_SIRIUS/repos/epics-dev'
+#alias g-pru-serial485='cd $LNLS_SIRIUS/repos/pru-serial485'
+#alias g-linac-opi='cd $LNLS_SIRIUS/linac-opi'
 #alias g-csslnls-sirius-lnls='cd $LNLS_SIRIUS/org.csstudio.product'
 #alias g-discs-sirius-lnls='cd $LNLS_SIRIUS/discs-management'
 #alias g-ps-tests='cd $LNLS_SIRIUS/repos/ps-tests'
 #alias g-siriusdm-sirius-lnls='cd $LNLS_SIRIUS/repos/dev-packages/siriusdm'
 #alias g-matlab-middle-layer='cd $LNLS_SIRIUS/matlab-middle-layer'
-alias g-csconstants-sirius-lnls='cd $LNLS_SIRIUS/repos/control-system-constants'
-alias g-dev-packages-sirius-lnls='cd $LNLS_SIRIUS/repos/dev-packages'
-alias g-hla-sirius-lnls='cd $LNLS_SIRIUS/repos/hla'
-alias g-pydm-sirius-lnls='cd $LNLS_SIRIUS/repos/pydm'
-alias g-siriuspy-sirius-lnls='cd $LNLS_SIRIUS/repos/dev-packages/siriuspy'
-alias g-machine-applications-sirius-lnls='cd $LNLS_SIRIUS/repos/machine-applications'
-alias g-epics-dev='cd $LNLS_SIRIUS/repos/epics-dev'
-alias g-pru-serial485='cd $LNLS_SIRIUS/repos/pru-serial485'
-alias g-linac-opi='cd $LNLS_SIRIUS/linac-opi'
 
 # --- lnls-fac repos ---
+alias g-data-fac='cd $LNLS_FAC/data'
+alias g-beamdynamics-data='cd $LNLS_FAC/data/sirius/beam_dynamics'
 alias g-apsuite-fac-lnls='cd $LNLS_FAC/repos/apsuite'
-alias g-va-fac-lnls='cd $LNLS_FAC/repos/va'
 alias g-lnls-fac-lnls='cd $LNLS_FAC/repos/lnls'
 alias g-pymodels-fac-lnls='cd $LNLS_FAC/repos/pymodels'
 alias g-trackcpp-fac-lnls='cd $LNLS_FAC/repos/trackcpp'
@@ -284,6 +283,7 @@ alias g-mml-fac-lnls='cd $LNLS_FAC/repos/MatlabMiddleLayer/Release'
 alias g-pyaccel-fac-lnls='cd $LNLS_FAC/repos/pyaccel'
 alias g-pymodels-fac-lnls='cd $LNLS_FAC/repos/pymodels'
 alias g-fieldmaptrack-code-fac-lnls='cd $LNLS_FAC/repos/fieldmaptrack'
+#alias g-va-fac-lnls='cd $LNLS_FAC/repos/va'
 
 # --- lnls-ima repos ---
 alias g-tb-dipoles-ima-lnls='cd $LNLS_IMA/repos/tb-dipoles'
