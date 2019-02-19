@@ -79,6 +79,7 @@ ff02::2 ip6-allrouters
 10.0.7.55      sirius-configdb.lnls.br configdb
 10.0.6.57      sirius-logbook.lnls.br logbook
 10.0.6.57      sirius-archiver.lnls.br archiver
+10.0.38.34     sirius-bbbdemon.lnls.br bbbdaemon
 
 
 # SIRIUS power supply beaglebones
