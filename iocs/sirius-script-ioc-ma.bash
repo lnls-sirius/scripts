@@ -5,22 +5,22 @@
 cmd=$1
 linac_passwd=$2
 desktop=desktop3
-maiocs=("sirius-ioc-ma-tb-dipoles.service"
-        "sirius-ioc-ma-tb-quadrupoles.service"
-        "sirius-ioc-ma-tb-correctors.service"
-        "sirius-ioc-ma-bo-correctors-01.service"
-        "sirius-ioc-ma-bo-correctors-02.service"
-        "sirius-ioc-ma-bo-correctors-03.service"
-        "sirius-ioc-ma-bo-correctors-04.service"
-        "sirius-ioc-ma-bo-correctors-05.service"
-        "sirius-ioc-ma-bo-correctors-06.service"
-        "sirius-ioc-ma-bo-correctors-07.service"
-        "sirius-ioc-ma-bo-correctors-08.service"
-        "sirius-ioc-ma-bo-correctors-09.service"
-        "sirius-ioc-ma-bo-correctors-10.service"
-        "sirius-ioc-ma-bo-correctors-11.service"
-        "sirius-ioc-ma-bo-correctors-12.service"
-        "sirius-ioc-ma-bo-correctors-13.service")
+maiocs=("sirius-ioc-tb-ma-dipoles.service"
+        "sirius-ioc-tb-ma-quadrupoles.service"
+        "sirius-ioc-tb-ma-correctors.service"
+        "sirius-ioc-bo-ma-correctors-01.service"
+        "sirius-ioc-bo-ma-correctors-02.service"
+        "sirius-ioc-bo-ma-correctors-03.service"
+        "sirius-ioc-bo-ma-correctors-04.service"
+        "sirius-ioc-bo-ma-correctors-05.service"
+        "sirius-ioc-bo-ma-correctors-06.service"
+        "sirius-ioc-bo-ma-correctors-07.service"
+        "sirius-ioc-bo-ma-correctors-08.service"
+        "sirius-ioc-bo-ma-correctors-09.service"
+        "sirius-ioc-bo-ma-correctors-10.service"
+        "sirius-ioc-bo-ma-correctors-11.service"
+        "sirius-ioc-bo-ma-correctors-12.service"
+        "sirius-ioc-bo-ma-correctors-13.service")
 
 
 # --- aux functions ---
