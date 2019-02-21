@@ -11,7 +11,7 @@ SCRIPTS = $(GENERALSCRIPTS)
 FULLSCRIPTS = $(addprefix $(DEST_DIR)/, $(SCRIPTS))
 
 
-install: uninstall $(SCRIPTS) install-bashrc install-rsyncd
+install: uninstall $(SCRIPTS) install-hosts install-rsyncd
 	cp $(SCRIPTS) $(DEST_DIR)
 
 install-hosts:
