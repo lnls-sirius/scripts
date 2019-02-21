@@ -14,7 +14,7 @@ FULLSCRIPTS = $(addprefix $(DEST_DIR)/, $(SCRIPTS))
 install: uninstall $(SCRIPTS) install-bashrc
 	cp $(SCRIPTS) $(DEST_DIR)
 
-install-bashrc:
+install-hosts:
 	rm /etc/hosts
 	cp hosts /etc/hosts
 	sed -i "s/#127.0.1.1 $(HOSTNAME)/127.0.1.1 $(HOSTNAME)/g" /etc/hosts
