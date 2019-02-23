@@ -125,6 +125,14 @@ ff02::2 ip6-allrouters
 10.128.117.104 bbb-as-dclinks-13     IA-17RaCtrl--CO-DCLinkCtrl  # BO-43U:PS-CH BO-43U:PS-CV BO-45U:PS-CH BO-45U:PS-CV
 10.128.120.104 bbb-as-dclinks-14     IA-20RaCtrl--CO-DCLinkCtrl  # BO-47U:PS-CH BO-47U:PS-CV BO-49D:PS-CH BO-49U:PS-CV
 
+# Oscilloscopes
+# =============
+# use gvncviewer
+10.128.1.52    oscilloscope1
+10.128.1.53    oscilloscope2
+10.128.150.77  oscilloscope3
+10.0.38.74     oscilloscope4
+
 
 # ~~~~~~~~~~~~~~~~~~ LNLS-FAC ~~~~~~~~~~~~~~~~~~
 
