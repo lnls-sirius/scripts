@@ -104,6 +104,7 @@ function print_header {
     printf "\e[1;31mbailing out...\e[0m]\n"
     exit
   fi
+  printf "\n"
 }
 
 function create_tagged_local_repos {
