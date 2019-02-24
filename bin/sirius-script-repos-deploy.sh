@@ -90,7 +90,7 @@ function checkout_tag_lnls452 {
   printf "\n"
   for repo in "${repos[@]}"; do
     printf_green ". repo $repo"
-    sshpass -p $sirius_passwd ssh sirius@lnls452-linux "cd /home/nfs-shared/repos-lnls-sirius/$repo; git stash save state-before-$tag; git fetch -p; git checkout $tag"
+    sshpass -p $sirius_passwd ssh sirius@lnls452-linux "cd /home/nfs-shared/repos-lnls-sirius/; echo "$tag" >> deploy.log; cd $repo; git stash save state-before-$tag; git fetch -p; git checkout $tag"
   done
 }
 
@@ -99,6 +99,7 @@ function deploy_desktops {
   printf "\n"
   for desktop in "${desktops[@]}"; do
     printf_green "installing repos in $desktop..."
+    sshpass -p $sirius_passwd ssh sirius@"$desktop" "sirius-script-repos-update-install.sh"
     sshpass -p $sirius_passwd ssh sirius@"$desktop" "sirius-script-repos-install.sh"
   done
 }
