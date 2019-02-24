@@ -65,6 +65,7 @@ function check_all_repos {
       fi
     popd > /dev/null
   done
+  printf "\n"
 }
 
 function process_local_repo {
