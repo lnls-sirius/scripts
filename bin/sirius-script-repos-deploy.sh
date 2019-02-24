@@ -1,11 +1,14 @@
 #!/usr/bin/env bash
 
 
-repos=("mathphys"
+repos=("scripts"
+       "mathphys"
        "dev-packages"
-       "machine-applications")
+       "machine-applications"
+       "hla")
 
-desktops=("lnls451-linux"
+desktops=("lnls452-linux"
+          "lnls451-linux"
           "lnls449-linux")
 
 repos_path=/home/sirius/repos/
@@ -13,7 +16,7 @@ repos_path=/home/sirius/repos/
 
 function get_deploy_tag {
   timestamp=`date '+%Y-%m-%d_%Hh%Mm%Ss'`
-  echo $timestamp"_"$USER"_"$LINUX_HOSTNAME
+  echo "deploy-"$timestamp"_"$USER"_"$LINUX_HOSTNAME
 }
 
 function get_password {
@@ -88,10 +91,12 @@ function create_tagged_local_repos {
 function checkout_tag_lnls452 {
   printf_yellow "... checkout tag in nfs server (lnls452-linux) ..."
   printf "\n"
+  sshpass -p $sirius_passwd ssh sirius@lnls452-linux "cd /home/nfs-shared/repos-lnls-sirius/; echo "$tag" >> deploy.log"
   for repo in "${repos[@]}"; do
     printf_green ". repo $repo"
-    sshpass -p $sirius_passwd ssh sirius@lnls452-linux "cd /home/nfs-shared/repos-lnls-sirius/; echo "$tag" >> deploy.log; cd $repo; git stash save state-before-$tag; git fetch -p; git checkout $tag"
+    sshpass -p $sirius_passwd ssh sirius@lnls452-linux "cd /home/nfs-shared/repos-lnls-sirius/$repo; git stash save state-before-$tag; git fetch -p --tags; git checkout $tag"
   done
+  printf "\n"
 }
 
 function deploy_desktops {
@@ -99,9 +104,10 @@ function deploy_desktops {
   printf "\n"
   for desktop in "${desktops[@]}"; do
     printf_green "installing repos in $desktop..."
-    sshpass -p $sirius_passwd ssh sirius@"$desktop" "sirius-script-repos-update-install.sh"
-    sshpass -p $sirius_passwd ssh sirius@"$desktop" "sirius-script-repos-install.sh"
+    sshpass -p $sirius_passwd ssh sirius@"$desktop" "sudo sirius-script-repos-update-install.sh"
+    sshpass -p $sirius_passwd ssh sirius@"$desktop" "sudo sirius-script-repos-install.sh"
   done
+  printf "\n"
 }
 
 

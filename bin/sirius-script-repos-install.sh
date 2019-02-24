@@ -6,7 +6,8 @@ hostname=`hostname`
 
 repos=("mathphys"
        "dev-packages"
-       "machine-applications")
+       "machine-applications"
+       "hla")
 
 
 function get_tmpdir {
@@ -22,6 +23,9 @@ function run_install {
       cd ./siriuspy
       ./setup.py install
     elif [ "$repo" == "machine-applications" ]; then
+      make install
+    elif [ "$repo" == "hla" ]; then
+      cd ./pyqt-apps
       make install
     else
       echo "installation not defined for $repo !"
