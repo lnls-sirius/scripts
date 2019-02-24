@@ -100,7 +100,8 @@ function print_header {
   printf_blue "Deploy Sirius Repositories"
   printf_blue "tag: $tag"
   printf "\n"
-  read -s -r -p "Are you sure [y|n]?: " answer; echo ""
+  read -r -p "Comment: " comment; echo ""
+  read -r -p "Are you sure [y|n]?: " answer; echo ""
   if [ "$answer" == 'n' ]; then
     printf "\e[1;31mbailing out...\e[0m]\n"
     exit
@@ -119,7 +120,7 @@ function create_tagged_local_repos {
 function checkout_tag_lnls452 {
   printf_yellow "... checkout tag in nfs server (lnls452-linux) ..."
   printf "\n"
-  sshpass -p $sirius_passwd ssh sirius@lnls452-linux "cd /home/nfs-shared/repos-lnls-sirius/; echo "$tag" >> deploy.log"
+  sshpass -p $sirius_passwd ssh sirius@lnls452-linux "cd /home/nfs-shared/repos-lnls-sirius/; echo "$tag  $comment" >> deploy.log"
   for repo in "${repos[@]}"; do
     printf_green ". repo $repo"
     sshpass -p $sirius_passwd ssh sirius@lnls452-linux "cd /home/nfs-shared/repos-lnls-sirius/$repo; git stash save state-before-$tag; git fetch -p --tags; git checkout master; git pull; git checkout $tag"
@@ -140,8 +141,8 @@ function deploy_desktops {
 
 
 tag=`get_deploy_tag $1`
-print_header
 check_all_repos
+print_header
 get_password
 create_tagged_local_repos
 checkout_tag_lnls452

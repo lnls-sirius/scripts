@@ -19,7 +19,7 @@ function get_password {
 
 function delete_tag {
   printf "Delete tag \e[1;34m'$tag'\e[0m...\n"
-  read -s -r -p "Are you sure [NO/yes]?: " answer; echo ""
+  read -r -p "Are you sure [NO/yes]?: " answer; echo ""
   if [ "$answer" != 'yes' ]; then
     printf "\e[1;31mbailing out...\e[0m]\n"
     exit
