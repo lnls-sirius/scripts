@@ -5,7 +5,9 @@ repos_path=/home/sirius/repos
 repos=("scripts"
        "mathphys"
        "dev-packages"
-       "machine-applications")
+       "machine-applications"
+       "hla"
+       "bbb-daemon")
 
 
 function get_password {
