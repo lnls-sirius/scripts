@@ -47,6 +47,23 @@ function printf_white_bold {
   printf "\e[1m$1\e[0m\n"
 }
 
+function check_all_repos {
+  printf_green "Checking all repos..."
+  for repo in "${repos[@]}"; do
+    if [ ! -d "$repos_path$repo" ]; then
+      printf_red ". repo path '$repos_path$repo' does not exist!"
+      exit
+    fi
+    pushd $repos_path$repo > /dev/null
+      if [[ $(git status -s) ]]; then
+        printf_red ". repo $repo is not clean!"
+        printf "\n"
+        exit
+      fi
+    popd > dev/null
+  done
+}
+
 function process_local_repo {
   repo=$1
   gittag=$2
@@ -114,6 +131,7 @@ function deploy_desktops {
 
 tag=`get_deploy_tag`
 print_header
+check_all_repos
 get_password
 create_tagged_local_repos
 checkout_tag_lnls452
