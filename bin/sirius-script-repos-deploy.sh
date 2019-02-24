@@ -63,7 +63,7 @@ function check_all_repos {
         printf "\n"
         exit
       fi
-    popd > dev/null
+    popd > /dev/null
   done
 }
 
