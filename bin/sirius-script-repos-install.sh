@@ -16,13 +16,15 @@ function get_tmpdir {
 
 function run_install {
     repo=$1
-    if [ "$repo" == "dev-packages" ]; then
-        cd ./siriuspy
-        ./setup.py install
+    if [ "$repo" == "mathphys" ]; then
+      ./setup.py install
+    elif [ "$repo" == "dev-packages" ]; then
+      cd ./siriuspy
+      ./setup.py install
     elif [ "$repo" == "machine-applications" ]; then
-        make install
+      make install
     else
-        echo "installation not defined for $repo !"
+      echo "installation not defined for $repo !"
     fi
 }
 
