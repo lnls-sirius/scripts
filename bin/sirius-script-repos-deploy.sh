@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-
 repos=("scripts"
        "mathphys"
        "dev-packages"
@@ -16,8 +15,12 @@ repos_path=/home/sirius/repos/
 
 
 function get_deploy_tag {
-  timestamp=`date '+%Y-%m-%d_%Hh%Mm%Ss'`
-  echo "deploy-"$timestamp"_"$USER"_"$LINUX_HOSTNAME
+  if [ -z "$1" ]; then
+    timestamp=`date '+%Y-%m-%d_%Hh%Mm%Ss'`
+    echo "deploy-"$timestamp"_"$USER"_"$LINUX_HOSTNAME
+  else
+    echo $1
+  fi
 }
 
 function get_password {
@@ -96,6 +99,11 @@ function print_header {
   printf_blue "Deploy Sirius Repositories"
   printf_blue "tag: $tag"
   printf "\n"
+  read -s -r -p "Are you sure [y|n]?: " answer; echo ""
+  if [ "$answer" == 'n' ]; then
+    printf "\e[1;31mbailing out...\e[0m]\n"
+    exit
+  fi
 }
 
 function create_tagged_local_repos {
@@ -129,7 +137,7 @@ function deploy_desktops {
 }
 
 
-tag=`get_deploy_tag`
+tag=`get_deploy_tag $1`
 print_header
 check_all_repos
 get_password
