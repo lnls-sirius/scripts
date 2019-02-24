@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-tmpdir=$(mktemp /tmp/deploy-update-instal-XXXXXX)
+# This file should be installed in /usr/local/etc manually in prestige desktops
 
 timestamp=`date '+%Y-%m-%d_%Hh%Mm%Ss'`
 tmpdir="/tmp/deploy-update-install-"$timestamp
