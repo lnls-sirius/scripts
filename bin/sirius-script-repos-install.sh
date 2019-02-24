@@ -4,10 +4,12 @@ repo_path=/home/sirius/repos
 
 hostname=`hostname`
 
-repos=("mathphys"
+repos=("scripts"
+       "mathphys"
        "dev-packages"
        "machine-applications"
-       "hla")
+       "hla"
+       "bbb-daemon")
 
 
 function get_tmpdir {
@@ -17,7 +19,12 @@ function get_tmpdir {
 
 function run_install {
     repo=$1
-    if [ "$repo" == "mathphys" ]; then
+    if [ "$repo" == "scripts" ]; then
+      pushd ./etc > /dev/null
+        make install
+        make install-hosts
+      popd > /dev/null
+    elif [ "$repo" == "mathphys" ]; then
       ./setup.py install
     elif [ "$repo" == "dev-packages" ]; then
       cd ./siriuspy
@@ -27,6 +34,8 @@ function run_install {
     elif [ "$repo" == "hla" ]; then
       cd ./pyqt-apps
       make install
+    elif [ "$repo" == "bbb-daemon" ]; then
+      :
     else
       echo "installation not defined for $repo !"
     fi

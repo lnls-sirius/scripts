@@ -5,7 +5,8 @@ repos=("scripts"
        "mathphys"
        "dev-packages"
        "machine-applications"
-       "hla")
+       "hla"
+       "bbb-daemon")
 
 desktops=("lnls452-linux"
           "lnls451-linux"
