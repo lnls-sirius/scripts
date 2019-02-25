@@ -131,7 +131,7 @@ ff02::2 ip6-allrouters
 10.128.1.52    oscilloscope1
 10.128.1.53    oscilloscope2
 10.128.150.77  oscilloscope3
-10.0.38.74     oscilloscope4
+10.0.38.74     epp-scope1
 
 
 # ~~~~~~~~~~~~~~~~~~ LNLS-FAC ~~~~~~~~~~~~~~~~~~
