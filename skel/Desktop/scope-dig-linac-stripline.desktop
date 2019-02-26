@@ -1,6 +1,6 @@
 [Desktop Entry]
 Type=Application
-Name=EPP\nScope1
+Name=DIG\nLinStrip
 Icon=/usr/share/icons/gnome/48x48/devices/audio-card.png
 Exec=/bin/bash -l -c "gvncviewer scope-dig-linac-stripline"
 StartupNotify=true
