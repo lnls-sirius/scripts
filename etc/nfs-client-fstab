@@ -1,0 +1,4 @@
+# --- fstab portions for workstations to mount folder from lnls452-linux
+10.128.254.203:/home/nfs-shared/repos-lnls-sirius   /home/sirius/repos nfs ro 0 0
+10.128.254.203:/home/nfs-shared/lost-and-found   /home/sirius/Desktop/lost-and-found nfs rw
+10.128.254.203:/home/nfs-shared/screens-iocs   /home/sirius/Desktop/screens-iocs nfs rw
