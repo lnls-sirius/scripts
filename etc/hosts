@@ -132,7 +132,7 @@ ff02::2 ip6-allrouters
 10.128.1.53    scope-dig-linac-stripline
 10.128.150.77  scope-dig-fpmdig
 10.128.150.78  scope-dig-fctdig
-10.0.38.74     scope-epp
+10.0.38.74     scope-epp-scope1
 
 
 
