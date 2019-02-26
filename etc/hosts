@@ -128,10 +128,12 @@ ff02::2 ip6-allrouters
 # Oscilloscopes
 # =============
 # use gvncviewer
-10.128.1.52    oscilloscope1
-10.128.1.53    oscilloscope2
-10.128.150.77  oscilloscope3
-10.0.38.74     epp-scope1
+10.128.1.52    scope-dig-linac-ict
+10.128.1.53    scope-dig-linac-stripline
+10.128.150.77  scope-dig-fpmdig
+10.128.150.78  scope-dig-fctdig
+10.0.38.74     scope-epp
+
 
 
 # ~~~~~~~~~~~~~~~~~~ LNLS-FAC ~~~~~~~~~~~~~~~~~~
