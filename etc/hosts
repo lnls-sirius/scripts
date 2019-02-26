@@ -107,6 +107,9 @@ ff02::2 ip6-allrouters
 10.128.123.102 bbb-bo-sextupole-sf   PA-RaPSC03--CO-PSCtrl-BO2   # BO-Fam:PS-SF
 10.128.123.103 bbb-bo-sextupole-sd   PA-RaPSC03--CO-PSCtrl-BO3   # BO-Fam:PS-SD
 10.128.123.104 bbb-bo-quadrupole-qd  PA-RaPSC03--CO-PSCtrl-BO4   # BO-Fam:PS-QD
+10.128.123.105 bbb-bo-dipole-2       PA-RaPSF05--CO-PSCtrl-BO    # BO-Fam:PS-B-2
+10.128.123.106 bbb-bo-dipole-1       PA-RaPSE05--CO-PSCtrl-BO    # BO-Fam:PS-B-1
+
 
 10.128.101.104 bbb-as-dclinks-02     IA-01RaCtrl--CO-DCLinkCtrl  # BO-01U:PS-CH BO-01U:PS-CV BO-02D:PS-QS
 10.128.102.104 bbb-as-dclinks-03     IA-02RaCtrl--CO-DCLinkCtrl  # BO-03U:PS-CH BO-03U:PS-CV BO-05U:PS-CH BO-05U:PS-CV
@@ -121,6 +124,14 @@ ff02::2 ip6-allrouters
 10.128.116.104 bbb-as-dclinks-12     IA-16RaCtrl--CO-DCLinkCtrl  # BO-39U:PS-CH BO-39U:PS-CV BO-41U:PS-CH BO-41U:PS-CV
 10.128.117.104 bbb-as-dclinks-13     IA-17RaCtrl--CO-DCLinkCtrl  # BO-43U:PS-CH BO-43U:PS-CV BO-45U:PS-CH BO-45U:PS-CV
 10.128.120.104 bbb-as-dclinks-14     IA-20RaCtrl--CO-DCLinkCtrl  # BO-47U:PS-CH BO-47U:PS-CV BO-49D:PS-CH BO-49U:PS-CV
+
+# Oscilloscopes
+# =============
+# use gvncviewer
+10.128.1.52    oscilloscope1
+10.128.1.53    oscilloscope2
+10.128.150.77  oscilloscope3
+10.0.38.74     epp-scope1
 
 
 # ~~~~~~~~~~~~~~~~~~ LNLS-FAC ~~~~~~~~~~~~~~~~~~

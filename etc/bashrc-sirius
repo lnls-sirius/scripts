@@ -85,7 +85,7 @@ IP_DI_IOCSERVERS="\
 "
 
 IP_BBB_TB="\
-10.128.121.101 10.128.121.103 10.128.121.104 10.128.121.102 \
+10.128.121.101 10.128.121.103 10.128.121.104 \
 "
 
 IP_BBB_BO_CORR="\
@@ -282,10 +282,12 @@ alias g-epics-base='cd $EPICS_DIR'
 
 # --- lnls-sirius repo aliases ---
 alias g-csconstants-sirius-lnls='cd $LNLS_SIRIUS/repos/control-system-constants'
+alias g-mathphys-sirius-lnls='cd $LNLS_SIRIUS/repos/mathphys'
 alias g-dev-packages-sirius-lnls='cd $LNLS_SIRIUS/repos/dev-packages/siriuspy'
 alias g-machine-applications-sirius-lnls='cd $LNLS_SIRIUS/repos/machine-applications'
 alias g-pydm-sirius-lnls='cd $LNLS_SIRIUS/repos/pydm'
 alias g-hla-sirius-lnls='cd $LNLS_SIRIUS/repos/hla'
+alias g-scripts-sirius-lnls='cd $LNLS_SIRIUS/repos/scripts'
 #alias g-epics-dev='cd $LNLS_SIRIUS/repos/epics-dev'
 #alias g-pru-serial485='cd $LNLS_SIRIUS/repos/pru-serial485'
 #alias g-linac-opi='cd $LNLS_SIRIUS/linac-opi'
@@ -296,19 +298,18 @@ alias g-hla-sirius-lnls='cd $LNLS_SIRIUS/repos/hla'
 #alias g-matlab-middle-layer='cd $LNLS_SIRIUS/matlab-middle-layer'
 
 # --- lnls-fac repos ---
-alias g-data-fac='cd $LNLS_FAC/data'
-alias g-beamdynamics-data='cd $LNLS_FAC/data/sirius/beam_dynamics'
-alias g-apsuite-fac-lnls='cd $LNLS_FAC/repos/apsuite'
-alias g-lnls-fac-lnls='cd $LNLS_FAC/repos/lnls'
-alias g-pymodels-fac-lnls='cd $LNLS_FAC/repos/pymodels'
-alias g-trackcpp-fac-lnls='cd $LNLS_FAC/repos/trackcpp'
-alias g-mathphys-fac-lnls='cd $LNLS_FAC/repos/mathphys'
-alias g-scripts-fac-lnls='cd $LNLS_FAC/repos/scripts'
-alias g-pyjob-fac-lnls='cd $LNLS_FAC/repos/job_manager'
 alias g-mml-fac-lnls='cd $LNLS_FAC/repos/MatlabMiddleLayer/Release'
-alias g-pyaccel-fac-lnls='cd $LNLS_FAC/repos/pyaccel'
-alias g-pymodels-fac-lnls='cd $LNLS_FAC/repos/pymodels'
 alias g-fieldmaptrack-code-fac-lnls='cd $LNLS_FAC/repos/fieldmaptrack'
+alias g-trackcpp-fac-lnls='cd $LNLS_FAC/repos/trackcpp'
+alias g-pyjob-fac-lnls='cd $LNLS_FAC/repos/job_manager'
+alias g-data-fac='cd $LNLS_FAC/data'
+#alias g-apsuite-fac-lnls='cd $LNLS_FAC/repos/apsuite'
+#alias g-pymodels-fac-lnls='cd $LNLS_FAC/repos/pymodels'
+#alias g-pyaccel-fac-lnls='cd $LNLS_FAC/repos/pyaccel'
+#alias g-beamdynamics-data='cd $LNLS_FAC/data/sirius/beam_dynamics'
+#alias g-mathphys-fac-lnls='cd $LNLS_FAC/repos/mathphys'
+#alias g-scripts-fac-lnls='cd $LNLS_FAC/repos/scripts'
+#alias g-lnls-fac-lnls='cd $LNLS_FAC/repos/lnls'
 #alias g-va-fac-lnls='cd $LNLS_FAC/repos/va'
 
 # --- lnls-ima repos ---
