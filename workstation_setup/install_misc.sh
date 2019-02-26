@@ -49,6 +49,10 @@ elif  [ $application == 'atom']; then
     sudo sh -c 'echo "deb [arch=amd64] https://packagecloud.io/AtomEditor/atom/any/ any main" > /etc/apt/sources.list.d/atom.list'
     sudo apt-get update
     sudo apt-get -y install atom
+elif  [ $application == 'rdesktop']; then
+		# needed to access one type of oscilloscope
+		sudo apt-get update
+		sudo apt-get -y install rdesktop
 else
 	echo "No instructions found for $application"
 fi

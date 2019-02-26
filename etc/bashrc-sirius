@@ -157,7 +157,7 @@ $IP_BBB_TB\
 $IP_BBB_BO_CORR\
 $IP_BBB_BO_BEND\
 $IP_BBB_BO_QUADSSEXTS\
-$IP_BBB_TB_TS_FBP_DCLINKS\
+$IP_BBB_TB_TS_FBP_DCLINKS\alias g-repos='cd $LNLS_SIRIUS/repos'
 $IP_BBB_BO_SI_FBP_DCLINKS\
 $IP_BBB_PULSED\
 $IP_BROADCAST_CROOM_NET\
@@ -281,6 +281,8 @@ alias g-ima-lnls='cd $LNLS_IMA/repos'
 alias g-epics-base='cd $EPICS_DIR'
 
 # --- lnls-sirius repo aliases ---
+alias g-repos='cd $LNLS_SIRIUS/repos'
+alias g-nfs-shared='cd /home/nfs-shared'
 alias g-csconstants-sirius-lnls='cd $LNLS_SIRIUS/repos/control-system-constants'
 alias g-mathphys-sirius-lnls='cd $LNLS_SIRIUS/repos/mathphys'
 alias g-dev-packages-sirius-lnls='cd $LNLS_SIRIUS/repos/dev-packages/siriuspy'

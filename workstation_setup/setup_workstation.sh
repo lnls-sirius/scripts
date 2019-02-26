@@ -61,6 +61,7 @@ execute install_repository.sh pruserial485 install http
 
 execute install_misc.sh cs-studio
 execute install_misc.sh remmina
+execute install_misc.sh rdesktop
 
 execute install_opi.sh pulsed
 
