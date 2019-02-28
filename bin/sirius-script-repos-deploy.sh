@@ -9,7 +9,8 @@ repos=("scripts"
 
 desktops=("lnls452-linux"
           "lnls451-linux"
-          "lnls449-linux")
+          "lnls449-linux"
+          "lnls454-linux")
 
 repos_path=/home/sirius/repos/
 
