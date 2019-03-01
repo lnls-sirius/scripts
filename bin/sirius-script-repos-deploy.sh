@@ -141,10 +141,12 @@ function deploy_desktops {
 }
 
 
-tag=`get_deploy_tag $1`
-check_all_repos
-print_header
+# tag=`get_deploy_tag $1`
+tag=deploy-2019-02-28_23h13m41s_ximenes_lnls561-linux
+comment="New deploy"
+# check_all_repos
+# print_header
 get_password
-create_tagged_local_repos
+# create_tagged_local_repos
 checkout_tag_lnls452
-deploy_desktops
+# deploy_desktops

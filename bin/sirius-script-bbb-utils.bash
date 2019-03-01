@@ -17,7 +17,7 @@ bbbs=("bbb-as-dclinks-01"
       "bbb-tb-dipoles"
       "bbb-tb-correctors"
       "bbb-tb-quadrupoles"
-      "bbb-bo-dipole-1"
+      # "bbb-bo-dipole-1"
       "bbb-bo-dipole-2"
       "bbb-bo-quadrupole-qf"
       "bbb-bo-quadrupole-qd"
@@ -67,38 +67,76 @@ function printf_white_bold {
   printf "\e[1m$1\e[0m"
 }
 
+function get_bbb_ip {
+  ip=$(cat /etc/hosts | cut -d" " -f1-2 | grep $bbb | sed "s/$bbb//g" | sed "s/ //g")
+  echo $ip
+}
+
+function get_timestamp {
+  timestamp=`date '+%Y-%m-%d_%Hh%Mm%Ss'`
+  echo $timestamp
+}
+
+function print_bbb_line {
+  bbb=$1
+  ip=$2
+  printf "%22s %16s" $bbb "($ip) ... "
+}
+
+function print_header {
+  func=$1
+  nbbbs=$2
+  timestamp=$(get_timestamp)
+  printf_white_bold "$func\n"
+  printf_white_bold "===================\n"
+  printf_white_bold "number bbbs: $nbbbs\n"
+  printf_white_bold "timestamp: $timestamp\n"
+  printf "\n"
+}
+
+function get_password {
+  username=$1
+  read -s -r -p "$username's password @ beaglebones: " user_passwd; echo ""
+  printf "\n"
+}
+
+
+# --- command ---
+
 function cmd_ping {
-  printf_white_bold "Pinging Beaglebones\n"
+  print_header "Pinging Beaglebones" $#
   lbbbs=${@}
-  # echo ${lbbbs[@]}
-  # for bbb in ${lbbbs[@]}; do
-  #   echo $bbb
-  # done
-  # return 0
-  cat /etc/hosts | cut -d" " -f1-2 | grep "bbb-" > /tmp/sirius-scripts-ping.log
-  nr_oks=0
   for bbb in ${lbbbs[@]}; do
-    ip=`cat /tmp/sirius-scripts-ping.log | grep $bbb | sed "s/$bbb//g" | sed "s/ //g"`
-    printf_white "pinging $bbb ($ip) ... "
+    ip=$(get_bbb_ip $bbb)
+    print_bbb_line $bbb $ip
     if ping -q -c 1 -W 1 $bbb > /dev/null; then
       printf_green "ok\n"
-      let "nr_oks++"
     else
       printf_red "fail\n"
     fi
   done
-  if [ "$nr_oks" != ${#lbbbs[@]} ]; then
-    printf "\e[1;31mAt least one beaglebone is not pinging!\e[0m\n"
-  else
-    printf "\e[1;32mAll beaglebones are pinging!\e[0m\n"
-  fi
+}
+
+function cmd_uptime {
+  print_header "Uptime Beaglebones" $#
+  get_password fac
+  lbbbs=${@}
+  for bbb in ${lbbbs[@]}; do
+    ip=$(get_bbb_ip $bbb)
+    print_bbb_line $bbb $ip
+    res=$(sshpass -p $user_passwd ssh -o LogLevel=Error -o ConnectTimeout=2 fac@$ip "uptime -p" 2> /dev/null)
+    printf_blue "$res\n"
+  done
 }
 
 function cmd_reboot {
-  cat /etc/hosts | cut -d" " -f1-2 | grep "bbb-" > /tmp/hosts-log
-  for bbb in "${bbbs[@]}"; do
-    ip=`cat /tmp/hosts-log | grep $bbb | sed "s/$bbb//g" | sed "s/ //g"`
-    printf "rebooting $bbb ($ip)...\n"
+  print_header "Rebooting Beaglebones" $#
+  lbbbs=${@}
+  for bbb in ${lbbbs[@]}; do
+    ip=$(get_bbb_ip $bbb)
+    print_bbb_line $bbb $ip
+    printf "\n"
     curl --header "Content-Type: application/json" -k --request POST --data "{\"ip\":\"${ip}\"}" https://servbbbdaemon/bbb-daemon/api/node/reboot
+    printf_blue "request sent!\n"
   done
 }

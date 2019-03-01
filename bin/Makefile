@@ -1,20 +1,21 @@
-# destination directory
+# Destination directory
 DEST_DIR = /usr/local/bin
 
-SIRIUSSCRIPTS= $(shell ls sirius-*)
+GENERALSCRIPTS = \
+		sirius-script-ioc-ps.bash \
+		sirius-script-ioc-ma.bash \
+		sirius-script-ioc-ps-ma.bash
 
-SCRIPTS = $(SIRIUSSCRIPTS)
+
+SCRIPTS = $(GENERALSCRIPTS)
 
 FULLSCRIPTS = $(addprefix $(DEST_DIR)/, $(SCRIPTS))
+
+uninstall:
+	rm -rf $(FULLSCRIPTS)
 
 install: uninstall $(SCRIPTS)
 	cp $(SCRIPTS) $(DEST_DIR); cd $(DEST_DIR); chmod a+x $(SCRIPTS)
 
-uninstall:
-	-rm -rf $(FULLSCRIPTS)
-
 develop: uninstall $(SCRIPTS)
-	ln -srf $(SCRIPTS) $(DEST_DIR)/
-
-sirius: $(SIRIUSSCRIPTS)
-	install $(SIRIUSSCRIPTS) $(DEST_DIR)
+	ln -srf $(SCRIPTS) $(DEST_DIR)
