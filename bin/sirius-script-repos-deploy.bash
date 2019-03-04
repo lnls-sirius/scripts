@@ -54,7 +54,7 @@ function checkout_tagged_repos_nfs_server {
   printf "\n"
   sshpass -p $user_passwd ssh sirius@$servnfs_hostname "cd $servnfs_repos_folder/; echo "$deploy_tag:  $comment" >> deploy.log"
   for repo in "${repos[@]}"; do
-    printf_white_bold "[$repo]\n"
+    printf_yellow "[$repo]\n"
     sshpass -p $user_passwd ssh sirius@$servnfs_hostname "cd $servnfs_repos_folder/$repo; git fetch -p --tags; git checkout master; git pull; git checkout $deploy_tag"
     printf "\n"
   done
