@@ -11,11 +11,6 @@ SCRIPTS = $(GENERALSCRIPTS)
 
 FULLSCRIPTS = $(addprefix $(DEST_DIR)/, $(SCRIPTS))
 
-uninstall:
-	rm -rf $(FULLSCRIPTS)
-
-install: uninstall $(SCRIPTS)
-	cp $(SCRIPTS) $(DEST_DIR); cd $(DEST_DIR); chmod a+x $(SCRIPTS)
-
-develop: uninstall $(SCRIPTS)
-	ln -srf $(SCRIPTS) $(DEST_DIR)
+install-update-install:
+		cp sirius-script-repos-install.sh $(DEST_DIR)/
+		chmod 755 $(DEST_DIR)/sirius-script-repos-install.sh
