@@ -1,13 +1,6 @@
 #!/usr/bin/env bash
 
-repos_path=/home/sirius/repos
-
-repos=("scripts"
-       "mathphys"
-       "dev-packages"
-       "machine-applications"
-       "hla"
-       "bbb-daemon")
+source /usr/local/bin/sirius-script-utils.bash
 
 
 function get_password {
@@ -18,7 +11,7 @@ function get_password {
 }
 
 function delete_tag {
-  printf "Delete tag \e[1;34m'$tag'\e[0m...\n"
+  printf_green "Delete tag \e[1;34m'$tag'\e[0m...\n"
   read -r -p "Are you sure [NO/yes]?: " answer; echo ""
   if [ "$answer" != 'yes' ]; then
     printf "\e[1;31mbailing out...\e[0m]\n"

@@ -4,7 +4,7 @@
 # This script is run in remote desktops and it clones and installs all
 # relevant repositories.
 
-source sirius-script-bbb-utils.bash
+source /usr/local/bin/sirius-script-utils.bash
 trap _abort SIGINT;
 
 
