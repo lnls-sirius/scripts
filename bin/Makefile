@@ -22,11 +22,11 @@ install-repos-install:
 		chmod 755 $(DEST_DIR)/sirius-script-repos-install.bash
 
 install:
-		cp sirius-script-utils.bash $(DEST_DIR)/
-		cp sirius-script-bbb-ping.bash $(DEST_DIR)/
-		cp sirius-script-bbb-reboot.bash $(DEST_DIR)/
-		cp sirius-script-bbb-uptime.bash $(DEST_DIR)/
-		cp sirius-script-repos-install.bash $(DEST_DIR)/
-		cp sirius-script-repos-install-pristine.bash $(DEST_DIR)/
-		cp sirius-script-repos-install-update.bash $(DEST_DIR)/
-		cp sirius-script-repos-deletetags.bash $(DEST_DIR)/
+		cp -a sirius-script-utils.bash $(DEST_DIR)/
+		cp -a sirius-script-bbb-ping.bash $(DEST_DIR)/
+		cp -a sirius-script-bbb-reboot.bash $(DEST_DIR)/
+		cp -a sirius-script-bbb-uptime.bash $(DEST_DIR)/
+		cp -a sirius-script-repos-install.bash $(DEST_DIR)/
+		cp -a sirius-script-repos-install-pristine.bash $(DEST_DIR)/
+		cp -a sirius-script-repos-install-update.bash $(DEST_DIR)/
+		cp -a sirius-script-repos-deletetags.bash $(DEST_DIR)/

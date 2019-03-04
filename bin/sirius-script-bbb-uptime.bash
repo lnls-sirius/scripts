@@ -9,7 +9,6 @@ function run {
   else
     lbbbs=$@
   fi
-  # echo ${lbbbs[@]}
   cmd_bbb_uptime ${lbbbs[@]}
 }
 
