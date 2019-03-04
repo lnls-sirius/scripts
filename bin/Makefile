@@ -11,7 +11,7 @@ SCRIPTS = $(GENERALSCRIPTS)
 
 FULLSCRIPTS = $(addprefix $(DEST_DIR)/, $(SCRIPTS))
 
-install-prestine:
+install-pristine:
 		cp sirius-script-bbb-utils.bash $(DEST_DIR)/
 		chmod 644 $(DEST_DIR)/sirius-script-bbb-utils.bash
 		cp sirius-script-repos-install-update.bash $(DEST_DIR)/

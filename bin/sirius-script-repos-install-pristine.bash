@@ -20,12 +20,12 @@ function get_tmpdir {
 }
 
 function run {
-  tmpdir=$(get_tmpdir repos-install-prestine)
+  tmpdir=$(get_tmpdir repos-install-pristine)
   mkdir -p $tmpdir
   cd $tmpdir
   git clone https://github.com/lnls-sirius/scripts.git
   cd scripts
-  make install-prestine
+  make install-pristine
 }
 
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-source ./sirius-script-bbb-utils.bash
+source sirius-script-bbb-utils.bash
 trap _abort SIGINT;
 
 
@@ -23,10 +23,12 @@ function cmd_repo_clone_master_create_deploy_tag {
 }
 
 function create_tagged_repos {
+  printf_green "Create tagged local repos\n"
+  printf "\n"
   tmpdir=$(get_tmpdir repos-deploy)
   mkdir -p $tmpdir
   for repo in ${repos[@]}; do
-    printf_white_bold "[$repo]\n"
+    printf_yellow "[$repo]\n"
     cmd_repo_clone_master_create_deploy_tag $repo $deploy_tag $tmpdir
     printf "\n"
   done
@@ -52,7 +54,7 @@ function checkout_tagged_repos_nfs_server {
   printf "\n"
   sshpass -p $user_passwd ssh sirius@$servnfs_hostname "cd $servnfs_repos_folder/; echo "$deploy_tag:  $comment" >> deploy.log"
   for repo in "${repos[@]}"; do
-    printf_green ". repo $repo\n"
+    printf_white_bold "[$repo]\n"
     sshpass -p $user_passwd ssh sirius@$servnfs_hostname "cd $servnfs_repos_folder/$repo; git fetch -p --tags; git checkout master; git pull; git checkout $deploy_tag"
     printf "\n"
   done
@@ -60,12 +62,12 @@ function checkout_tagged_repos_nfs_server {
 
 
 function deploy_desktops {
-  printf_yellow "... deploying in desktops ..."
+  printf_yellow "Deploying in desktops"
   printf "\n"
   for desktop in "${desktops[@]}"; do
-    printf_green "installing repos in $desktop..."
-    sshpass -p $user_passwd ssh sirius@"$desktop" "sudo sirius-script-repos-install-update.sh"
-    sshpass -p $user_passwd ssh sirius@"$desktop" "sudo sirius-script-repos-install.sh"
+    printf_green "[$desktop]\n"
+    sshpass -p $user_passwd ssh sirius@"$desktop" "sudo sirius-script-repos-install-update.bash"
+    sshpass -p $user_passwd ssh sirius@"$desktop" "sudo sirius-script-repos-install.bash"
   done
   printf "\n"
 }
@@ -75,6 +77,7 @@ function run {
   print_header_and_inputs
   create_tagged_repos
   checkout_tagged_repos_nfs_server
+  deploy_desktops
 }
 
 run

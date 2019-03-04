@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
 
-# This script is used either in 'sirius-script-repos-installfile should be installed in /usr/local/etc manually in prestine desktops
-
-source ./sirius-script-bbb-utils.bash
+source sirius-script-bbb-utils.bash
 trap _abort SIGINT;
 
 function run {

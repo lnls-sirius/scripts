@@ -1,5 +1,5 @@
-install-prestine:
-	$(MAKE) install-prestine -C bin/
+install-pristine:
+	$(MAKE) install-pristine -C bin/
 
 install-repos-install:
 	$(MAKE) install-repos-install -C bin/

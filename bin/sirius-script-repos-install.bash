@@ -4,7 +4,7 @@
 # This script is run in remote desktops and it clones and installs all
 # relevant repositories.
 
-source ./sirius-script-bbb-utils.bash
+source sirius-script-bbb-utils.bash
 trap _abort SIGINT;
 
 
@@ -13,7 +13,7 @@ function install_repos {
   lrepos=${@:2}
   mkdir -p $tmpdir
   for repo in ${lrepos[@]}; do
-    printf_white "installing $repo ... "
+    printf_white_bold "[$repo] ... "
     cmd_repo_install $repo $tmpdir
     if [[ -z "$var_error" ]]; then
       printf_green "ok\n"

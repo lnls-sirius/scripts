@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-source ./sirius-script-bbb-utils.bash
+source sirius-script-bbb-utils.bash
 trap _abort SIGINT;
 
 function run {
