@@ -217,7 +217,7 @@ function cmd_repo_install {
     if [ "$(hostname)" == "$servweb_hostname" ]; then
       make install-html 1> ../../log-install-$repo.stdout 2> ../../log-install-$repo.stderr
     else
-      echo "" 1> log-install-$repo.stdout 2> log-install-$repo.stderr
+      echo "" 1> ../log-install-$repo.stdout 2> ../log-install-$repo.stderr
     fi
   else
     echo "installation not defined for $repo !" 1> log-install-$repo.stdout 2> log-install-$repo.stderr

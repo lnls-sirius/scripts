@@ -65,7 +65,7 @@ function deploy_desktops {
   printf_green "Deploying in desktops\n"
   printf "\n"
   for desktop in "${desktops[@]}"; do
-    printf_green "[$desktop]\n"
+    printf_blue "[$desktop]\n"
     sshpass -p $user_passwd ssh sirius@"$desktop" "sudo sirius-script-repos-install-update.bash"
     sshpass -p $user_passwd ssh sirius@"$desktop" "sudo sirius-script-repos-install.bash"
     printf "\n"

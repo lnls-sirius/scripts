@@ -16,7 +16,7 @@ function install_repos {
     printf_yellow "[$repo] ... "
     cmd_repo_install $repo $tmpdir
     if [[ -z "$var_error" ]]; then
-      printf_green "ok\n"
+      printf_yellow "ok\n"
     else
       printf_red "fail\n"
       printf_white_bold "Check local log file '$tmpdir/log-install-$repo.stderr'!\n"
