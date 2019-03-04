@@ -11,3 +11,6 @@ install:
 develop:
 	$(MAKE) develop -C etc/
 	$(MAKE) develop -C bin/
+
+install-hosts:
+	$(MAKE) install-hosts -C etc/
