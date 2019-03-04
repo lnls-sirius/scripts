@@ -50,7 +50,7 @@ function print_header_and_inputs {
 }
 
 function checkout_tagged_repos_nfs_server {
-  printf_yellow "Checkout tagged repos in nfs server ($servnfs_hostname)\n"
+  printf_green "Checkout tagged repos in nfs server ($servnfs_hostname)\n"
   printf "\n"
   sshpass -p $user_passwd ssh sirius@$servnfs_hostname "cd $servnfs_repos_folder/; echo "$deploy_tag:  $comment" >> deploy.log"
   for repo in "${repos[@]}"; do
@@ -62,14 +62,14 @@ function checkout_tagged_repos_nfs_server {
 
 
 function deploy_desktops {
-  printf_yellow "Deploying in desktops"
+  printf_green "Deploying in desktops\n"
   printf "\n"
   for desktop in "${desktops[@]}"; do
     printf_green "[$desktop]\n"
     sshpass -p $user_passwd ssh sirius@"$desktop" "sudo sirius-script-repos-install-update.bash"
     sshpass -p $user_passwd ssh sirius@"$desktop" "sudo sirius-script-repos-install.bash"
+    printf "\n"
   done
-  printf "\n"
 }
 
 

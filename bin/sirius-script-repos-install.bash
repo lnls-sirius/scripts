@@ -13,7 +13,7 @@ function install_repos {
   lrepos=${@:2}
   mkdir -p $tmpdir
   for repo in ${lrepos[@]}; do
-    printf_white_bold "[$repo] ... "
+    printf_yellow "[$repo] ... \n"
     cmd_repo_install $repo $tmpdir
     if [[ -z "$var_error" ]]; then
       printf_green "ok\n"
@@ -26,7 +26,7 @@ function install_repos {
 }
 
 function run {
-  printf_white_bold "Installing Repositories"
+  printf_white "Installing repositories...\n"
   if [ $# -eq 0 ]; then
     lrepos=${repos[@]}
   else

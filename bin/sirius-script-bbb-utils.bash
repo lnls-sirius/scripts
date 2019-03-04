@@ -213,8 +213,8 @@ function cmd_repo_install {
     make install 1> ../../log-install-$repo.stdout 2> ../../log-install-$repo.stderr
   elif [ "$repo" == "bbb-daemon" ]; then
     echo "" 1> ../log-install-$repo.stdout 2> ../log-install-$repo.stderr
-  elif [ "$repo" == "control-system-constants"]; then
-    if [ "$(hostname)" == "$servweb_hostname"]; then
+  elif [ "$repo" == "control-system-constants" ]; then
+    if [ "$(hostname)" == "$servweb_hostname" ]; then
       make install-html 1> ../../log-install-$repo.stdout 2> ../../log-install-$repo.stderr
     else
       echo "" 1> log-install-$repo.stdout 2> log-install-$repo.stderr
