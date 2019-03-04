@@ -10,7 +10,7 @@ function run {
     lbbbs=$@
   fi
   # echo ${lbbbs[@]}
-  cmd_reboot ${lbbbs[@]}
+  cmd_bbb_reboot ${lbbbs[@]}
 }
 
 run $@

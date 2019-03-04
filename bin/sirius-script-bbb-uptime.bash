@@ -10,7 +10,7 @@ function run {
     lbbbs=$@
   fi
   # echo ${lbbbs[@]}
-  cmd_uptime ${lbbbs[@]}
+  cmd_bbb_uptime ${lbbbs[@]}
 }
 
 run $@

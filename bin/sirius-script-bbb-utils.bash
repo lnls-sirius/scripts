@@ -37,6 +37,17 @@ bbbs=("bbb-as-dclinks-01"
       "bbb-bo-correctors-12"
       "bbb-bo-correctors-13")
 
+repos=("scripts"
+       "mathphys"
+       "dev-packages"
+       "machine-applications"
+       "hla"
+       "bbb-daemon")
+
+mirror_repos_path=/home/sirius/repos
+
+
+# --- aux functions ---
 
 function _abort {
   printf "\n"
@@ -77,6 +88,17 @@ function get_timestamp {
   echo $timestamp
 }
 
+function get_tmpdir {
+  timestamp=$(get_timestamp)
+  prefix=$1
+  if [[ -z "$prefix" ]]; then
+    tmpdir="/tmp/sirius-script-"$timestamp
+  else
+    tmpdir="/tmp/sirius-script-"$prefix"-"$timestamp
+  fi
+  echo $tmpdir
+}
+
 function print_bbb_line {
   bbb=$1
   ip=$2
@@ -101,9 +123,9 @@ function get_password {
 }
 
 
-# --- command ---
+# --- command functions  ---
 
-function cmd_ping {
+function cmd_bbb_ping {
   print_header "Pinging Beaglebones" $#
   lbbbs=${@}
   for bbb in ${lbbbs[@]}; do
@@ -117,7 +139,7 @@ function cmd_ping {
   done
 }
 
-function cmd_uptime {
+function cmd_bbb_uptime {
   print_header "Uptime Beaglebones" $#
   get_password fac
   lbbbs=${@}
@@ -129,7 +151,7 @@ function cmd_uptime {
   done
 }
 
-function cmd_reboot {
+function cmd_bbb_reboot {
   print_header "Rebooting Beaglebones" $#
   lbbbs=${@}
   for bbb in ${lbbbs[@]}; do

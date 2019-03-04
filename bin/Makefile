@@ -11,6 +11,12 @@ SCRIPTS = $(GENERALSCRIPTS)
 
 FULLSCRIPTS = $(addprefix $(DEST_DIR)/, $(SCRIPTS))
 
-install-update-install:
-		cp sirius-script-repos-install.sh $(DEST_DIR)/
-		chmod 755 $(DEST_DIR)/sirius-script-repos-install.sh
+install-prestine:
+		cp sirius-script-bbb-utils.bash $(DEST_DIR)/
+		chmod 644 $(DEST_DIR)/sirius-script-bbb-utils.bash
+		cp sirius-script-repos-install-update.bash $(DEST_DIR)/
+		chmod 755 $(DEST_DIR)/sirius-script-repos-install-update.bash
+
+install-repos-install:
+		cp sirius-script-repos-install.bash $(DEST_DIR)/
+		chmod 755 $(DEST_DIR)/sirius-script-repos-install.bash
