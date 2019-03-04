@@ -1,152 +1,80 @@
 #!/usr/bin/env bash
 
-repos=("scripts"
-       "mathphys"
-       "dev-packages"
-       "machine-applications"
-       "hla"
-       "bbb-daemon")
-
-desktops=("lnls452-linux"
-          "lnls451-linux"
-          "lnls449-linux"
-          "lnls454-linux")
-
-repos_path=/home/sirius/repos/
+source ./sirius-script-bbb-utils.bash
+trap _abort SIGINT;
 
 
-function get_deploy_tag {
-  if [ -z "$1" ]; then
-    timestamp=`date '+%Y-%m-%d_%Hh%Mm%Ss'`
-    echo "deploy-"$timestamp"_"$USER"_"$LINUX_HOSTNAME
-  else
-    echo $1
-  fi
-}
-
-function get_password {
-  if [ -z "$fac_passwd" ]; then
-    read -s -r -p "sirius user's password @ desktops: " sirius_passwd; echo ""
-  fi
-  printf "\n"
-}
-
-function printf_green {
-  printf "\e[1;32m$1\e[0m\n"
-}
-
-function printf_yellow {
-  printf "\e[1;33m$1\e[0m\n"
-}
-
-function printf_red {
-  printf "\e[1;31m$1\e[0m\n"
-}
-
-function printf_blue {
-  printf "\e[1;34m$1\e[0m\n"
-}
-
-function printf_white_bold {
-  printf "\e[1m$1\e[0m\n"
-}
-
-function check_all_repos {
-  printf_green "Checking all repos..."
-  for repo in "${repos[@]}"; do
-    if [ ! -d "$repos_path$repo" ]; then
-      printf_red ". repo path '$repos_path$repo' does not exist!"
-      exit
-    fi
-    pushd $repos_path$repo > /dev/null
-      if [[ $(git status -s) ]]; then
-        printf_red ". repo $repo is not clean!"
-        printf "\n"
-        exit
-      fi
-    popd > /dev/null
-  done
-  printf "\n"
-}
-
-function process_local_repo {
+function cmd_repo_clone_master_create_deploy_tag {
   repo=$1
-  gittag=$2
-  printf_green "Processing local $repo..."
-  if [ ! -d "$repos_path$repo" ]; then
-    printf_red ". repo path '$repos_path$repo' does not exist!"
-    exit
-  fi
-  cd $repos_path$repo
-  if [[ -z $(git status -s) ]]; then
-    # check master
-    printf_white_bold ". checkout and pull master..."
-    git checkout master
-    git pull
-    # create new tag
-    printf_white_bold ". creating tag ..."
-    git tag $gittag
-    # push up tags
-    git push --tags
-    printf "\n"
+  tag=$2
+  tmpdir=$3
+  cd $tmpdir
+  if [ "$repo" == "mathphys" ]; then
+      git clone ssh://git@github.com/lnls-fac/$repo
   else
-    printf_red ". repo is not clean!"
+    git clone ssh://git@github.com/lnls-sirius/$repo
+  fi
+  cd $repo
+  if [ "$repo" == "control-system-constants" ]; then
+    git checkout PR-update-makefile
+  fi
+  git tag $tag
+  git push --tags
+}
+
+function create_tagged_repos {
+  tmpdir=$(get_tmpdir repos-deploy)
+  mkdir -p $tmpdir
+  for repo in ${repos[@]}; do
+    printf_white_bold "[$repo]\n"
+    cmd_repo_clone_master_create_deploy_tag $repo $deploy_tag $tmpdir
     printf "\n"
-    exit
-  fi
-}
-
-function print_header {
-  printf "\n"
-  printf_blue "Deploy Sirius Repositories"
-  printf_blue "tag: $tag"
-  printf "\n"
-  read -r -p "Comment: " comment; echo ""
-  read -r -p "Are you sure [y|n]?: " answer; echo ""
-  if [ "$answer" == 'n' ]; then
-    printf "\e[1;31mbailing out...\e[0m]\n"
-    exit
-  fi
-  printf "\n"
-}
-
-function create_tagged_local_repos {
-  printf_yellow "... local repositories ..."
-  printf "\n"
-  for repo in "${repos[@]}"; do
-    process_local_repo $repo $tag
   done
 }
 
-function checkout_tag_lnls452 {
-  printf_yellow "... checkout tag in nfs server (lnls452-linux) ..."
+function print_header_and_inputs {
+  printf_blue "Deploying Sirius Repositories\n"
   printf "\n"
-  sshpass -p $sirius_passwd ssh sirius@lnls452-linux "cd /home/nfs-shared/repos-lnls-sirius/; echo "$tag  $comment" >> deploy.log"
-  for repo in "${repos[@]}"; do
-    printf_green ". repo $repo"
-    sshpass -p $sirius_passwd ssh sirius@lnls452-linux "cd /home/nfs-shared/repos-lnls-sirius/$repo; git stash save state-before-$tag; git fetch -p --tags; git checkout master; git pull; git checkout $tag"
-  done
+  deploy_tag=$(create_deploy_tag)
+  read -e -p "Enter deploy tag    : " -i "$deploy_tag" deploy_tag
+  read -r -p "Enter deploy comment: " comment; echo ""
+  get_password sirius destops
+  read -r -p "Really deploy ? [yes|no]: " answer; echo ""
+  if [ ! "$answer" == 'yes' ]; then
+    printf_red "bailing out...\n"
+    exit
+  fi
   printf "\n"
 }
+
+function checkout_tagged_repos_nfs_server {
+  printf_yellow "Checkout tagged repos in nfs server ($servnfs_hostname)\n"
+  printf "\n"
+  sshpass -p $user_passwd ssh sirius@$servnfs_hostname "cd $servnfs_repos_folder/; echo "$deploy_tag:  $comment" >> deploy.log"
+  for repo in "${repos[@]}"; do
+    printf_green ". repo $repo\n"
+    sshpass -p $user_passwd ssh sirius@$servnfs_hostname "cd $servnfs_repos_folder/$repo; git fetch -p --tags; git checkout master; git pull; git checkout $deploy_tag"
+    printf "\n"
+  done
+}
+
 
 function deploy_desktops {
   printf_yellow "... deploying in desktops ..."
   printf "\n"
   for desktop in "${desktops[@]}"; do
     printf_green "installing repos in $desktop..."
-    sshpass -p $sirius_passwd ssh sirius@"$desktop" "sudo sirius-script-repos-update-install.sh"
-    sshpass -p $sirius_passwd ssh sirius@"$desktop" "sudo sirius-script-repos-install.sh"
+    sshpass -p $user_passwd ssh sirius@"$desktop" "sudo sirius-script-repos-install-update.sh"
+    sshpass -p $user_passwd ssh sirius@"$desktop" "sudo sirius-script-repos-install.sh"
   done
   printf "\n"
 }
 
 
-# tag=`get_deploy_tag $1`
-tag=deploy-2019-02-28_23h13m41s_ximenes_lnls561-linux
-comment="New deploy"
-# check_all_repos
-# print_header
-get_password
-# create_tagged_local_repos
-checkout_tag_lnls452
-# deploy_desktops
+function run {
+  print_header_and_inputs
+  create_tagged_repos
+  checkout_tagged_repos_nfs_server
+}
+
+run

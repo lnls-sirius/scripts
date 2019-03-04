@@ -37,14 +37,26 @@ bbbs=("bbb-as-dclinks-01"
       "bbb-bo-correctors-12"
       "bbb-bo-correctors-13")
 
+desktops=("lnls452-linux"
+          "lnls451-linux"
+          "lnls449-linux"
+          "lnls454-linux")
+
 repos=("scripts"
        "mathphys"
+       "control-system-constants"
        "dev-packages"
        "machine-applications"
        "hla"
        "bbb-daemon")
 
 mirror_repos_path=/home/sirius/repos
+
+servweb_hostname=lnls452-linux
+
+servnfs_hostname=lnls452-linux
+
+servnfs_repos_folder=/home/nfs-shared/repos-lnls-sirius/
 
 
 # --- aux functions ---
@@ -118,10 +130,23 @@ function print_header {
 
 function get_password {
   username=$1
-  read -s -r -p "$username's password @ beaglebones: " user_passwd; echo ""
+  hosttype=$2
+  read -s -r -p "$username's password @ $hosttype: " user_passwd; echo ""
   printf "\n"
 }
 
+function check_repo_install {
+  repo="$1"
+  tmpdir=$2
+  fname="$tmpdir/log-install-$repo.stderr"
+  err=$(cat $fname)
+  echo $err
+}
+
+function create_deploy_tag {
+  timestamp=$(get_timestamp)
+  echo "deploy-"$timestamp"_"$USER"_"$LINUX_HOSTNAME
+}
 
 # --- command functions  ---
 
@@ -161,4 +186,41 @@ function cmd_bbb_reboot {
     curl --header "Content-Type: application/json" -k --request POST --data "{\"ip\":\"${ip}\"}" https://servbbbdaemon/bbb-daemon/api/node/reboot
     printf_blue "request sent!\n"
   done
+}
+
+function cmd_repo_install {
+  repo="$1"
+  tmpdir="$2"
+  if [[ ! -d "$mirror_repos_path/$repo" ]]; then
+    echo "repo '$repo' is missing in '$mirror_repos_path'!" > $tmpdir/log-install-$repo.stderr
+    var_error=$(check_repo_install $repo $tmpdir)
+    return
+  fi
+  cp -a $mirror_repos_path/$repo $tmpdir/
+  cd $tmpdir/$repo
+  if [ "$repo" == "scripts" ]; then
+    make install 1> ../log-install-$repo.stdout 2> ../log-install-$repo.stderr
+    make install-hosts 1>> ../log-install-$repo.stdout 2>> ../log-install-$repo.stderr
+  elif [ "$repo" == "mathphys" ]; then
+    ./setup.py install 1> ../log-install-$repo.stdout 2> ../log-install-$repo.stderr
+  elif [ "$repo" == "dev-packages" ]; then
+    cd ./siriuspy
+    ./setup.py install 1> ../../log-install-$repo.stdout 2> ../../log-install-$repo.stderr
+  elif [ "$repo" == "machine-applications" ]; then
+    make install 1> ../log-install-$repo.stdout 2> ../log-install-$repo.stderr
+  elif [ "$repo" == "hla" ]; then
+    cd ./pyqt-apps
+    make install 1> ../../log-install-$repo.stdout 2> ../../log-install-$repo.stderr
+  elif [ "$repo" == "bbb-daemon" ]; then
+    echo "" 1> ../log-install-$repo.stdout 2> ../log-install-$repo.stderr
+  elif [ "$repo" == "control-system-constants"]; then
+    if [ "$(hostname)" == "$servweb_hostname"]; then
+      make install-html 1> ../../log-install-$repo.stdout 2> ../../log-install-$repo.stderr
+    else
+      echo "" 1> log-install-$repo.stdout 2> log-install-$repo.stderr
+    fi
+  else
+    echo "installation not defined for $repo !" 1> log-install-$repo.stdout 2> log-install-$repo.stderr
+  fi
+  var_error=$(check_repo_install $repo $tmpdir)
 }
