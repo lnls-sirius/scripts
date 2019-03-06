@@ -29,4 +29,6 @@ install:
 		cp -a sirius-script-repos-install.bash $(DEST_DIR)/
 		cp -a sirius-script-repos-install-pristine.bash $(DEST_DIR)/
 		cp -a sirius-script-repos-install-update.bash $(DEST_DIR)/
+		cp -a sirius-script-repos-install.bash $(DEST_DIR)/
 		cp -a sirius-script-repos-deletetags.bash $(DEST_DIR)/
+		cp -a sirius-script-repos-deploy.bash $(DEST_DIR)/
