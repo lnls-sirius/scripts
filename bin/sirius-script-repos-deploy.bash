@@ -36,7 +36,7 @@ function print_header_and_inputs {
 function checkout_tagged_repos_nfs_server {
   printf_green "Checkout tagged repos in nfs server ($servnfs_hostname)\n"
   printf "\n"
-  sshpass -p $user_passwd ssh sirius@$servnfs_hostname "cd $servnfs_repos_folder/; echo "$deploy_tag:  $comment" >> deploy.log"
+  sshpass -p $user_passwd ssh sirius@$servnfs_hostname "cd $servnfs_repos_folder/; echo '$deploy_tag:  $comment' >> deploy.log"
   for repo in "${repos[@]}"; do
     reponame=$(echo $repo | cut -d":" -f1)
     branch=$(echo $repo | cut -d":" -f2)
