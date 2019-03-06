@@ -210,6 +210,8 @@ function cmd_repo_install {
   elif [ "$repo" == "machine-applications" ]; then
     make install 1> ../log-install-$repo.stdout 2> ../log-install-$repo.stderr
   elif [ "$repo" == "pydm" ]; then
+    # to avoid generating unnecessary stderr content about __file__ variable
+    sed -i "s/license='BSD',/license='BSD',\n    zip_safe=False,/g" setup.py
     python-sirius setup.py install 1> ../log-install-$repo.stdout 2> ../log-install-$repo.stderr
   elif [ "$repo" == "hla" ]; then
     cd ./pyqt-apps
