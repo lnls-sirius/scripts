@@ -42,13 +42,14 @@ desktops=("lnls452-linux"
           "lnls449-linux"
           "lnls454-linux")
 
-repos=("scripts"
-       "mathphys"
-       "control-system-constants"
-       "dev-packages"
-       "machine-applications"
-       "hla"
-       "bbb-daemon")
+repos=("scripts:master"
+       "mathphys:master"
+       "control-system-constants:PR-update-makefile"
+       "dev-packages:master"
+       "machine-applications:master"
+       "pydm:master"
+       "hla:master"
+       "bbb-daemon":master)
 
 mirror_repos_path=/home/sirius/repos
 
@@ -136,7 +137,7 @@ function get_password {
 }
 
 function check_repo_install {
-  repo="$1"
+  # repo=$(echo $1 | cut -d":" -f1)
   tmpdir=$2
   fname="$tmpdir/log-install-$repo.stderr"
   err=$(cat $fname)
@@ -189,7 +190,7 @@ function cmd_bbb_reboot {
 }
 
 function cmd_repo_install {
-  repo="$1"
+  repo=$(echo $1 | cut -d":" -f1)
   tmpdir="$2"
   if [[ ! -d "$mirror_repos_path/$repo" ]]; then
     echo "repo '$repo' is missing in '$mirror_repos_path'!" > $tmpdir/log-install-$repo.stderr
@@ -208,6 +209,8 @@ function cmd_repo_install {
     ./setup.py install 1> ../../log-install-$repo.stdout 2> ../../log-install-$repo.stderr
   elif [ "$repo" == "machine-applications" ]; then
     make install 1> ../log-install-$repo.stdout 2> ../log-install-$repo.stderr
+  elif [ "$repo" == "pydm" ]; then
+    python-sirius setup.py install 1> ../log-install-$repo.stdout 2> ../log-install-$repo.stderr
   elif [ "$repo" == "hla" ]; then
     cd ./pyqt-apps
     make install 1> ../../log-install-$repo.stdout 2> ../../log-install-$repo.stderr
@@ -223,4 +226,18 @@ function cmd_repo_install {
     echo "installation not defined for $repo !" 1> log-install-$repo.stdout 2> log-install-$repo.stderr
   fi
   var_error=$(check_repo_install $repo $tmpdir)
+}
+
+function cmd_repo_clone_master {
+  repo=$(echo $1 | cut -d":" -f1)
+  branch=$(echo $1 | cut -d":" -f2)
+  tmpdir=$2
+  cd $tmpdir
+  if [ "$repo" == "mathphys" ]; then
+      git clone ssh://git@github.com/lnls-fac/$repo
+  else
+    git clone ssh://git@github.com/lnls-sirius/$repo
+  fi
+  cd $repo
+  git checkout $branch
 }

@@ -3,30 +3,33 @@
 source /usr/local/bin/sirius-script-utils.bash
 
 
-function get_password {
- if [ -z "$fac_passwd" ]; then
-   read -s -r -p "sirius user's password @ desktops: " sirius_passwd; echo ""
- fi
- printf "\n"
+function get_tag {
+  read -r -p "please enter deploy tag name to be deleted: " deploytag;
+  echo $deploytag
 }
 
-function delete_tag {
-  printf_green "Delete tag \e[1;34m'$tag'\e[0m...\n"
-  read -r -p "Are you sure [NO/yes]?: " answer; echo ""
-  if [ "$answer" != 'yes' ]; then
-    printf "\e[1;31mbailing out...\e[0m]\n"
+function run {
+  printf_green "Delete deploy tag\n"
+  deploy_tag=`get_tag`
+  printf_yellow "Deleting tag '$deploy_tag'...\n"
+  read -r -p "Are you sure ? [yes|no]: " answer;
+  if [ ! "$answer" == "yes" ]; then
+    printf_red "bailing out...\n"
     exit
   fi
-  get_password
+  printf "\n"
+
+  tmpdir=$(get_tmpdir deletetags)
+  mkdir -p $tmpdir
+  cd $tmpdir
   for repo in "${repos[@]}"; do
-    echo "deleting in local repo $repo..."
-    cd $repos_path/$repo
-    git tag -d $tag
-    git push --delete origin $tag
-    echo "deleting in lnls452-linux repo $repo..."
-    sshpass -p $sirius_passwd ssh sirius@lnls452-linux "cd /home/nfs-shared/repos-lnls-sirius/$repo; git tag -d $tag"
+    printf_yellow "[$repo]\n"
+    cmd_repo_clone_master $repo $tmpdir
+    git tag -d $deploy_tag
+    git push --delete origin $deploy_tag
+    printf "\n"
   done
 }
 
-tag=$1
-delete_tag
+
+run

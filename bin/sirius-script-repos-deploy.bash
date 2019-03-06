@@ -4,24 +4,6 @@ source /usr/local/bin/sirius-script-utils.bash
 trap _abort SIGINT;
 
 
-function cmd_repo_clone_master_create_deploy_tag {
-  repo=$1
-  tag=$2
-  tmpdir=$3
-  cd $tmpdir
-  if [ "$repo" == "mathphys" ]; then
-      git clone ssh://git@github.com/lnls-fac/$repo
-  else
-    git clone ssh://git@github.com/lnls-sirius/$repo
-  fi
-  cd $repo
-  if [ "$repo" == "control-system-constants" ]; then
-    git checkout PR-update-makefile
-  fi
-  git tag $tag
-  git push --tags
-}
-
 function create_tagged_repos {
   printf_green "Create tagged local repos\n"
   printf "\n"
@@ -29,7 +11,9 @@ function create_tagged_repos {
   mkdir -p $tmpdir
   for repo in ${repos[@]}; do
     printf_yellow "[$repo]\n"
-    cmd_repo_clone_master_create_deploy_tag $repo $deploy_tag $tmpdir
+    cmd_repo_clone_master $repo $tmpdir
+    git tag $deploy_tag
+    git push --tags
     printf "\n"
   done
 }
@@ -54,12 +38,13 @@ function checkout_tagged_repos_nfs_server {
   printf "\n"
   sshpass -p $user_passwd ssh sirius@$servnfs_hostname "cd $servnfs_repos_folder/; echo "$deploy_tag:  $comment" >> deploy.log"
   for repo in "${repos[@]}"; do
+    reponame=$(echo $repo | cut -d":" -f1)
+    branch=$(echo $repo | cut -d":" -f2)
     printf_yellow "[$repo]\n"
-    sshpass -p $user_passwd ssh sirius@$servnfs_hostname "cd $servnfs_repos_folder/$repo; git fetch -p --tags; git checkout master; git pull; git checkout $deploy_tag"
+    sshpass -p $user_passwd ssh sirius@$servnfs_hostname "cd $servnfs_repos_folder/$reponame; git fetch --prune origin '+refs/tags/*:refs/tags/*'; git checkout $branch; git pull; git checkout $deploy_tag"
     printf "\n"
   done
 }
-
 
 function deploy_desktops {
   printf_green "Deploying in desktops\n"
@@ -71,7 +56,6 @@ function deploy_desktops {
     printf "\n"
   done
 }
-
 
 function run {
   print_header_and_inputs
