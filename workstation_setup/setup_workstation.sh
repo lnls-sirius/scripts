@@ -13,6 +13,27 @@ function execute {
     fi
 }
 
+function set_nfs {
+    sudo apt-get install nfs-common
+
+    mkdir -p /home/sirius/Desktop/lost-and-found
+    mkdir -p /home/sirius/Desktop/screens-iocs
+    chown -R sirius:sirius /home/sirius/Desktop/lost-and-found
+    chown -R sirius:sirius /home/sirius/Desktop/screens-iocs
+
+    rules=(
+        '10.128.254.203:/home/nfs-shared/repos-lnls-sirius   /home/sirius/repos nfs ro 0 0'
+        '10.128.254.203:/home/nfs-shared/lost-and-found   /home/sirius/Desktop/lost-and-found nfs rw'
+        '10.128.254.203:/home/nfs-shared/screens-iocs   /home/sirius/Desktop/screens-iocs nfs rw')
+    for rule in ${rules[@]}; do
+        if ! grep -Fxq $rule /etc/fstab; then
+            echo $rule | sudo tee -a /etc/fstab
+        fi
+    done
+
+    sudo mount -a
+}
+
 # Check write permission
 if [ ! -w ./ ]; then
 	echo 'You do not have write permission for the current directory. Aborting.'
@@ -33,10 +54,11 @@ fi
 execute create_groups.sh
 # execute create_users.sh
 execute directories_permissions.sh
-execute create_bbb_repositories
 
 # execute install_git.sh
 sudo apt-get install -y git
+
+execute create_bbb_repositories.sh
 
 execute install_python.sh
 execute install_epics.sh
@@ -47,22 +69,12 @@ execute install_pyqt.sh
 
 execute install_fac_deps.sh
 
-# execute check_github_ssh_key.sh
-
-execute install_repository.sh mathphys install http
-execute install_repository.sh sirius-scripts install http
-execute install_repository.sh control-system-constants install http
-execute install_repository.sh dev-packages install http
-execute install_repository.sh pydm install http
-execute install_repository.sh hla install http
-execute install_repository.sh machine-applications install http
-execute install_repository.sh pruserial485 install http
-# execute install_repository.sh pyjob install http
+set_nfs
 
 execute install_misc.sh cs-studio
 execute install_misc.sh remmina
 execute install_misc.sh rdesktop
 
-execute install_opi.sh pulsed
+execute install_css_opi.sh pulsed
 
 sudo apt-get install -y htop vim

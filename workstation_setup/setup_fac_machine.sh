@@ -50,7 +50,7 @@ execute install_repository.sh pruserial485 develop ssh
 execute install_repository.sh pyjob develop ssh
 
 execute install_misc.sh cs-studio
-execute intall_misc.sh vscode
-execute intall_misc.sh atom
+execute install_misc.sh vscode
+execute install_misc.sh atom
 
 sudo apt-get install -y htop vim
