@@ -44,12 +44,12 @@ desktops=("lnls452-linux"
 
 repos=("scripts:master"
        "mathphys:master"
-       "control-system-constants:PR-update-makefile"
+       "control-system-constants:master"
        "dev-packages:master"
        "machine-applications:master"
        "pydm:master"
        "hla:master"
-       "bbb-daemon":master)
+       "bbb-daemon:master")
 
 mirror_repos_path=/home/sirius/repos
 
