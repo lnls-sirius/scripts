@@ -54,10 +54,11 @@ fi
 execute create_groups.sh
 # execute create_users.sh
 execute directories_permissions.sh
-execute create_bbb_repositories
 
 # execute install_git.sh
 sudo apt-get install -y git
+
+execute create_bbb_repositories.sh
 
 execute install_python.sh
 execute install_epics.sh
@@ -74,6 +75,6 @@ execute install_misc.sh cs-studio
 execute install_misc.sh remmina
 execute install_misc.sh rdesktop
 
-execute install_opi.sh pulsed
+execute install_css_opi.sh pulsed
 
 sudo apt-get install -y htop vim
