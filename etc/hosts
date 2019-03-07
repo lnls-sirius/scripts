@@ -135,6 +135,13 @@ ff02::2 ip6-allrouters
 10.128.150.78  scope-dig-fctdig
 10.0.38.74     scope-epp-scope1
 
+# Linac
+# =====
+10.128.1.11    linac-egun
+10.128.1.13    linac-modulators
+10.128.1.14    linac-mps
+10.128.1.15    linac-vacuum
+10.128.1.20    linac-pwrsupply
 
 
 # ~~~~~~~~~~~~~~~~~~ LNLS-FAC ~~~~~~~~~~~~~~~~~~
