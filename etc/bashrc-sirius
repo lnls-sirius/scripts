@@ -211,7 +211,7 @@ export SIRIUS_URL_LOGBOOK=http://sirius-logbook.lnls.br:8080/Olog
 # ======
 export PYTHONPATH=$PYTHONPATH:$ROOT_FAC/repos/job_manager/src
 #export PYTHONPATH=$PYTHONPATH:$ROOT_FAC/repos/hla/plot/src
-export PYQTDESIGNERPATH=$PYQTDESIGNERPATH:$ROOT_SIRIUS/repos/hla/pyqt-apps
+export PYQTDESIGNERPATH=$PYQTDESIGNERPATH:$LNLS_SIRIUS/repos/hla/pyqt-apps
 export PYEPICS_LIBCA=$EPICS_DIR/base/lib/linux-x86_64/libca.so
 
 

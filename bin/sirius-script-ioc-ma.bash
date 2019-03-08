@@ -8,6 +8,9 @@ desktop=desktop3
 maiocs=("sirius-ioc-tb-ma-dipoles.service"
         "sirius-ioc-tb-ma-quadrupoles.service"
         "sirius-ioc-tb-ma-correctors.service"
+        "sirius-ioc-bo-ma-dipoles.service"
+        "sirius-ioc-bo-ma-quadrupoles.service"
+        "sirius-ioc-bo-ma-sextupoles.service"
         "sirius-ioc-bo-ma-correctors-01.service"
         "sirius-ioc-bo-ma-correctors-02.service"
         "sirius-ioc-bo-ma-correctors-03.service"
@@ -42,7 +45,7 @@ function ioc_cmd {
   maioc=$1
   cmd=$2
   printf "=== $maioc : $cmd ===\n"
-  sshpass -p $linac_passwd ssh linac@"$desktop" "sudo systemctl $cmd $maioc"
+  sshpass -p $linac_passwd ssh sirius@"$desktop" "sudo systemctl $cmd $maioc"
 }
 
 function list {
