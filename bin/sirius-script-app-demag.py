@@ -122,7 +122,7 @@ def gen_waveform(dt, ampl, nrpts_period, nr_periods, tau_period, square):
 
 def ps_set_sp(pv, value):
     """."""
-    # pv.value = value
+    pv.value = value
     pass
 
 
