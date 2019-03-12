@@ -1,0 +1,8 @@
+---
+# Control room apt and pip control
+- hosts: control_room
+  remote_user: sirius
+
+  roles:
+    - apt-packages
+    - python-packages

@@ -1,0 +1,31 @@
+---
+# tasks file for python-packages
+- name: Install python packages
+  pip:
+    name:
+    - qtpy
+    # calc
+    - numpy==1.15.0
+    - scipy
+    - pandas
+    # epics
+    - pyepics==3.3.1
+    - pcaspy==0.7.1
+    # plot
+    - pyqtgraph
+    - matplotlib
+    - python-dateutil==2.6.1
+    - six==1.11.0
+    - jupyter
+    - requests
+    - python-nmap
+    - wakeonlan
+    - psutil
+    - termcolor
+    - sh
+    - cairocffi
+    # Con
+    - xlrd
+    executable: pip-sirius
+  become: yes
+  become_flags: "-HE"
