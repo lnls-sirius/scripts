@@ -97,6 +97,60 @@ parms = {
     'BO-47U:PS-CV': [_dt, 10.0, 4*(11+1), 10, 2, False],  # 2.9 [A/s]
     'BO-49D:PS-CH': [_dt, 10.0, 4*(11+1), 10, 2, False],  # 2.9 [A/s]
     'BO-49U:PS-CV': [_dt, 10.0, 4*(11+1), 10, 2, False],  # 2.9 [A/s]
+
+    # TODO: start including linac dipole deman when IOC stops cycling as power on!
+    # 'LA-CN:H1DPPS-1': [_dt, 18.0, 4*(11+1), 10, 2, False],
+
+    'LA-CN:H1DQPS-1': [_dt, 5.0, 4*(11+1), 10, 2, False],
+    'LA-CN:H1DQPS-2': [_dt, 5.0, 4*(11+1), 10, 2, False],
+    'LA-CN:H1FQPS-1': [_dt, 5.0, 4*(11+1), 10, 2, False],
+    'LA-CN:H1FQPS-2': [_dt, 5.0, 4*(11+1), 10, 2, False],
+    'LA-CN:H1FQPS-3': [_dt, 5.0, 4*(11+1), 10, 2, False],
+
+    'LA-CN:H1LCPS-1': [_dt, 1.5, 4*(11+1), 10, 2, False],
+    'LA-CN:H1LCPS-2': [_dt, 1.5, 4*(11+1), 10, 2, False],
+    'LA-CN:H1LCPS-3': [_dt, 1.5, 4*(11+1), 10, 2, False],
+    'LA-CN:H1LCPS-4': [_dt, 1.5, 4*(11+1), 10, 2, False],
+    'LA-CN:H1LCPS-5': [_dt, 1.5, 4*(11+1), 10, 2, False],
+    'LA-CN:H1LCPS-6': [_dt, 1.5, 4*(11+1), 10, 2, False],
+    'LA-CN:H1LCPS-7': [_dt, 1.5, 4*(11+1), 10, 2, False],
+    'LA-CN:H1LCPS-8': [_dt, 1.5, 4*(11+1), 10, 2, False],
+    'LA-CN:H1LCPS-9': [_dt, 1.5, 4*(11+1), 10, 2, False],
+    'LA-CN:H1LCPS-10': [_dt, 1.5, 4*(11+1), 10, 2, False],
+
+    'LA-CN:H1MLPS-1': [_dt, 5.0, 4*(11+1), 10, 2, False],
+    'LA-CN:H1MLPS-2': [_dt, 5.0, 4*(11+1), 10, 2, False],
+    'LA-CN:H1MLPS-3': [_dt, 5.0, 4*(11+1), 10, 2, False],
+    'LA-CN:H1MLPS-4': [_dt, 5.0, 4*(11+1), 10, 2, False],
+
+    'LA-CN:H1RCPS-1': [_dt, 15.0, 4*(11+1), 10, 2, False],
+
+    'LA-CN:H1SCPS-1': [_dt, 0.25, 4*(11+1), 10, 2, False],
+    'LA-CN:H1SCPS-2': [_dt, 0.25, 4*(11+1), 10, 2, False],
+    'LA-CN:H1SCPS-3': [_dt, 0.25, 4*(11+1), 10, 2, False],
+    'LA-CN:H1SCPS-4': [_dt, 0.25, 4*(11+1), 10, 2, False],
+
+    'LA-CN:H1SLPS-1': [_dt, 35.0, 4*(18+1), 6, 1.5, True],
+    'LA-CN:H1SLPS-2': [_dt, 35.0, 4*(18+1), 6, 1.5, True],
+    'LA-CN:H1SLPS-3': [_dt, 35.0, 4*(18+1), 6, 1.5, True],
+    'LA-CN:H1SLPS-4': [_dt, 35.0, 4*(18+1), 6, 1.5, True],
+    'LA-CN:H1SLPS-5': [_dt, 35.0, 4*(18+1), 6, 1.5, True],
+    'LA-CN:H1SLPS-6': [_dt, 35.0, 4*(18+1), 6, 1.5, True],
+    'LA-CN:H1SLPS-7': [_dt, 35.0, 4*(18+1), 6, 1.5, True],
+    'LA-CN:H1SLPS-8': [_dt, 35.0, 4*(18+1), 6, 1.5, True],
+    'LA-CN:H1SLPS-9': [_dt, 35.0, 4*(18+1), 6, 1.5, True],
+    'LA-CN:H1SLPS-10': [_dt, 35.0, 4*(18+1), 6, 1.5, True],
+    'LA-CN:H1SLPS-11': [_dt, 35.0, 4*(18+1), 6, 1.5, True],
+    'LA-CN:H1SLPS-12': [_dt, 35.0, 4*(18+1), 6, 1.5, True],
+    'LA-CN:H1SLPS-13': [_dt, 35.0, 4*(18+1), 6, 1.5, True],
+    'LA-CN:H1SLPS-14': [_dt, 35.0, 4*(18+1), 6, 1.5, True],
+    'LA-CN:H1SLPS-15': [_dt, 35.0, 4*(18+1), 6, 1.5, True],
+    'LA-CN:H1SLPS-16': [_dt, 35.0, 4*(18+1), 6, 1.5, True],
+    'LA-CN:H1SLPS-17': [_dt, 35.0, 4*(18+1), 6, 1.5, True],
+    'LA-CN:H1SLPS-18': [_dt, 35.0, 4*(18+1), 6, 1.5, True],
+    'LA-CN:H1SLPS-19': [_dt, 35.0, 4*(18+1), 6, 1.5, True],
+    'LA-CN:H1SLPS-20': [_dt, 35.0, 4*(18+1), 6, 1.5, True],
+    'LA-CN:H1SLPS-21': [_dt, 35.0, 4*(18+1), 6, 1.5, True],
 }
 
 
@@ -126,65 +180,13 @@ def ps_set_sp(pv, value):
     pass
 
 
-def ps_ramp_down(psname, pv):
+def create_pv_sp(psname):
     """."""
-    time_step = 0.5  # [s]
-    max_speed = 10.0  # [A/s]
-
-    value = pv.value
-    if value is None:
-        print('{:<16s} disconnected.'.format(pv.pvname))
-        sys.exit(-1)
-    total_time = value/max_speed
-    nrpts = int(total_time/time_step)
-    fv = np.linspace(1.0, 0, nrpts)
-    print('{:<16s} ramping down with {} points...'.format(psname, nrpts))
-    for i in range(len(fv)):
-        new_value = value * fv[i]
-        print('{:<16s} RD {:+010.4f} A  ({:03d}/{:03d})'.format(psname,
-              new_value, i+1, nrpts))
-        ps_set_sp(pv, new_value)
-        time.sleep(time_step)
-    print('{:<16s} ramp down finished.'.format(psname))
-
-
-def ps_cycle(psname, plot=True):
-    """."""
-    t, w = gen_waveform(*parms[psname])
-    if plot:
-        dt = np.diff(t)
-        dw = np.diff(w)
-        print('{}: {:.02f} minutes, max {:.1f} A/s'.format(
-            psname, max(t)/60.0, max(dw/dt)))
-        plt.plot(t, w, 'o')
-        plt.xlabel('time [s]')
-        plt.ylabel('Current [A]')
-        plt.title(psname)
-        plt.show()
+    if psname.startswith('LA-CN'):
+        pv_sp = epics.PV(psname + ':seti')
     else:
         pv_sp = epics.PV(psname + ':Current-SP')
-        ps_ramp_down(psname, pv_sp)
-        print('{:<16s} cycling with {} points...'.format(psname, len(t)))
-        for i in range(0, len(t)-1):
-            print('{:<16s} CY {:+010.4f} A  ({:03d}/{:03d})'.format(psname,
-                  w[i], i+1, len(w)))
-            ps_set_sp(pv_sp, w[i])
-            time.sleep(t[i+1]-t[i])
-        print('{:<16s} CY {:+010.4f} A  ({:03d}/{:03d})'.format(psname,
-              w[i], i+1, len(w)))
-        pv_sp.value = w[-1]
-        print('{:<16s} cycling finished.'.format(psname))
-
-
-def cycle_all(psnames):
-    """."""
-    threads = []
-    for psname in psnames:
-        process = Process(target=ps_cycle, args=(psname, False))
-        process.start()
-        threads.append(process)
-    for process in threads:
-        process.join()
+    return pv_sp
 
 
 def select_psnames(psgroup):
@@ -233,9 +235,108 @@ def select_psnames(psgroup):
         for ps in allps:
             if ps.startswith('BO-'):
                 psnames.append(ps)
+    elif psgroup.lower() in ('li-dipole', 'li-spectrometer'):
+        for ps in allps:
+            if ps.startswith('LA-CN:H1DPPS'):
+                psnames.append(ps)
+    elif psgroup.lower() in ('li-quadrupoles', ):
+        for ps in allps:
+            if 'H1DQPS' in ps or 'H1FQPS' in ps:
+                psnames.append(ps)
+    elif psgroup.lower() in ('li-long-correctors', ):
+        for ps in allps:
+            if 'H1LCPS' in ps:
+                psnames.append(ps)
+    elif psgroup.lower() in ('li-magnetic-lenses', ):
+        for ps in allps:
+            if 'H1MLPS' in ps:
+                psnames.append(ps)
+    elif psgroup.lower() in ('li-short-correctors', ):
+        for ps in allps:
+            if 'H1SCPS' in ps:
+                psnames.append(ps)
+    elif psgroup.lower() in ('li-solenoids', ):
+        for ps in allps:
+            if 'H1SLPS' in ps:
+                psnames.append(ps)
+    elif psgroup.lower() == 'li':
+        for ps in allps:
+            if ps.startswith('LA-CN'):
+                psnames.append(ps)
     else:
         print('Invalid ps group {}!'.format(psgroup))
     return list(set(psnames))
+
+
+def ps_list(psname):
+    """."""
+    t, w = gen_waveform(*parms[psname])
+    dt = np.diff(t)
+    dw = np.diff(w)
+    print('{:<20s}: {:.02f} minutes, max {:.1f} A/s'.format(
+        psname, max(t)/60.0, max(dw/dt)))
+
+
+def ps_plot(psname):
+    """."""
+    t, w = gen_waveform(*parms[psname])
+    plt.plot(t, w, 'o')
+    plt.xlabel('time [s]')
+    plt.ylabel('Current [A]')
+    plt.title(psname)
+    plt.show()
+
+
+def ps_rampdown(psname):
+    """."""
+    time_step = 0.5  # [s]
+    max_speed = 10.0  # [A/s]
+
+    pv = create_pv_sp(psname)
+    value = pv.value
+    if value is None:
+        print('{:<20s} disconnected.'.format(pv.pvname))
+        sys.exit(-1)
+    value = abs(value)
+    total_time = value/max_speed
+    nrpts = int(total_time/time_step)
+    fv = np.linspace(1.0, 0, nrpts)
+    print('{:<20s} ramping down with {} points...'.format(psname, nrpts))
+    for i in range(len(fv)):
+        new_value = value * fv[i]
+        print('{:<20s} RD {:+010.4f} A  ({:03d}/{:03d})'.format(psname,
+              new_value, i+1, nrpts))
+        ps_set_sp(pv, new_value)
+        time.sleep(time_step)
+    print('{:<20s} ramp down finished.'.format(psname))
+
+
+def ps_cycle(psname):
+    """."""
+    t, w = gen_waveform(*parms[psname])
+    ps_rampdown(psname)
+    pv_sp = create_pv_sp(psname)
+    print('{:<20s} cycling with {} points...'.format(psname, len(t)))
+    for i in range(0, len(t)-1):
+        print('{:<20s} CY {:+010.4f} A  ({:03d}/{:03d})'.format(psname,
+              w[i], i+1, len(w)))
+        ps_set_sp(pv_sp, w[i])
+        time.sleep(t[i+1]-t[i])
+    print('{:<20s} CY {:+010.4f} A  ({:03d}/{:03d})'.format(psname,
+          w[i], i+1, len(w)))
+    pv_sp.value = w[-1]
+    print('{:<20s} cycling finished.'.format(psname))
+
+
+def exec_all(psnames, target):
+    """."""
+    threads = []
+    for psname in psnames:
+        process = Process(target=target, args=(psname,))
+        process.start()
+        threads.append(process)
+    for process in threads:
+        process.join()
 
 
 def print_help():
@@ -251,7 +352,11 @@ def print_help():
     print("")
     print("       --help          print this help")
     print("")
+    print("       --list          list power supplies")
+    print("")
     print("       --plot          plot demag curves")
+    print("")
+    print("       --rampdown      ramp selected power supplies down to zero current")
     print("")
     print("       all             demag all magnets")
     print("")
@@ -285,37 +390,44 @@ def print_help():
 
 def process_argv():
     """."""
-    plot = False
+    plot_flag, list_flag, rmpdown_flag = False, False, False
     argv = [v for v in sys.argv[1:]]
     if '--help' in argv:
         print_help()
         sys.exit(0)
     if '--plot' in argv:
-        plot = True
+        plot_flag = True
         argv.remove('--plot')
+    if '--list' in argv:
+        list_flag = True
+        argv.remove('--list')
+    if '--rampdown' in argv:
+        rmpdown_flag = True
+        argv.remove('--rampdown')
+
     psnames = []
     for arg in argv:
         psnames += select_psnames(arg)
     psnames = sorted(list(set(psnames)))
-    return psnames, plot
+    return psnames, plot_flag, list_flag, rmpdown_flag
 
 
 def run():
     """."""
-    psnames, plot_flag = process_argv()
-    if plot_flag:
+    psnames, plot_flag, list_flag, rmpdown_flag = process_argv()
+    if list_flag:
+        print('Selecting {} power supplies:'.format(len(psnames)))
+        exec_all(psnames, ps_list)
+    elif plot_flag:
         print('Plotting cycling waveforms for {} power supplies:'.format(
             len(psnames)))
+        exec_all(psnames, ps_plot)
+    elif rmpdown_flag:
+        print('Ramping down {} power supplies:'.format(len(psnames)))
+        exec_all(psnames, ps_rampdown)
     else:
         print('Cycling magnets with {} power supplies:'.format(len(psnames)))
-    for ps in psnames:
-        print(ps)
-    if plot_flag:
-        for ps in psnames:
-            ps_cycle(ps, plot=True)
-    else:
-        cycle_all(psnames)
-        pass
+        exec_all(psnames, ps_cycle)
 
 
 if __name__ == "__main__":
