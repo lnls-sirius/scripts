@@ -1,6 +1,6 @@
 ---
 # Control room apt and pip control
-- hosts: control_room
+- hosts: control_room,fac
   remote_user: sirius
 
   roles:
