@@ -1,0 +1,48 @@
+---
+# Deploy repos to control rool PCs
+# Requirements:
+#    user sirius with privileges  
+- hosts: control_room
+  remote_user: sirius
+
+  tasks:
+    - include_role: 
+        name: deploy-repo
+      vars:
+        repo_name: "/lnls-sirius/scripts"
+    - include_role:
+        name: deploy-repo
+      vars:
+        repo_name: "/lnls-fac/mathphys"
+        install_via_setup: yes
+    - include_role:
+        name: deploy-repo
+      vars:
+        repo_name: "/lnls-sirius/dev-packages"
+        install_path: "siriuspy"
+        install_via_setup: yes
+    - include_role:
+        name: deploy-repo
+      vars:
+        repo_name: "/lnls-sirius/pydm"
+        install_via_setup: yes
+    - include_role:
+        name: deploy-repo
+      vars:
+        repo_name: "/lnls-sirius/hla"
+        install_path: "pyqt-apps"
+
+    - name: Clone pru-serial485
+      git:
+        repo: "https://github.com/lnls-sirius/pru-serial485.git"
+        dest: "/tmp/pru-serial485"
+    - name: Install pru-serial485
+      command: "./library_build.sh"
+      args:
+        chdir: "/tmp/pru-serial485/src"
+      become: yes
+
+    - include_role:
+        name: deploy-repo
+      vars:
+        repo_name: "/lnls-sirius/machine-applications"

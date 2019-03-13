@@ -1,0 +1,8 @@
+---
+# tasks file for python-packages
+- name: Install python packages
+  pip:
+    name: "{{ packages }}"
+    executable: pip-sirius
+  become: yes
+  become_flags: "-HE"
