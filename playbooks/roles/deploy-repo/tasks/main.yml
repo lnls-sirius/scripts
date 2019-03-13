@@ -1,0 +1,21 @@
+---
+# tasks file for deploy-repo
+- name: "Clone repo {{ repo_name }}"
+  git:
+    repo: "https://github.com{{ repo_name }}"
+    dest: "/tmp/{{ repo_name }}"
+    version: "{{ repo_version | default('master') }}"
+
+- name: "Install {{ repo_name }} via makefile"
+  command: "make install"
+  args:
+    chdir: "/tmp/{{ repo_name }}/{{ install_path | default('')}}"
+  become: yes
+  when: install_via_setup is undefined
+
+- name: "Install {{ repo_name }} via setup.py"
+  command: "python-sirius setup.py install"
+  args:
+    chdir: "/tmp/{{ repo_name }}/{{ install_path | default('')}}"
+  become: yes
+  when: install_via_setup is defined
