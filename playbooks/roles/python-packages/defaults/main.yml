@@ -1,0 +1,26 @@
+---
+# defaults for python-packages
+packages:
+- qtpy
+# calc
+- numpy==1.15.0
+- scipy
+- pandas
+# epics
+- pyepics==3.3.1
+- pcaspy==0.7.1
+# plot
+- pyqtgraph
+- matplotlib
+- python-dateutil==2.6.1
+- six==1.11.0
+- jupyter
+- requests
+- python-nmap
+- wakeonlan
+- psutil
+- termcolor
+- sh
+- cairocffi
+# Con
+- xlrd
