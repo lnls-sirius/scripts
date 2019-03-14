@@ -32,3 +32,5 @@ packages:
 - rdesktop
 - vim
 - htop
+- xdotool
+- sshpass
