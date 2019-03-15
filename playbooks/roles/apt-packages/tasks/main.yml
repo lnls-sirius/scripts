@@ -12,6 +12,12 @@
 #     state: latest
 #   become: yes
 
+- name: Install xfonts-100-dpi
+  apt:
+    name: xfonts-100dpi
+  become: yes
+  when: ansible_distribution == "Ubuntu" and ansible_distribution_version == "18.04"
+
 - name: Install packages
   apt:
     name: "{{ packages }}"
