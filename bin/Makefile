@@ -4,10 +4,23 @@ DEST_DIR = /usr/local/bin
 GENERALSCRIPTS = \
 		sirius-script-ioc-ps.bash \
 		sirius-script-ioc-ma.bash \
-		sirius-script-ioc-ps-ma.bash
+		sirius-script-ioc-ps-ma.bash \
+		sirius-script-app-demag.py \
+		sirius-script-utils.bash
 
+REPOSSCRIPTS = \
+		sirius-script-repos-install-pristine.bash \
+		sirius-script-repos-install-update.bash \
+		sirius-script-repos-install.bash \
+		sirius-script-repos-deletetags.bash \
+		sirius-script-repos-deploy.bash
 
-SCRIPTS = $(GENERALSCRIPTS)
+BBBSCRIPTS = \
+		sirius-script-bbb-ping.bash \
+		sirius-script-bbb-reboot.bash \
+		sirius-script-bbb-uptime.bash
+
+SCRIPTS = $(GENERALSCRIPTS) $(REPOSSCRIPTS) $(BBBSCRIPTS)
 
 FULLSCRIPTS = $(addprefix $(DEST_DIR)/, $(SCRIPTS))
 
@@ -21,15 +34,11 @@ install-repos-install:
 		cp sirius-script-repos-install.bash $(DEST_DIR)/
 		chmod 755 $(DEST_DIR)/sirius-script-repos-install.bash
 
-install:
-		cp -a sirius-script-utils.bash $(DEST_DIR)/
-		cp -a sirius-script-bbb-ping.bash $(DEST_DIR)/
-		cp -a sirius-script-bbb-reboot.bash $(DEST_DIR)/
-		cp -a sirius-script-bbb-uptime.bash $(DEST_DIR)/
-		cp -a sirius-script-repos-install.bash $(DEST_DIR)/
-		cp -a sirius-script-repos-install-pristine.bash $(DEST_DIR)/
-		cp -a sirius-script-repos-install-update.bash $(DEST_DIR)/
-		cp -a sirius-script-repos-install.bash $(DEST_DIR)/
-		cp -a sirius-script-repos-deletetags.bash $(DEST_DIR)/
-		cp -a sirius-script-repos-deploy.bash $(DEST_DIR)/
-		cp -a sirius-script-app-demag.py $(DEST_DIR)/
+install: uninstall
+		cp -a $(SCRIPTS) $(DEST_DIR)
+
+develop: uninstall
+		ln -srf $(SCRIPTS) $(DEST_DIR)
+
+uninstall:
+	rm -rf $(FULLSCRIPTS)
