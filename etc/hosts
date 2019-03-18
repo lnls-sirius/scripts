@@ -87,9 +87,9 @@ ff02::2 ip6-allrouters
 # ===============================
 
 # --- TB ---
-10.128.121.101 bbb-tb-dipoles        LA-RaPS02--CO-PSCtrl-TB
-10.128.121.103 bbb-tb-quadrupoles    LA-RaCtrl--CO-PSCtrl-TB1
-10.128.121.104 bbb-tb-correctors     LA-RaCtrl--CO-PSCtrl-TB2
+10.128.121.101  LA-RaPS02--CO-PSCtrl-TB   bbb-tb-dipoles        
+10.128.121.103  LA-RaCtrl--CO-PSCtrl-TB1  bbb-tb-quadrupoles
+10.128.121.104  LA-RaCtrl--CO-PSCtrl-TB2  bbb-tb-correctors
 
 # --- BO ---
 10.128.101.105  IA-01RaCtrl--CO-PSCtrl-BO  bbb-bo-correctors-01     # BO-01U:PS-CH BO-01U:PS-CV BO-02D:PS-QS
