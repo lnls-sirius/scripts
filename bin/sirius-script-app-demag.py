@@ -39,9 +39,9 @@ parms = {
     'TB-04:PS-CV-1': [_dt, 10.0, 4*(11+1), 10, 2, False],  # 2.9 [A/s]
     'TB-04:PS-CV-2': [_dt, 10.0, 4*(11+1), 10, 2, False],  # 2.9 [A/s]
 
-    'BO-Fam:PS-B-1': [_dt, 60.0, 4*(22+1), 6, 1.5, False],  # 9.6 [A/s]
-    'BO-Fam:PS-B-2': [_dt, 60.0, 4*(22+1), 6, 1.5, False],  # 9.6 [A/s]
-    'BO-Fam:PS-QF': [_dt, 20.0, 4*(11+1), 10, 2, False],  # 5.8 [A/s]
+    'BO-Fam:PS-B-1': [_dt, 150.0, 4*(22+1), 6, 1.5, False],  # 24 [A/s]
+    'BO-Fam:PS-B-2': [_dt, 150.0, 4*(22+1), 6, 1.5, False],  # 24 [A/s]
+    'BO-Fam:PS-QF': [_dt, 120.0, 4*(11+1), 10, 2, False],  # 34.8 [A/s]
     'BO-Fam:PS-QD': [_dt, 30.0, 4*(11+1), 10, 2, False],  # 8.8 [A/s]
     'BO-Fam:PS-SF': [_dt, 149.0, 4*(11+1), 10, 2, False],  # 43.5 [A/s]
     'BO-Fam:PS-SD': [_dt, 149.0, 4*(11+1), 10, 2, False],  # 43.5 [A/s]
@@ -98,8 +98,7 @@ parms = {
     'BO-49D:PS-CH': [_dt, 10.0, 4*(11+1), 10, 2, False],  # 2.9 [A/s]
     'BO-49U:PS-CV': [_dt, 10.0, 4*(11+1), 10, 2, False],  # 2.9 [A/s]
 
-    # TODO: start including linac dipole deman when IOC stops cycling as power on!
-    # 'LA-CN:H1DPPS-1': [_dt, 18.0, 4*(11+1), 10, 2, False],
+    'LA-CN:H1DPPS-1': [_dt, 18.0, 4*(11+1), 10, 2, False],
 
     'LA-CN:H1DQPS-1': [_dt, 5.0, 4*(11+1), 10, 2, False],
     'LA-CN:H1DQPS-2': [_dt, 5.0, 4*(11+1), 10, 2, False],
@@ -350,42 +349,54 @@ def print_help():
     print("DESCRIPTION")
     print("       Script used to demagnetize magnets with power supplies in in SlowRef mode")
     print("")
-    print("       --help          print this help")
+    print("       --help               print this help")
     print("")
-    print("       --list          list power supplies")
+    print("       --list               list power supplies")
     print("")
-    print("       --plot          plot demag curves")
+    print("       --plot               plot demag curves")
     print("")
-    print("       --rampdown      ramp selected power supplies down to zero current")
+    print("       --rampdown           ramp selected power supplies down to zero current")
     print("")
-    print("       all             demag all magnets")
+    print("       all                  demag all magnets")
     print("")
-    print("       tb-dipoles      demag TB dipoles")
+    print("       tb-dipoles           demag TB dipoles")
     print("")
-    print("       tb-quadrupoles  demag TB quadrupoles")
+    print("       tb-quadrupoles       demag TB quadrupoles")
     print("")
-    print("       tb-correctors   demag TB correctors")
+    print("       tb-correctors        demag TB correctors")
     print("")
-    print("       tb              demag TB magnets")
+    print("       tb                   demag TB magnets")
     print("")
-    print("       bo-dipoles      demag BO dipoles")
+    print("       bo-dipoles           demag BO dipoles")
     print("")
-    print("       bo-quadrupoles  demag BO quadrupoles")
+    print("       bo-quadrupoles       demag BO quadrupoles")
     print("")
-    print("       bo-sextupoles  demag BO sextupoles")
+    print("       bo-sextupoles        demag BO sextupoles")
     print("")
-    print("       bo-correctors   demag BO correctors")
+    print("       bo-correctors        demag BO correctors")
     print("")
-    print("       BO-Fam:PS-QF    demag BO QF quadrupoles")
+    print("       bo                   demag BO magnets")
     print("")
-    print("       bo              demag BO magnets")
+    print("       li-dipole            demag LI dipole or spectrometer")
+    print("")
+    print("       li-spectrometer      demag LI dipole or spectrometer")
+    print("")
+    print("       li-quadrupoles       demag LI quadrupoles")
+    print("")
+    print("       li-short-correctors  demag LI short correctors")
+    print("")
+    print("       li-long-correctors   demag LI long correctors")
+    print("")
+    print("       li-solenoids         demag LI solenoids")
+    print("")
+    print("       li                   demag LI magnets")
     print("")
     print("       <POWER-SUPPLY>  demag magnets excitated by <POWER-SUPPLY>")
     print("")
     print("       and so on...")
     print("")
     print("AUTHOR")
-    print("       Written by X. Resende, FACS-LNLS.")
+    print("       FACS-LNLS.")
 
 
 def process_argv():
