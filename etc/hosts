@@ -80,14 +80,14 @@ ff02::2 ip6-allrouters
 10.128.254.203 sirius-nfs.lnls.br servnfs
 10.0.38.42     sirius-logbook.lnls.br servolog
 10.0.38.42     sirius-archiver.lnls.br servarchiver
-10.0.38.42     sirius-bbbdemon.lnls.br servbbbdaemon
+10.0.38.34     sirius-bbbdemon.lnls.br servbbbdaemon
 
 
 # SIRIUS power supply beaglebones
 # ===============================
 
 # --- TB ---
-10.128.121.101  LA-RaPS02--CO-PSCtrl-TB   bbb-tb-dipoles        
+10.128.121.101  LA-RaPS02--CO-PSCtrl-TB   bbb-tb-dipoles
 10.128.121.103  LA-RaCtrl--CO-PSCtrl-TB1  bbb-tb-quadrupoles
 10.128.121.104  LA-RaCtrl--CO-PSCtrl-TB2  bbb-tb-correctors
 
@@ -114,7 +114,7 @@ ff02::2 ip6-allrouters
 
 # --- DCLinks ---
 
-10.128.121.102  LA-RaCtrl--CO-DCLinkCtrl    bbb-as-dclink-01   bbb-dclink-tb-correctors      bbb-dclink-tb-quadrupoles  bbb-dclink-ts-correctors
+10.128.121.102  LA-RaCtrl--CO-DCLinkCtrl    bbb-as-dclinks-01  bbb-dclink-tb-correctors  bbb-dclink-tb-quadrupoles  bbb-dclink-ts-correctors
 
 10.128.101.104  IA-01RaCtrl--CO-DCLinkCtrl  bbb-as-dclinks-02  bbb-dclink-bo-correctors-01   # BO-01U:PS-CH BO-01U:PS-CV BO-02D:PS-QS
 10.128.102.104  IA-02RaCtrl--CO-DCLinkCtrl  bbb-as-dclinks-03  bbb-dclink-bo-correctors-02   # BO-03U:PS-CH BO-03U:PS-CV BO-05U:PS-CH BO-05U:PS-CV
