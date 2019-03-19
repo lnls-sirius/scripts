@@ -17,7 +17,7 @@ bbbs=("bbb-as-dclinks-01"
       "bbb-tb-dipoles"
       "bbb-tb-correctors"
       "bbb-tb-quadrupoles"
-      # "bbb-bo-dipole-1"
+      "bbb-bo-dipole-1"
       "bbb-bo-dipole-2"
       "bbb-bo-quadrupole-qf"
       "bbb-bo-quadrupole-qd"
@@ -40,7 +40,8 @@ bbbs=("bbb-as-dclinks-01"
 desktops=("lnls452-linux"
           "lnls451-linux"
           "lnls449-linux"
-          "lnls454-linux")
+          "lnls454-linux"
+          "lnls455-linux")
 
 repos=("scripts:master"
        "mathphys:master"
@@ -92,7 +93,7 @@ function printf_white_bold {
 }
 
 function get_bbb_ip {
-  ip=$(cat /etc/hosts | cut -d" " -f1-2 | grep $bbb | sed "s/$bbb//g" | sed "s/ //g")
+  ip=$(cat /etc/hosts | grep $bbb | sed "s/ \+/ /g" | cut -d" " -f1)
   echo $ip
 }
 
