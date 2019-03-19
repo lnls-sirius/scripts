@@ -40,7 +40,8 @@ bbbs=("bbb-as-dclinks-01"
 desktops=("lnls452-linux"
           "lnls451-linux"
           "lnls449-linux"
-          "lnls454-linux")
+          "lnls454-linux"
+          "lnls455-linux")
 
 repos=("scripts:master"
        "mathphys:master"
