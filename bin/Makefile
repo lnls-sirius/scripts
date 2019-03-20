@@ -2,11 +2,9 @@
 DEST_DIR = /usr/local/bin
 
 GENERALSCRIPTS = \
-		sirius-script-ioc-ps.bash \
-		sirius-script-ioc-ma.bash \
-		sirius-script-ioc-ps-ma.bash \
+		sirius-script-utils.bash \
 		sirius-script-app-demag.py \
-		sirius-script-utils.bash
+		sirius-script-services-lnls452.bash
 
 REPOSSCRIPTS = \
 		sirius-script-repos-install-pristine.bash \
