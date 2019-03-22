@@ -72,8 +72,9 @@ services_lnls452=(
          "sirius-ioc-bo-ma-correctors-11.service"
          "sirius-ioc-bo-ma-correctors-12.service"
          "sirius-ioc-bo-ma-correctors-13.service"
-         "sirius-ioc-bo-pm-injkckr.service"
          "sirius-ioc-tb-pm-injsept.service"
+         "sirius-ioc-bo-pm-injkckr.service"
+
          "sirius-ioc-as-ti-evts.service"
          "sirius-ioc-as-ti-trig.service"
          "sirius-ioc-li-ti-trig.service"
@@ -81,19 +82,23 @@ services_lnls452=(
          "sirius-ioc-bo-ti-trig.service"
          "sirius-ioc-ts-ti-trig.service"
          "sirius-ioc-si-ti-trig.service"
-         "sirius-ioc-tb-ap-posang.service"
-         "sirius-ioc-tb-ap-sofb.service"
+
          "sirius-ioc-bo-ap-currinfo-current.service"
          "sirius-ioc-bo-ap-currinfo-lifetime.service"
-         "sirius-ioc-bo-ap-sofb.service"
-         "sirius-ioc-bo-ap-tunecorr.service"
-         "sirius-ioc-bo-ap-chromcorr.service"
-         "sirius-ioc-ts-ap-posang.service"
-         "sirius-ioc-ts-ap-sofb.service"
          #"sirius-ioc-si-ap-currinfo-charge.service"  # Broken!
          "sirius-ioc-si-ap-currinfo-current.service"
          "sirius-ioc-si-ap-currinfo-lifetime.service"
+
+         "sirius-ioc-tb-ap-posang.service"
+         "sirius-ioc-ts-ap-posang.service"
+
+         "sirius-ioc-tb-ap-sofb.service"
+         "sirius-ioc-bo-ap-sofb.service"
+         "sirius-ioc-ts-ap-sofb.service"
          "sirius-ioc-si-ap-sofb.service"
+
+         "sirius-ioc-bo-ap-tunecorr.service"
+         "sirius-ioc-bo-ap-chromcorr.service"
          "sirius-ioc-si-ap-tunecorr.service"
          "sirius-ioc-si-ap-chromcorr.service"
          )

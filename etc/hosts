@@ -130,6 +130,8 @@ ff02::2 ip6-allrouters
 10.128.117.104  IA-17RaCtrl--CO-DCLinkCtrl  bbb-as-dclinks-13  bbb-dclink-bo-correctors-12   # BO-43U:PS-CH BO-43U:PS-CV BO-45U:PS-CH BO-45U:PS-CV
 10.128.120.104  IA-20RaCtrl--CO-DCLinkCtrl  bbb-as-dclinks-14  bbb-dclink-bo-correctors-13   # BO-47U:PS-CH BO-47U:PS-CV BO-49D:PS-CH BO-49U:PS-CV
 
+10.128.101.120  bbb-test
+
 # Oscilloscopes
 # =============
 # use gvncviewer
