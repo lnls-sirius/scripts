@@ -5,11 +5,6 @@ import epics
 import sys
 
 
-# import numpy as np
-# import matplotlib.pyplot as plt
-# import time
-# from multiprocessing import Process
-
 from siriuspy.search import PSSearch
 
 
