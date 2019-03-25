@@ -41,7 +41,7 @@ parms = {
 
     'BO-Fam:PS-B-1': [_dt, 60.0, 4*(22+1), 6, 1.5, False],  # 24 [A/s]
     'BO-Fam:PS-B-2': [_dt, 60.0, 4*(22+1), 6, 1.5, False],  # 24 [A/s]
-    'BO-Fam:PS-QF': [_dt, 20.0, 4*(11+1), 10, 2, False],  # 34.8 [A/s]
+    'BO-Fam:PS-QF': [_dt, 120.0, 4*(11+1), 10, 2, False],  # 34.8 [A/s]
     'BO-Fam:PS-QD': [_dt, 30.0, 4*(11+1), 10, 2, False],  # 8.8 [A/s]
     'BO-Fam:PS-SF': [_dt, 150.0, 4*(11+1), 10, 2, False],  # 43.5 [A/s]
     'BO-Fam:PS-SD': [_dt, 150.0, 4*(11+1), 10, 2, False],  # 43.5 [A/s]
