@@ -151,8 +151,8 @@ def print_version(psnames):
     nrls = max([len(ps) for ps in psnames])
     fmts = '{:<' + str(nrls) + '}: {}'
     for ps in psnames:
-        version = epics.caget(ps + ':Version-Cte')
-        print(fmts.format(ps, version))
+        pv = epics.PV(ps + ':Version-Cte', connection_timeout=0.1)
+        print(fmts.format(ps, pv.value))
 
 
 def run():
