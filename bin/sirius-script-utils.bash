@@ -72,8 +72,21 @@ services_lnls452=(
          "sirius-ioc-bo-ma-correctors-11.service"
          "sirius-ioc-bo-ma-correctors-12.service"
          "sirius-ioc-bo-ma-correctors-13.service"
+
+         # "sirius-ioc-tb-ps-diag.service"
+         # "sirius-ioc-bo-ps-diag.service"
+         # "sirius-ioc-ts-ps-diag.service"
+         # "sirius-ioc-si-ps-diag-fam.service"
+         # "sirius-ioc-si-ps-diag-ch.service"
+         # "sirius-ioc-si-ps-diag-cv.service"
+         # "sirius-ioc-si-ps-diag-qs.service"
+         # "sirius-ioc-si-ps-diag-fc.service"
+         # "sirius-ioc-si-ps-diag-trim-01.service"
+         # "sirius-ioc-si-ps-diag-trim-02.service"
+
          "sirius-ioc-tb-pm-injsept.service"
          "sirius-ioc-bo-pm-injkckr.service"
+
 
          "sirius-ioc-as-ti-evts.service"
          "sirius-ioc-as-ti-trig.service"
