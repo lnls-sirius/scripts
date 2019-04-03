@@ -41,7 +41,8 @@ desktops=("lnls452-linux"
           "lnls451-linux"
           "lnls449-linux"
           "lnls454-linux"
-          "lnls455-linux")
+          "lnls455-linux"
+          "elp-pwrsupply")
 
 repos=("scripts:master"
        "mathphys:master"
