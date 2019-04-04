@@ -41,6 +41,7 @@ function checkout_tagged_repos_nfs_server {
     reponame=$(echo $repo | cut -d":" -f1)
     branch=$(echo $repo | cut -d":" -f2)
     printf_yellow "[$repo]\n"
+    sshpass -p $user_passwd ssh sirius@$servnfs_hostname "cd $servnfs_repos_folder/$reponame; rm -rf dist build */*.egg-info *.egg-info"
     sshpass -p $user_passwd ssh sirius@$servnfs_hostname "cd $servnfs_repos_folder/$reponame; git stash; git fetch --prune origin '+refs/tags/*:refs/tags/*'; git checkout $branch; git pull; git checkout $deploy_tag"
     printf "\n"
   done
