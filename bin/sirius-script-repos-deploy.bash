@@ -33,6 +33,12 @@ function print_header_and_inputs {
   printf "\n"
 }
 
+function update_servweb {
+  printf_green "Update servweb ($servweb_hostname)\n"
+  printf "\n"
+  sshpass -p $user_passwd ssh sirius@$servweb_hostname "git -C /storage/misc/repository/control-system-constants pull"
+}
+
 function checkout_tagged_repos_nfs_server {
   printf_green "Checkout tagged repos in nfs server ($servnfs_hostname)\n"
   printf "\n"
@@ -61,6 +67,7 @@ function deploy_desktops {
 function run {
   print_header_and_inputs
   create_tagged_repos
+  # update_servweb
   checkout_tagged_repos_nfs_server
   deploy_desktops
 }
