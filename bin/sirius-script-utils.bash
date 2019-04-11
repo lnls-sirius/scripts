@@ -119,7 +119,7 @@ services_lnls452=(
 
 mirror_repos_path=/home/sirius/repos
 
-servweb_hostname=lnls452-linux
+servweb_hostname=sirius-consts.lnls.br
 
 servnfs_hostname=lnls452-linux
 
