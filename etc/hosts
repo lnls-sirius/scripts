@@ -75,8 +75,10 @@ ff02::2 ip6-allrouters
 10.0.7.55      sirius-ns.lnls.br naming-service-wildfly
 10.0.7.55      sirius-ccdb.lnls.br ccdb
 10.0.7.55      sirius-cable.lnls.br cable
-10.128.255.5   sirius-configdb.lnls.br servconf
-10.128.255.5   sirius-consts.lnls.br servweb
+#10.128.255.5   sirius-configdb.lnls.br servconf
+#10.128.255.5   sirius-consts.lnls.br servweb
+10.0.38.42     sirius-configdb.lnls.br servconf
+10.0.38.42     sirius-consts.lnls.br servweb
 10.128.254.203 sirius-nfs.lnls.br servnfs
 10.0.38.42     sirius-logbook.lnls.br servolog
 10.0.38.42     sirius-archiver.lnls.br servarchiver
