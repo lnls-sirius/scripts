@@ -26,7 +26,7 @@ if [ -d $dir ]; then
 	fi
 	cd epics-dev/
 	git checkout base-3.15
-	sudo ./run-all.sh -a no -e yes -x no -s yes -i -o -c
+	sudo ./run-all.sh -a no -e yes -x no -s yes -r yes -i -o -c
 	cd ..
 	sudo rm -rf $dir/epics-dev
 	exit 0
