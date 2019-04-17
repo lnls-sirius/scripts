@@ -34,10 +34,11 @@ function print_header_and_inputs {
 }
 
 function update_servweb {
-  repodir=/storage/misc/repository/control-system-constants/
   printf_green "Update servweb ($servweb_hostname)\n"
   printf "\n"
+  repodir=/storage/misc/repository/control-system-constants/
   sshpass -p $user_passwd ssh sirius@$servweb_hostname "cd $repodir; git stash; git fetch --prune origin '+refs/tags/*:refs/tags/*'; git checkout $branch; git pull; git checkout $deploy_tag"
+  printf "\n"
 }
 
 function checkout_tagged_repos_nfs_server {
