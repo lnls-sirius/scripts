@@ -293,7 +293,7 @@ function cmd_repo_install {
       echo "" 1> ../log-install-$repo.stdout 2> ../log-install-$repo.stderr
     fi
   else
-    echo "installation not defined for $repo !" 1> log-install-$repo.stdout 2> log-install-$repo.stderr
+    echo "installation not defined for $repo !" 1> ../log-install-$repo.stdout 2> ../log-install-$repo.stderr
   fi
   var_error=$(check_repo_install $repo $tmpdir)
 }
