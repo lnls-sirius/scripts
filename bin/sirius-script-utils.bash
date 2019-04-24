@@ -51,7 +51,9 @@ repos=("scripts:master"
        "machine-applications:master"
        "pydm:master"
        "hla:master"
-       "bbb-daemon:master")
+       "bbb-daemon:master"
+       "ARM:deploy-v0.32-2019-04-10"
+       "C28:deploy-v0.32-2019-04-10")
 
 services_lnls452=(
          "sirius-ioc-tb-ma-dipoles.service"
