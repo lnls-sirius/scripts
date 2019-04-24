@@ -25,6 +25,11 @@ function install_repos {
   done
 }
 
+function update_scripts {
+  tmpdir $(get_tmpdir update-scripts)
+  cmd_repo_install scripts $tmpdir
+}
+
 function run {
   printf_white "Installing repositories...\n"
   if [ $# -eq 0 ]; then
@@ -32,6 +37,7 @@ function run {
   else
     lrepos=$@
   fi
+  update_scripts
   tmpdir=$(get_tmpdir repos-install)
   install_repos $tmpdir $lrepos
 }
