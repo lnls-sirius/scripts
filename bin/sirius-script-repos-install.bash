@@ -26,7 +26,8 @@ function install_repos {
 }
 
 function update_scripts {
-  tmpdir $(get_tmpdir update-scripts)
+  printf_yellow "Updating install scripts ... "
+  tmpdir=$(get_tmpdir update-scripts)
   cmd_repo_install scripts $tmpdir
 }
 
