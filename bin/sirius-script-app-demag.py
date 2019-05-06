@@ -15,7 +15,8 @@ from multiprocessing import Process
 _dt = 0.5  # [s]
 parms = {
     # dt, ampl, nrpts_period, nr_periods, tau_period, sin_squared?
-    'TB-Fam:PS-B': [_dt, 250.0, 4*(18+1), 6, 1.5, True],  # 42.6 [A/s]
+    # 'TB-Fam:PS-B': [_dt, 250.0, 4*(18+1), 6, 1.5, True],  # 42.6 [A/s]
+    'TB-Fam:PS-B': [_dt, 300.0, 4*(3+1), 32, 4.0, True],  # 42.6 [A/s]
 
     'TB-01:PS-QD1': [_dt, 10.0, 4*(11+1), 10, 2, False],  # 2.9 [A/s]
     'TB-01:PS-QF1': [_dt, 10.0, 4*(11+1), 10, 2, False],  # 2.9 [A/s]
@@ -262,6 +263,10 @@ def select_psnames(psgroup):
         for ps in allps:
             if ps.startswith('LA-CN'):
                 psnames.append(ps)
+    elif psgroup.lower() == 'default':
+        for ps in allps:
+            if ps.startswith('LA-CN') or ps == 'TB-Fam:PS-B':
+                psnames.append(ps)
     else:
         print('Invalid ps group {}!'.format(psgroup))
     return list(set(psnames))
@@ -358,6 +363,8 @@ def print_help():
     print("       --rampdown           ramp selected power supplies down to zero current")
     print("")
     print("       all                  demag all magnets")
+    print("")
+    print("       default              demag LI magnets and TB dipoles")
     print("")
     print("       tb-dipoles           demag TB dipoles")
     print("")
