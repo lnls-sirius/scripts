@@ -329,7 +329,6 @@ def ps_rampdown(psname):
 
 def ps_cycle(psname):
     """."""
-    # t, w = gen_waveform(*parms[psname])
     t, w = gen_waveform(*parms[psname])
     ps_rampdown(psname)
     pv_sp = create_pv_sp(psname)
