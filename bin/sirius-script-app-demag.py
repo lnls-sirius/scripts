@@ -293,7 +293,6 @@ def ps_list(psname):
 
 def ps_plot(psname):
     """."""
-    # t, w = gen_waveform(*parms[psname])
     t, w = gen_waveform(*parms[psname])
     plt.plot(t, w, '-b')
     plt.plot(t, w, '.b')
