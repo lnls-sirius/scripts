@@ -196,6 +196,13 @@ def create_pv_sp(psname):
     return pv_sp
 
 
+def check_egun_enabled():
+    """."""
+    pv = epics.PV('egun:triggerps:enable')
+    value = pv.get()
+    return value
+
+
 def select_psnames(psgroup):
     """."""
     psnames = []
@@ -328,6 +335,10 @@ def ps_rampdown(psname):
 
 def ps_cycle(psname):
     """."""
+    if psname == 'LA-CN:H1DPPS-1':
+        if check_egun_enabled():
+            print('Linac EGun pulse is enabled! Please disable it.')
+            return
     t, w = gen_waveform(*parms[psname])
     ps_rampdown(psname)
     pv_sp = create_pv_sp(psname)
@@ -345,6 +356,10 @@ def ps_cycle(psname):
 
 def exec_all(psnames, target):
     """."""
+    if target == ps_cycle and 'LA-CN:H1DPPS-1' in psnames:
+        if check_egun_enabled():
+            print('Linac EGun pulse is enabled! Please disable it.')
+            return
     threads = []
     for psname in psnames:
         process = Process(target=target, args=(psname,))
