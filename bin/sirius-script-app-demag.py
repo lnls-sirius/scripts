@@ -2,12 +2,31 @@
 """."""
 
 import sys
+import time
+import signal
+from threading import Thread
+
+# The original code was using multiprocessing instead of threading.
+# It was buggy when an epics PV in global scope was created!
+from multiprocessing import Process  # BUGGY with epics PVs!!!
+
+
 import epics
 import numpy as np
 import matplotlib.pyplot as plt
-import time
-from multiprocessing import Process
+from siriuspy import util
 
+
+stop_event = False
+
+
+def _stop_now(signum, frame):
+    global stop_event
+    print(signal.Signals(signum).name + ' received at ' +
+          util.get_timestamp())
+    sys.stdout.flush()
+    sys.stderr.flush()
+    stop_event = True
 
 # obs:
 # In order for the waveform to end at zero current, as it is desirable,
@@ -301,12 +320,19 @@ def ps_list(psname):
 def ps_plot(psname):
     """."""
     t, w = gen_waveform(*parms[psname])
+    plt.ion()
+    fig = plt.figure()
     plt.plot(t, w, '-b')
     plt.plot(t, w, '.b')
     plt.xlabel('time [s]')
     plt.ylabel('Current [A]')
     plt.title(psname)
-    plt.show()
+    while not stop_event:
+        try:
+            fig.canvas.flush_events()
+        except:
+            break
+        time.sleep(0.20)
 
 
 def ps_rampdown(psname):
@@ -348,21 +374,30 @@ def ps_cycle(psname):
               w[i], i+1, len(w)))
         ps_set_sp(pv_sp, w[i])
         time.sleep(t[i+1]-t[i])
+        if stop_event:
+            print('Force stop cycling for {}...'.format(psname))
+            return False
     print('{:<20s} CY {:+010.4f} A  ({:03d}/{:03d})'.format(psname,
           w[i], i+1, len(w)))
     pv_sp.value = w[-1]
     print('{:<20s} cycling finished.'.format(psname))
+    return True
 
 
 def exec_all(psnames, target):
     """."""
     if target == ps_cycle and 'LA-CN:H1DPPS-1' in psnames:
+        LocalThread = Thread
         if check_egun_enabled():
             print('Linac EGun pulse is enabled! Please disable it.')
             return
+    elif target == ps_rampdown:
+        LocalThread = Thread
+    else:
+        LocalThread = Process
     threads = []
     for psname in psnames:
-        process = Process(target=target, args=(psname,))
+        process = LocalThread(target=target, args=(psname,))
         process.start()
         threads.append(process)
     for process in threads:
@@ -459,6 +494,11 @@ def process_argv():
 def run():
     """."""
     psnames, plot_flag, list_flag, rmpdown_flag = process_argv()
+
+    # Define abort function
+    signal.signal(signal.SIGINT, _stop_now)
+    signal.signal(signal.SIGTERM, _stop_now)
+
     if list_flag:
         print('Selecting {} power supplies:'.format(len(psnames)))
         exec_all(psnames, ps_list)
