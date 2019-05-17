@@ -5,7 +5,8 @@ GENERALSCRIPTS = \
 		sirius-script-utils.bash \
 		sirius-script-app-demag.py \
 		sirius-script-services-lnls452.bash \
-		sirius-script-ps-firmware-version.py
+		sirius-script-ps-firmware-version.py \
+		sirius-script-li-egun-ramp.py
 
 REPOSSCRIPTS = \
 		sirius-script-repos-install-pristine.bash \
