@@ -173,8 +173,6 @@ class Egun:
         print('Preparing Egun')
         self.pv_bias_volt_sp.value = self.bias_volt  # 3nC
 
-        self.set_fila_current(self.fila_curr)
-
         self.pv_trig_state_sp.value = self.beam_pulse if turn_on else False
         if self.pv_hv_enbl_rb.value == 0:
             self.pv_hv_enbl_sp.value = 1
@@ -197,6 +195,8 @@ class Egun:
         volt = self.goal_volt if turn_on else 0.0
         print('Setting HV from {0:.2f} to {1:.2f} kV'.format(
             self.pv_hv_volt_rb.value, volt))
+
+        self.set_fila_current(self.fila_curr)
         self.set_hv_volt(volt)
 
     def set_hv_volt(self, val):
