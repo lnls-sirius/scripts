@@ -183,6 +183,7 @@ export PATH=$PATH:$EPICS_EXTENSIONS/bin/$EPICS_HOST_ARCH
 # EDM
 # ===
 
+export LI_EDM_FOLDER=$LNLS_SIRIUS/repos/linac-opi/
 export EDMPVOBJECTS=$EPICS_EXTENSIONS/src/edm/setup
 export EDMOBJECTS=$EPICS_EXTENSIONS/src/edm/setup
 export EDMHELPFILES=$EPICS_EXTENSIONS/src/edm/helpFiles
