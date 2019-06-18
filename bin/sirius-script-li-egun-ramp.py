@@ -173,8 +173,6 @@ class Egun:
         print('Preparing Egun')
         self.pv_bias_volt_sp.value = self.bias_volt  # 3nC
 
-        self.set_fila_current(self.fila_curr)
-
         self.pv_trig_state_sp.value = self.beam_pulse if turn_on else False
         if self.pv_hv_enbl_rb.value == 0:
             self.pv_hv_enbl_sp.value = 1
@@ -197,6 +195,8 @@ class Egun:
         volt = self.goal_volt if turn_on else 0.0
         print('Setting HV from {0:.2f} to {1:.2f} kV'.format(
             self.pv_hv_volt_rb.value, volt))
+
+        self.set_fila_current(self.fila_curr)
         self.set_hv_volt(volt)
 
     def set_hv_volt(self, val):
@@ -435,7 +435,8 @@ class Egun:
         isok = [out.value == 0 for out in self.pvs_mps_status_proc]
         allok = all(isok)
         allok &= self.pv_mps_permit.value == 1
-        allok &= self.pv_trig_allow_mon.value == 1
+        if self.beam_pulse:
+            allok &= self.pv_trig_allow_mon.value == 1
         allok &= self.pv_sys_valve_mon.value == 1
         allok &= self.pv_sys_gate_mon.value == 1
         allok &= self.pv_sys_vacuum_mon.value == 1
@@ -477,6 +478,9 @@ if __name__ == '__main__':
     parser.add_argument(
         '-f', '--filahot', action='store_true', default=False,
         help="Whether egun's filament is hot (Default = False).")
+    parser.add_argument(
+        '--nobeam', action='store_true', default=False,
+        help="pass this argument if you don't want beam.")
 
     args = parser.parse_args()
     egun = Egun()
@@ -487,6 +491,7 @@ if __name__ == '__main__':
     egun.bias_volt = max(min(args.bias, -20), -110)  # -38 V --> 3 nC
     egun.leak_curr = min(max(0, args.leak), 20) * 1e-3  # mA
     egun.fila_ishot = args.filahot
+    egun.beam_pulse = not args.nobeam
     if args.dowhat == opts[0]:
         egun.set_fila_current(egun.fila_curr)
     elif args.dowhat == opts[1]:
