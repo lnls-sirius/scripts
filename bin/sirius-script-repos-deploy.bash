@@ -21,10 +21,10 @@ function create_tagged_repos {
 function print_header_and_inputs {
   printf_blue "Deploying Sirius Repositories\n"
   printf "\n"
+  get_password sirius desktops
   deploy_tag=$(create_deploy_tag)
   read -e -p "Enter deploy tag    : " -i "$deploy_tag" deploy_tag
   read -r -p "Enter deploy comment: " comment; echo ""
-  get_password sirius desktops
   read -r -p "Really deploy ? [yes|no]: " answer; echo ""
   if [ ! "$answer" == 'yes' ]; then
     printf_red "bailing out...\n"
