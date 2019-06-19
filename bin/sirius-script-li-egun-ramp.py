@@ -200,9 +200,9 @@ class Egun:
         self.set_hv_volt(volt)
 
     def set_hv_volt(self, val):
-        npts = 60
-        duration = 60
-        ini_val = self.pv_hv_volt_rb.value
+        npts = 20
+        duration = 60 * 10
+        ini_val = 0  # self.pv_hv_volt_rb.value
         npts = int(npts * abs(val-ini_val)/90)
         if npts <= 0:
             return
@@ -210,7 +210,9 @@ class Egun:
             self.pv_hv_volt_sp.value = val
             return
         duration = duration * abs(val-ini_val)/90
-        y = _np.linspace(ini_val, val, npts)
+        x = _np.linspace(0, 1, npts)
+        y = self._get_ramp(x, val, False)
+        # y = _np.linspace(ini_val, val, npts)
 
         t_inter = duration / (npts-1)
         print('Starting HV ramp to {0:.3f} kV.'.format(val))
@@ -218,8 +220,10 @@ class Egun:
         for i, cur in enumerate(y[1:]):
             dur = str(_timedelta(seconds=duration - i*t_inter)).split('.')[0]
             print('RemTime: {0:s}  HV: {1:.3f} kV'.format(dur, cur), end='\r')
-            _time.sleep(t_inter)
             self.pv_hv_volt_sp.value = cur
+            _time.sleep(t_inter)
+            if not self._check_ok():
+                return
         print('HV Ready!' + 40*' ')
 
     def set_fila_current(self, val):
