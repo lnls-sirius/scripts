@@ -9,6 +9,7 @@ packages:
 # epics
 - pyepics==3.3.1
 - pcaspy==0.7.2
+- pydm==1.7.1
 # plot
 - pyqtgraph==0.10.0
 - matplotlib==3.0.2
