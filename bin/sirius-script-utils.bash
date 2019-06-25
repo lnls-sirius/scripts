@@ -202,10 +202,12 @@ function get_password {
   username=$1
   hosttype=$2
   read -s -r -p "$username's password @ $hosttype: " user_passwd; echo ""
-  res=$( sshpass -p $user_passwd ssh sirius@$servnfs_hostname ls 2>&1 |grep denied)
-  if [ ! -z "$res" ]; then
-    echo "Invalid Password."
-    exit 1
+  if [ "$hosttype" == "desktops" ]; then
+    res=$( sshpass -p $user_passwd ssh sirius@$servnfs_hostname ls 2>&1 |grep denied)
+    if [ ! -z "$res" ]; then
+      echo "Invalid Password."
+      exit 1
+    fi
   fi
   printf "\n"
 }
