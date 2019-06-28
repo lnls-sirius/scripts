@@ -34,6 +34,7 @@ execute install_sip.sh
 execute install_pyqt.sh
 
 execute install_fac_deps.sh
+exectute install_timechart.sh
 
 execute check_github_ssh_key.sh
 
