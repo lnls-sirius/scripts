@@ -315,7 +315,7 @@ function cmd_repo_clone_master {
   if [ "$repo" == "mathphys" ]; then
       git clone ssh://git@github.com/lnls-fac/$repo
   elif [ "$repo" == "linac-opi" ]; then
-      git clone sirius@lnls350-linux:/home/fac_files/repo/sirius/$repo
+      git clone lnls350-linux:/home/fac_files/repo/sirius/$repo
   else
       git clone ssh://git@github.com/lnls-sirius/$repo
   fi
