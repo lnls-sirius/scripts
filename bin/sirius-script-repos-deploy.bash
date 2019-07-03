@@ -38,11 +38,6 @@ function update_servweb {
   printf "\n"
   repodir=/storage/misc/repository/control-system-constants/
   branch=master
-  # echo $servweb_hostname
-  # echo $user_passwd
-  # echo $repodir
-  # echo $branch
-  # echo $deploy_tag
   sshpass -p $user_passwd ssh sirius@$servweb_hostname "cd $repodir; git stash; git fetch --prune origin '+refs/tags/*:refs/tags/*'; git checkout $branch; git pull; git checkout $deploy_tag"
   printf "\n"
 }
