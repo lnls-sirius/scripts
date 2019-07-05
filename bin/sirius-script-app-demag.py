@@ -32,6 +32,58 @@ def _stop_now(signum, frame):
 # In order for the waveform to end at zero current, as it is desirable,
 # please choose period as multiple of time step dt;
 
+
+NEW_LI_NAMES = True
+
+
+PSConvDict = {
+    'LA-CN:H1RCPS-1': 'LI-01:PS-LensRev',
+    'LA-CN:H1MLPS-1': 'LI-01:PS-Lens-1',
+    'LA-CN:H1MLPS-2': 'LI-01:PS-Lens-2',
+    'LA-CN:H1MLPS-3': 'LI-01:PS-Lens-3',
+    'LA-CN:H1MLPS-4': 'LI-01:PS-Lens-4',
+    'LA-CN:H1SLPS-1': 'LI-01:PS-Slnd-1',
+    'LA-CN:H1SLPS-2': 'LI-01:PS-Slnd-2',
+    'LA-CN:H1SLPS-3': 'LI-01:PS-Slnd-3',
+    'LA-CN:H1SLPS-4': 'LI-01:PS-Slnd-4',
+    'LA-CN:H1SLPS-5': 'LI-01:PS-Slnd-5',
+    'LA-CN:H1SLPS-6': 'LI-01:PS-Slnd-6',
+    'LA-CN:H1SLPS-7': 'LI-01:PS-Slnd-7',
+    'LA-CN:H1SLPS-8': 'LI-01:PS-Slnd-8',
+    'LA-CN:H1SLPS-9': 'LI-01:PS-Slnd-9',
+    'LA-CN:H1SLPS-10': 'LI-01:PS-Slnd-10',
+    'LA-CN:H1SLPS-11': 'LI-01:PS-Slnd-11',
+    'LA-CN:H1SLPS-12': 'LI-01:PS-Slnd-12',
+    'LA-CN:H1SLPS-13': 'LI-01:PS-Slnd-13',
+    'LA-CN:H1SLPS-14': 'LI-Fam:PS-Slnd-14',
+    'LA-CN:H1SLPS-15': 'LI-Fam:PS-Slnd-15',
+    'LA-CN:H1SLPS-16': 'LI-Fam:PS-Slnd-16',
+    'LA-CN:H1SLPS-17': 'LI-Fam:PS-Slnd-17',
+    'LA-CN:H1SLPS-18': 'LI-Fam:PS-Slnd-18',
+    'LA-CN:H1SLPS-19': 'LI-Fam:PS-Slnd-19',
+    'LA-CN:H1SLPS-20': 'LI-Fam:PS-Slnd-20',
+    'LA-CN:H1SLPS-21': 'LI-Fam:PS-Slnd-21',
+    'LA-CN:H1SCPS-1': 'LI-01:PS-CV-1',
+    'LA-CN:H1SCPS-2': 'LI-01:PS-CH-1',
+    'LA-CN:H1SCPS-3': 'LI-01:PS-CV-2',
+    'LA-CN:H1SCPS-4': 'LI-01:PS-CH-2',
+    'LA-CN:H1LCPS-1': 'LI-01:PS-CV-3',
+    'LA-CN:H1LCPS-2': 'LI-01:PS-CH-3',
+    'LA-CN:H1LCPS-3': 'LI-01:PS-CV-4',
+    'LA-CN:H1LCPS-4': 'LI-01:PS-CH-4',
+    'LA-CN:H1LCPS-5': 'LI-01:PS-CV-5',
+    'LA-CN:H1LCPS-6': 'LI-01:PS-CH-5',
+    'LA-CN:H1LCPS-7': 'LI-01:PS-CV-6',
+    'LA-CN:H1LCPS-8': 'LI-01:PS-CH-6',
+    'LA-CN:H1LCPS-9': 'LI-01:PS-CV-7',
+    'LA-CN:H1LCPS-10': 'LI-01:PS-CH-7',
+    'LA-CN:H1FQPS-1': 'LI-Fam:PS-QF1',
+    'LA-CN:H1FQPS-2': 'LI-Fam:PS-QF2',
+    'LA-CN:H1FQPS-3': 'LI-01:PS-QF3',
+    'LA-CN:H1DQPS-1': 'LI-01:PS-QD1',
+    'LA-CN:H1DQPS-2': 'LI-01:PS-QD2',
+    'LA-CN:H1DPPS-1': 'LI-01:PS-Spect'}
+
 parms = {
     # psname           dt[s], max_amp[A], period[s], nr_cycles, tau[s], sin**2
 
@@ -60,8 +112,6 @@ parms = {
     'TB-04:PS-CH':     [0.5, 10, 24, 10, 48, False],  # 2.9 [A/s]
     'TB-04:PS-CV-1':   [0.5, 10, 24, 10, 48, False],  # 2.9 [A/s]
     'TB-04:PS-CV-2':   [0.5, 10, 24, 10, 48, False],  # 2.9 [A/s]
-
-    # --- LI ---
 
     'LA-CN:H1DPPS-1':  [0.5, 6.0, 24, 8, 48, False],
 
@@ -182,6 +232,15 @@ parms = {
 }
 
 
+def conv_li_psnames():
+    """."""
+    global parms
+    for oname, nname in PSConvDict.items():
+        data = parms[oname]
+        parms[nname] = data
+        del parms[oname]
+
+
 def gen_waveform(dt, ampl, period, nr_periods, tau, square):
     """."""
     w = 2*np.pi/period
@@ -208,7 +267,7 @@ def ps_set_sp(pv, value):
 
 def create_pv_sp(psname):
     """."""
-    if psname.startswith('LA-CN'):
+    if psname.startswith('LA-CN') or psname.startswith('LI-'):
         pv_sp = epics.PV(psname + ':seti')
     else:
         pv_sp = epics.PV(psname + ':Current-SP')
@@ -217,7 +276,10 @@ def create_pv_sp(psname):
 
 def check_egun_enabled():
     """."""
-    pv = epics.PV('egun:triggerps:enable')
+    if NEW_LI_NAMES:
+        pv = epics.PV('LI-01:EG-TriggerPS:enable')
+    else:
+        pv = epics.PV('egun:triggerps:enable')
     value = pv.get()
     return value
 
@@ -270,35 +332,27 @@ def select_psnames(psgroup):
                 psnames.append(ps)
     elif psgroup.lower() in ('li-dipole', 'li-spectrometer'):
         for ps in allps:
-            if ps.startswith('LA-CN:H1DPPS'):
+            if ps.startswith('LA-CN:H1DPPS') or ps.startswith('LI-01:PS-Spect'):
                 psnames.append(ps)
     elif psgroup.lower() in ('li-quadrupoles', ):
         for ps in allps:
-            if 'H1DQPS' in ps or 'H1FQPS' in ps:
+            if 'H1DQPS' in ps or 'H1FQPS' in ps or ('LI-' in ps and 'PS-Q' in ps):
                 psnames.append(ps)
-    elif psgroup.lower() in ('li-long-correctors', ):
+    elif psgroup.lower() in ('li-correctors', ):
         for ps in allps:
-            if 'H1LCPS' in ps:
+            if 'H1LCPS' in ps or 'HISCPS' in ps or ('LI-' in ps and 'PS-C' in ps):
                 psnames.append(ps)
     elif psgroup.lower() in ('li-magnetic-lenses', ):
         for ps in allps:
-            if 'H1MLPS' in ps:
-                psnames.append(ps)
-    elif psgroup.lower() in ('li-short-correctors', ):
-        for ps in allps:
-            if 'H1SCPS' in ps:
+            if 'H1MLPS' in ps or ('LI-' in ps and '-Lens' in ps):
                 psnames.append(ps)
     elif psgroup.lower() in ('li-solenoids', ):
         for ps in allps:
-            if 'H1SLPS' in ps:
+            if 'H1SLPS' in ps or ('LI-' in ps and '-Slnd' in ps):
                 psnames.append(ps)
     elif psgroup.lower() == 'li':
         for ps in allps:
-            if ps.startswith('LA-CN'):
-                psnames.append(ps)
-    elif psgroup.lower() == 'default':
-        for ps in allps:
-            if ps.startswith('LA-CN') or ps == 'TB-Fam:PS-B':
+            if ps.startswith('LA-CN') or ps.startswith('LI-'):
                 psnames.append(ps)
     else:
         print('Invalid ps group {}!'.format(psgroup))
@@ -361,7 +415,7 @@ def ps_rampdown(psname):
 
 def ps_cycle(psname):
     """."""
-    if psname == 'LA-CN:H1DPPS-1':
+    if psname == 'LA-CN:H1DPPS-1' or psname == 'LI-01:PS-Spect':
         if check_egun_enabled():
             print('Linac EGun pulse is enabled! Please disable it.')
             return
@@ -386,7 +440,7 @@ def ps_cycle(psname):
 
 def exec_all(psnames, target):
     """."""
-    if target == ps_cycle and 'LA-CN:H1DPPS-1' in psnames:
+    if target == ps_cycle and ('LA-CN:H1DPPS-1' in psnames or 'LI-01:PS-Spect' in psnames):
         LocalThread = Thread
         if check_egun_enabled():
             print('Linac EGun pulse is enabled! Please disable it.')
@@ -493,6 +547,10 @@ def process_argv():
 
 def run():
     """."""
+    # convert li psnames from old to new
+    if NEW_LI_NAMES:
+        conv_li_psnames()
+
     psnames, plot_flag, list_flag, rmpdown_flag = process_argv()
 
     # Define abort function
