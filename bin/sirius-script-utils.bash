@@ -37,10 +37,10 @@ bbbs=("bbb-as-dclinks-01"
       "bbb-bo-correctors-12"
       "bbb-bo-correctors-13")
 
-desktops=("lnls452-linux"
+desktops=("lnls454-linux"
+          "lnls452-linux"
           "lnls451-linux"
           "lnls449-linux"
-          "lnls454-linux"
           "lnls455-linux"
           "elp-pwrsupply")
 
@@ -55,7 +55,7 @@ repos=("scripts:master"
        "ARM:deploy-v0.32-2019-04-10"
        "C28:deploy-v0.32-2019-04-10")
 
-services_lnls452=(
+services_lnls454=(
          "sirius-ioc-tb-ma-dipoles.service"
          "sirius-ioc-tb-ma-quadrupoles.service"
          "sirius-ioc-tb-ma-correctors.service"
@@ -123,7 +123,7 @@ mirror_repos_path=/home/sirius/repos
 
 servweb_hostname=sirius-consts.lnls.br
 
-servnfs_hostname=lnls452-linux
+servnfs_hostname=lnls454-linux
 
 servnfs_repos_folder=/home/nfs-shared/repos-lnls-sirius/
 
