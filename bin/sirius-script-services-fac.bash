@@ -12,7 +12,7 @@ function print_help {
     printf "       sirius-script-services-fac.bash [--help] CMD...\n"
     printf "\n"
     printf "DESCRIPTION\n"
-    printf "       Script used to interact with services running in lnls454-linux\n"
+    printf "       Script used to interact with services running in FAC desktop\n"
     printf "\n"
     printf "       --help               print this help\n"
     printf "\n"
