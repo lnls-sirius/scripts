@@ -6,10 +6,10 @@ trap _abort SIGINT;
 
 function print_help {
     printf "NAME\n"
-    printf "       sirius-script-services-lnls454.bash - Interact with services in lnls454-linux\n"
+    printf "       sirius-script-services-fac.bash - Interact with services in lnls454-linux\n"
     printf "\n"
     printf "SINOPSIS\n"
-    printf "       sirius-script-services-lnls454.bash [--help] CMD...\n"
+    printf "       sirius-script-services-fac.bash [--help] CMD...\n"
     printf "\n"
     printf "DESCRIPTION\n"
     printf "       Script used to interact with services running in lnls454-linux\n"
@@ -32,7 +32,7 @@ function run_systemctl {
   cmd=$1
   printf_blue "Runnnig systemctl $cmd for services.\n"
   printf "\n"
-  for service in ${services_lnls454[@]}; do
+  for service in ${services_fac[@]}; do
     printf_yellow "$service...\n"
     sudo systemctl $cmd $service
     printf "\n"
@@ -47,12 +47,13 @@ function run {
     print_help
     exit
   fi
+
   host=$(hostname)
-  if [[ "$host" == "lnls454-linux" ]]; then
+  if [[ "$host" == "$servnfs_hostname" ]]; then
     run_systemctl $1
   else
-    get_password sirius lnls454-linux
-    sshpass -p $user_passwd ssh -t sirius@lnls454-linux "sudo sirius-script-services-lnls454.bash $1"
+    get_password sirius $servnfs_hostname
+    sshpass -p $user_passwd ssh -t sirius@$servnfs_hostname "sudo sirius-script-services-fac.bash $1"
   fi
 }
 

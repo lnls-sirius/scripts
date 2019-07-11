@@ -55,7 +55,7 @@ repos=("scripts:master"
        "ARM:deploy-v0.32-2019-04-10"
        "C28:deploy-v0.32-2019-04-10")
 
-services_lnls454=(
+services_fac=(
          "sirius-ioc-tb-ma-dipoles.service"
          "sirius-ioc-tb-ma-quadrupoles.service"
          "sirius-ioc-tb-ma-correctors.service"
