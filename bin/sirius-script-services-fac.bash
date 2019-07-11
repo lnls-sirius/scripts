@@ -6,7 +6,7 @@ trap _abort SIGINT;
 
 function print_help {
     printf "NAME\n"
-    printf "       sirius-script-services-fac.bash - Interact with services in lnls454-linux\n"
+    printf "       sirius-script-services-fac.bash - Interact with services in FAC desktop\n"
     printf "\n"
     printf "SINOPSIS\n"
     printf "       sirius-script-services-fac.bash [--help] CMD...\n"
