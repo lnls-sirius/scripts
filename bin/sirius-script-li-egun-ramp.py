@@ -463,10 +463,10 @@ if __name__ == '__main__':
         '-v', '--volt', type=float, default=90,
         help='Which Voltage to put in the HV in kV. (90 A)')
     parser.add_argument(
-        '-b', '--bias', type=float, default=-38,
+        '-b', '--bias', type=float, default=-33,
         help='Which Voltage to put in Bias in V. (-38 A)')
     parser.add_argument(
-        '-l', '--leak', type=float, default=8,
+        '-l', '--leak', type=float, default=20,
         help='Maximum Leak current allowed in uA. (8 uA)')
     parser.add_argument(
         '-p', '--pressure', type=float, default=8e-9,
