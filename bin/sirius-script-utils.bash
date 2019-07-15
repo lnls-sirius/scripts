@@ -127,6 +127,8 @@ servnfs_hostname=lnls454-linux
 
 servnfs_repos_folder=/home/nfs-shared/repos-lnls-sirius/
 
+serverb_repodir=/storage/misc/repository/control-system-constants/
+
 
 # --- aux functions ---
 
@@ -222,6 +224,39 @@ function check_repo_install {
 function create_deploy_tag {
   timestamp=$(get_timestamp)
   echo "deploy-"$timestamp"_"$USER"_"$LINUX_HOSTNAME
+}
+
+function update_servweb {
+  printf_green "Update servweb ($servweb_hostname)\n"
+  printf "\n"
+  branch=master
+  sshpass -p $user_passwd ssh sirius@$servweb_hostname "cd $servweb_repodir; git stash; git fetch --prune origin '+refs/tags/*:refs/tags/*'; git checkout $branch; git pull; git checkout $deploy_tag"
+  printf "\n"
+}
+
+function checkout_tagged_repos_nfs_server {
+  printf_green "Checkout tagged repos in nfs server ($servnfs_hostname)\n"
+  printf "\n"
+  sshpass -p $user_passwd ssh sirius@$servnfs_hostname "cd $servnfs_repos_folder/; echo '$deploy_tag:  $comment' >> deploy.log"
+  for repo in "${repos[@]}"; do
+    reponame=$(echo $repo | cut -d":" -f1)
+    branch=$(echo $repo | cut -d":" -f2)
+    printf_yellow "[$repo]\n"
+    sshpass -p $user_passwd ssh sirius@$servnfs_hostname "cd $servnfs_repos_folder/$reponame; rm -rf dist build */*.egg-info *.egg-info"
+    sshpass -p $user_passwd ssh sirius@$servnfs_hostname "cd $servnfs_repos_folder/$reponame; git stash; git fetch --prune origin '+refs/tags/*:refs/tags/*'; git checkout $branch; git pull; git checkout $deploy_tag"
+    printf "\n"
+  done
+}
+
+function deploy_desktops {
+  printf_green "Deploying in desktops\n"
+  printf "\n"
+  for desktop in "${desktops[@]}"; do
+    printf_blue "[$desktop]\n"
+    sshpass -p $user_passwd ssh sirius@"$desktop" "sudo sirius-script-repos-install-update.bash"
+    sshpass -p $user_passwd ssh sirius@"$desktop" "sudo sirius-script-repos-install.bash"
+    printf "\n"
+  done
 }
 
 # --- command functions  ---
