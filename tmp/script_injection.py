@@ -42,21 +42,20 @@ class PSOInjection(PSO):
 
         self._upper_limits = self._limits
         self._lower_limits = - self._upper_limits
-        self._max_delta = self._upper_limits
-        self._min_delta = - self._max_delta
 
         self._p_bpm = 1.0
         self._p_orb = 1.0e3
+
+        self._nswarm = 10 + 2 * int(np.sqrt(len(self._upper_limits)))
 
     def calc_merit_function(self):
         f_out = np.zeros(self._nswarm)
         ind_bpm = np.arange(1, len(self.diag[-1].value) + 1)
 
-        for i in range(0, self._nswarm):
+        for i in range(self._nswarm):
             change = self.reference + self._position[i, :]
-            # change = self._set_lim(change)
 
-            for k in range(0, len(self.corrs)):
+            for k in range(len(self.corrs)):
                 self.corrs[k].value = change[k]
 
             _time.sleep(self._wait * 0.5 + 1)
