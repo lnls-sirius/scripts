@@ -13,7 +13,8 @@ REPOSSCRIPTS = \
 		sirius-script-repos-install-update.bash \
 		sirius-script-repos-install.bash \
 		sirius-script-repos-deletetags.bash \
-		sirius-script-repos-deploy.bash
+		sirius-script-repos-deploy.bash \
+		sirius-script-repos-deploytag.bash
 
 BBBSCRIPTS = \
 		sirius-script-bbb-ping.bash \
