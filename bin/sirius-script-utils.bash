@@ -127,7 +127,7 @@ servnfs_hostname=lnls454-linux
 
 servnfs_repos_folder=/home/nfs-shared/repos-lnls-sirius/
 
-serverb_repodir=/storage/misc/repository/control-system-constants/
+servweb_repodir=/storage/misc/repository/control-system-constants/
 
 
 # --- aux functions ---
