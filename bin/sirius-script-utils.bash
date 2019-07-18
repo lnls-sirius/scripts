@@ -90,8 +90,6 @@ services_fac=(
          "sirius-ioc-tb-pm-injsept.service"
          "sirius-ioc-bo-pm-injkckr.service"
 
-
-         "sirius-ioc-as-ti-evts.service"
          "sirius-ioc-as-ti-trig.service"
          "sirius-ioc-li-ti-trig.service"
          "sirius-ioc-tb-ti-trig.service"
