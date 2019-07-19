@@ -1,19 +1,19 @@
 #!/usr/bin/env bash
 
-bbbs=("bbb-as-dclinks-01"
-      "bbb-as-dclinks-02"
-      "bbb-as-dclinks-03"
-      "bbb-as-dclinks-04"
-      "bbb-as-dclinks-05"
-      "bbb-as-dclinks-06"
-      "bbb-as-dclinks-07"
-      "bbb-as-dclinks-08"
-      "bbb-as-dclinks-09"
-      "bbb-as-dclinks-10"
-      "bbb-as-dclinks-11"
-      "bbb-as-dclinks-12"
-      "bbb-as-dclinks-13"
-      "bbb-as-dclinks-14"
+bbbs=("bbb-dclink-tb-ts"
+      "bbb-dclink-bo-correctors-01"
+      "bbb-dclink-bo-correctors-02"
+      "bbb-dclink-bo-correctors-03"
+      "bbb-dclink-bo-correctors-04"
+      "bbb-dclink-bo-correctors-05"
+      "bbb-dclink-bo-correctors-06"
+      "bbb-dclink-bo-correctors-07"
+      "bbb-dclink-bo-correctors-08"
+      "bbb-dclink-bo-correctors-09"
+      "bbb-dclink-bo-correctors-10"
+      "bbb-dclink-bo-correctors-11"
+      "bbb-dclink-bo-correctors-12"
+      "bbb-dclink-bo-correctors-13"
       "bbb-tb-dipoles"
       "bbb-tb-correctors"
       "bbb-tb-quadrupoles"
@@ -38,7 +38,7 @@ bbbs=("bbb-as-dclinks-01"
       "bbb-bo-correctors-13")
 
 desktops=("lnls454-linux"
-          "lnls452-linux"
+          #"lnls452-linux"
           "lnls451-linux"
           "lnls449-linux"
           "lnls455-linux"
@@ -52,8 +52,9 @@ repos=("scripts:master"
        "hla:master"
        "linac-opi:master"
        "bbb-daemon:master"
-       "ARM:deploy-v0.32-2019-04-10"
-       "C28:deploy-v0.32-2019-04-10")
+       #"ARM:deploy-v0.32-2019-04-10"
+       #"C28:deploy-v0.32-2019-04-10"
+       )
 
 services_fac=(
          "sirius-ioc-tb-ma-dipoles.service"
@@ -90,8 +91,6 @@ services_fac=(
          "sirius-ioc-tb-pm-injsept.service"
          "sirius-ioc-bo-pm-injkckr.service"
 
-
-         "sirius-ioc-as-ti-evts.service"
          "sirius-ioc-as-ti-trig.service"
          "sirius-ioc-li-ti-trig.service"
          "sirius-ioc-tb-ti-trig.service"
@@ -121,13 +120,15 @@ services_fac=(
 
 mirror_repos_path=/home/sirius/repos
 
-servweb_hostname=sirius-consts.lnls.br
+#servweb_hostname=sirius-consts.lnls.br
+servweb_hostname=10.0.38.59
 
 servnfs_hostname=lnls454-linux
 
 servnfs_repos_folder=/home/nfs-shared/repos-lnls-sirius/
 
-servweb_repodir=/storage/misc/repository/control-system-constants/
+#servweb_repodir=/storage/misc/repository/control-system-constants/
+servweb_repodir=/home/con-srv/LA-disk0/misc-brick/repository/control-system-constants/
 
 
 # --- aux functions ---
