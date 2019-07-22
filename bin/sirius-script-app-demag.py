@@ -113,67 +113,58 @@ parms = {
     'TB-04:PS-CV-1':   [0.5, 10, 24, 10, 48, False],  # 2.9 [A/s]
     'TB-04:PS-CV-2':   [0.5, 10, 24, 10, 48, False],  # 2.9 [A/s]
 
-    # --- LI ---
+    'LA-CN:H1DPPS-1':  [0.5, 6.0, 24, 8, 48, False],
 
-    # SPECTROMETER
-    'LI-01:PS-Spect':  [0.5, 6.0, 24, 8, 48, False],
+    'LA-CN:H1DQPS-1':  [0.5, 5, 24, 8, 48, False],
+    'LA-CN:H1DQPS-2':  [0.5, 5, 24, 8, 48, False],
+    'LA-CN:H1FQPS-1':  [0.5, 5, 24, 8, 48, False],
+    'LA-CN:H1FQPS-2':  [0.5, 5, 24, 8, 48, False],
+    'LA-CN:H1FQPS-3':  [0.5, 5, 24, 8, 48, False],
 
-    # QUADRUPOLES
-    'LI-01:PS-QD1':   [0.5, 5, 24, 8, 48, False],
-    'LI-01:PS-QD2':   [0.5, 5, 24, 8, 48, False],
-    'LI-Fam:PS-QF1':  [0.5, 5, 24, 8, 48, False],
-    'LI-Fam:PS-QF2':  [0.5, 5, 24, 8, 48, False],
-    'LI-01:PS-QF3':  [0.5, 5, 24, 8, 48, False],
+    'LA-CN:H1LCPS-1':  [0.5, 1.5, 24, 8, 48, False],
+    'LA-CN:H1LCPS-2':  [0.5, 1.5, 24, 8, 48, False],
+    'LA-CN:H1LCPS-3':  [0.5, 1.5, 24, 8, 48, False],
+    'LA-CN:H1LCPS-4':  [0.5, 1.5, 24, 8, 48, False],
+    'LA-CN:H1LCPS-5':  [0.5, 1.5, 24, 8, 48, False],
+    'LA-CN:H1LCPS-6':  [0.5, 1.5, 24, 8, 48, False],
+    'LA-CN:H1LCPS-7':  [0.5, 1.5, 24, 8, 48, False],
+    'LA-CN:H1LCPS-8':  [0.5, 1.5, 24, 8, 48, False],
+    'LA-CN:H1LCPS-9':  [0.5, 1.5, 24, 8, 48, False],
+    'LA-CN:H1LCPS-10': [0.5, 1.5, 24, 8, 48, False],
 
-    # LONG CORRECTORS
-    'LI-01:PS-CV-3': [0.5, 1.5, 24, 8, 48, False],
-    'LI-01:PS-CH-3': [0.5, 1.5, 24, 8, 48, False],
-    'LI-01:PS-CV-4': [0.5, 1.5, 24, 8, 48, False],
-    'LI-01:PS-CH-4': [0.5, 1.5, 24, 8, 48, False],
-    'LI-01:PS-CV-5': [0.5, 1.5, 24, 8, 48, False],
-    'LI-01:PS-CH-5': [0.5, 1.5, 24, 8, 48, False],
-    'LI-01:PS-CV-6': [0.5, 1.5, 24, 8, 48, False],
-    'LI-01:PS-CH-6': [0.5, 1.5, 24, 8, 48, False],
-    'LI-01:PS-CV-7': [0.5, 1.5, 24, 8, 48, False],
-    'LI-01:PS-CH-7': [0.5, 1.5, 24, 8, 48, False],
+    'LA-CN:H1MLPS-1':  [0.5, 5, 24, 8, 48, False],
+    'LA-CN:H1MLPS-2':  [0.5, 5, 24, 8, 48, False],
+    'LA-CN:H1MLPS-3':  [0.5, 5, 24, 8, 48, False],
+    'LA-CN:H1MLPS-4':  [0.5, 5, 24, 8, 48, False],
 
-    # LENSES
-    'LI-01:PS-Lens-1':  [0.5, 5, 24, 8, 48, False],
-    'LI-01:PS-Lens-2':  [0.5, 5, 24, 8, 48, False],
-    'LI-01:PS-Lens-3':  [0.5, 5, 24, 8, 48, False],
-    'LI-01:PS-Lens-4':  [0.5, 5, 24, 8, 48, False],
+    'LA-CN:H1RCPS-1':  [0.5, 5, 24, 8, 48, False],
 
-    # REVERSE LENS
-    'LI-01:PS-LensRev':  [0.5, 5, 24, 8, 48, False],
+    'LA-CN:H1SCPS-1':  [0.5, 0.25, 24, 8, 48, False],
+    'LA-CN:H1SCPS-2':  [0.5, 0.25, 24, 8, 48, False],
+    'LA-CN:H1SCPS-3':  [0.5, 0.25, 24, 8, 48, False],
+    'LA-CN:H1SCPS-4':  [0.5, 0.25, 24, 8, 48, False],
 
-    # SHORT CORRECTORS
-    'LI-01:PS-CV-1':  [0.5, 0.25, 24, 8, 48, False],
-    'LI-01:PS-CH-1':  [0.5, 0.25, 24, 8, 48, False],
-    'LI-01:PS-CV-2':  [0.5, 0.25, 24, 8, 48, False],
-    'LI-01:PS-CH-2':  [0.5, 0.25, 24, 8, 48, False],
-
-    # SOLENOIDS
-    'LI-01:PS-Slnd-1':   [0.5, 35, 38, 5, 57, True],
-    'LI-01:PS-Slnd-2':   [0.5, 35, 38, 5, 57, True],
-    'LI-01:PS-Slnd-3':   [0.5, 35, 38, 5, 57, True],
-    'LI-01:PS-Slnd-4':   [0.5, 35, 38, 5, 57, True],
-    'LI-01:PS-Slnd-5':   [0.5, 35, 38, 5, 57, True],
-    'LI-01:PS-Slnd-6':   [0.5, 35, 38, 5, 57, True],
-    'LI-01:PS-Slnd-7':   [0.5, 35, 38, 5, 57, True],
-    'LI-01:PS-Slnd-8':   [0.5, 35, 38, 5, 57, True],
-    'LI-01:PS-Slnd-9':   [0.5, 35, 38, 5, 57, True],
-    'LI-01:PS-Slnd-10':  [0.5, 35, 38, 5, 57, True],
-    'LI-01:PS-Slnd-11':  [0.5, 35, 38, 5, 57, True],
-    'LI-01:PS-Slnd-12':  [0.5, 35, 38, 5, 57, True],
-    'LI-01:PS-Slnd-13':  [0.5, 35, 38, 5, 57, True],
-    'LI-Fam:PS-Slnd-14': [0.5, 35, 38, 5, 57, True],
-    'LI-Fam:PS-Slnd-15': [0.5, 35, 38, 5, 57, True],
-    'LI-Fam:PS-Slnd-16': [0.5, 35, 38, 5, 57, True],
-    'LI-Fam:PS-Slnd-17': [0.5, 35, 38, 5, 57, True],
-    'LI-Fam:PS-Slnd-18': [0.5, 35, 38, 5, 57, True],
-    'LI-Fam:PS-Slnd-19': [0.5, 35, 38, 5, 57, True],
-    'LI-Fam:PS-Slnd-20': [0.5, 35, 38, 5, 57, True],
-    'LI-Fam:PS-Slnd-21': [0.5, 35, 38, 5, 57, True],
+    'LA-CN:H1SLPS-1':  [0.5, 35, 38, 5, 57, True],
+    'LA-CN:H1SLPS-2':  [0.5, 35, 38, 5, 57, True],
+    'LA-CN:H1SLPS-3':  [0.5, 35, 38, 5, 57, True],
+    'LA-CN:H1SLPS-4':  [0.5, 35, 38, 5, 57, True],
+    'LA-CN:H1SLPS-5':  [0.5, 35, 38, 5, 57, True],
+    'LA-CN:H1SLPS-6':  [0.5, 35, 38, 5, 57, True],
+    'LA-CN:H1SLPS-7':  [0.5, 35, 38, 5, 57, True],
+    'LA-CN:H1SLPS-8':  [0.5, 35, 38, 5, 57, True],
+    'LA-CN:H1SLPS-9':  [0.5, 35, 38, 5, 57, True],
+    'LA-CN:H1SLPS-10': [0.5, 35, 38, 5, 57, True],
+    'LA-CN:H1SLPS-11': [0.5, 35, 38, 5, 57, True],
+    'LA-CN:H1SLPS-12': [0.5, 35, 38, 5, 57, True],
+    'LA-CN:H1SLPS-13': [0.5, 35, 38, 5, 57, True],
+    'LA-CN:H1SLPS-14': [0.5, 35, 38, 5, 57, True],
+    'LA-CN:H1SLPS-15': [0.5, 35, 38, 5, 57, True],
+    'LA-CN:H1SLPS-16': [0.5, 35, 38, 5, 57, True],
+    'LA-CN:H1SLPS-17': [0.5, 35, 38, 5, 57, True],
+    'LA-CN:H1SLPS-18': [0.5, 35, 38, 5, 57, True],
+    'LA-CN:H1SLPS-19': [0.5, 35, 38, 5, 57, True],
+    'LA-CN:H1SLPS-20': [0.5, 35, 38, 5, 57, True],
+    'LA-CN:H1SLPS-21': [0.5, 35, 38, 5, 57, True],
 
     # --- BO ---
 
@@ -276,7 +267,7 @@ def ps_set_sp(pv, value):
 
 def create_pv_sp(psname):
     """."""
-    if psname.startswith('LI-'):
+    if psname.startswith('LA-CN') or psname.startswith('LI-'):
         pv_sp = epics.PV(psname + ':seti')
     else:
         pv_sp = epics.PV(psname + ':Current-SP')
@@ -285,7 +276,10 @@ def create_pv_sp(psname):
 
 def check_egun_enabled():
     """."""
-    pv = epics.PV('LI-01:EG-TriggerPS:enable')
+    if NEW_LI_NAMES:
+        pv = epics.PV('LI-01:EG-TriggerPS:enable')
+    else:
+        pv = epics.PV('egun:triggerps:enable')
     value = pv.get()
     return value
 
@@ -338,40 +332,27 @@ def select_psnames(psgroup):
                 psnames.append(ps)
     elif psgroup.lower() in ('li-dipole', 'li-spectrometer'):
         for ps in allps:
-            if ps.startswith('LI-01:PS-Spect'):
+            if ps.startswith('LA-CN:H1DPPS') or ps.startswith('LI-01:PS-Spect'):
                 psnames.append(ps)
     elif psgroup.lower() in ('li-quadrupoles', ):
         for ps in allps:
-            if ps.startswith('LI-'):
-                if 'QD' in ps or 'QF' in ps:
-                    psnames.append(ps)
-    elif psgroup.lower() in ('li-long-correctors', ):
+            if 'H1DQPS' in ps or 'H1FQPS' in ps or ('LI-' in ps and 'PS-Q' in ps):
+                psnames.append(ps)
+    elif psgroup.lower() in ('li-correctors', ):
         for ps in allps:
-            if ps.startswith('LI-'):
-                if 'CH' in ps or 'CV' in ps:
-                    if '-1' not in ps and '-2' not in ps:
-                        psnames.append(ps)
+            if 'H1LCPS' in ps or 'HISCPS' in ps or ('LI-' in ps and 'PS-C' in ps):
+                psnames.append(ps)
     elif psgroup.lower() in ('li-magnetic-lenses', ):
         for ps in allps:
-            if 'Lens-' in ps:
+            if 'H1MLPS' in ps or ('LI-' in ps and '-Lens' in ps):
                 psnames.append(ps)
-    elif psgroup.lower() in ('li-short-correctors', ):
-        for ps in allps:
-            if ps.startswith('LI-'):
-                if 'CH' in ps or 'CV' in ps:
-                    if '-1' in ps or '-2' in ps:
-                        psnames.append(ps)
     elif psgroup.lower() in ('li-solenoids', ):
         for ps in allps:
-            if 'Slnd' in ps:
+            if 'H1SLPS' in ps or ('LI-' in ps and '-Slnd' in ps):
                 psnames.append(ps)
     elif psgroup.lower() == 'li':
         for ps in allps:
-            if ps.startswith('LI-'):
-                psnames.append(ps)
-    elif psgroup.lower() == 'default':
-        for ps in allps:
-            if ps.startswith('LI-') or ps == 'TB-Fam:PS-B':
+            if ps.startswith('LA-CN') or ps.startswith('LI-'):
                 psnames.append(ps)
     else:
         print('Invalid ps group {}!'.format(psgroup))
@@ -434,7 +415,7 @@ def ps_rampdown(psname):
 
 def ps_cycle(psname):
     """."""
-    if psname == 'LI-01:PS-Spect':
+    if psname == 'LA-CN:H1DPPS-1' or psname == 'LI-01:PS-Spect':
         if check_egun_enabled():
             print('Linac EGun pulse is enabled! Please disable it.')
             return
@@ -459,7 +440,7 @@ def ps_cycle(psname):
 
 def exec_all(psnames, target):
     """."""
-    if target == ps_cycle and 'LI-01:PS-Spect' in psnames:
+    if target == ps_cycle and ('LA-CN:H1DPPS-1' in psnames or 'LI-01:PS-Spect' in psnames):
         LocalThread = Thread
         if check_egun_enabled():
             print('Linac EGun pulse is enabled! Please disable it.')
