@@ -1,19 +1,19 @@
 #!/usr/bin/env bash
 
-bbbs=("bbb-as-dclinks-01"
-      "bbb-as-dclinks-02"
-      "bbb-as-dclinks-03"
-      "bbb-as-dclinks-04"
-      "bbb-as-dclinks-05"
-      "bbb-as-dclinks-06"
-      "bbb-as-dclinks-07"
-      "bbb-as-dclinks-08"
-      "bbb-as-dclinks-09"
-      "bbb-as-dclinks-10"
-      "bbb-as-dclinks-11"
-      "bbb-as-dclinks-12"
-      "bbb-as-dclinks-13"
-      "bbb-as-dclinks-14"
+bbbs=("bbb-dclink-tb-ts"
+      "bbb-dclink-bo-correctors-01"
+      "bbb-dclink-bo-correctors-02"
+      "bbb-dclink-bo-correctors-03"
+      "bbb-dclink-bo-correctors-04"
+      "bbb-dclink-bo-correctors-05"
+      "bbb-dclink-bo-correctors-06"
+      "bbb-dclink-bo-correctors-07"
+      "bbb-dclink-bo-correctors-08"
+      "bbb-dclink-bo-correctors-09"
+      "bbb-dclink-bo-correctors-10"
+      "bbb-dclink-bo-correctors-11"
+      "bbb-dclink-bo-correctors-12"
+      "bbb-dclink-bo-correctors-13"
       "bbb-tb-dipoles"
       "bbb-tb-correctors"
       "bbb-tb-quadrupoles"
@@ -37,10 +37,10 @@ bbbs=("bbb-as-dclinks-01"
       "bbb-bo-correctors-12"
       "bbb-bo-correctors-13")
 
-desktops=("lnls452-linux"
+desktops=("lnls454-linux"
+          #"lnls452-linux"
           "lnls451-linux"
           "lnls449-linux"
-          "lnls454-linux"
           "lnls455-linux"
           "elp-pwrsupply")
 
@@ -52,10 +52,11 @@ repos=("scripts:master"
        "hla:master"
        "linac-opi:master"
        "bbb-daemon:master"
-       "ARM:deploy-v0.32-2019-04-10"
-       "C28:deploy-v0.32-2019-04-10")
+       #"ARM:deploy-v0.32-2019-04-10"
+       #"C28:deploy-v0.32-2019-04-10"
+       )
 
-services_lnls452=(
+services_fac=(
          "sirius-ioc-tb-ma-dipoles.service"
          "sirius-ioc-tb-ma-quadrupoles.service"
          "sirius-ioc-tb-ma-correctors.service"
@@ -90,8 +91,6 @@ services_lnls452=(
          "sirius-ioc-tb-pm-injsept.service"
          "sirius-ioc-bo-pm-injkckr.service"
 
-
-         "sirius-ioc-as-ti-evts.service"
          "sirius-ioc-as-ti-trig.service"
          "sirius-ioc-li-ti-trig.service"
          "sirius-ioc-tb-ti-trig.service"
@@ -121,11 +120,15 @@ services_lnls452=(
 
 mirror_repos_path=/home/sirius/repos
 
-servweb_hostname=sirius-consts.lnls.br
+#servweb_hostname=sirius-consts.lnls.br
+servweb_hostname=10.0.38.59
 
-servnfs_hostname=lnls452-linux
+servnfs_hostname=lnls454-linux
 
 servnfs_repos_folder=/home/nfs-shared/repos-lnls-sirius/
+
+#servweb_repodir=/storage/misc/repository/control-system-constants/
+servweb_repodir=/home/con-srv/LA-disk0/misc-brick/repository/control-system-constants/
 
 
 # --- aux functions ---
@@ -222,6 +225,39 @@ function check_repo_install {
 function create_deploy_tag {
   timestamp=$(get_timestamp)
   echo "deploy-"$timestamp"_"$USER"_"$LINUX_HOSTNAME
+}
+
+function update_servweb {
+  printf_green "Update servweb ($servweb_hostname)\n"
+  printf "\n"
+  branch=master
+  sshpass -p $user_passwd ssh sirius@$servweb_hostname "cd $servweb_repodir; git stash; git fetch --prune origin '+refs/tags/*:refs/tags/*'; git checkout $branch; git pull; git checkout $deploy_tag"
+  printf "\n"
+}
+
+function checkout_tagged_repos_nfs_server {
+  printf_green "Checkout tagged repos in nfs server ($servnfs_hostname)\n"
+  printf "\n"
+  sshpass -p $user_passwd ssh sirius@$servnfs_hostname "cd $servnfs_repos_folder/; echo '$deploy_tag:  $comment' >> deploy.log"
+  for repo in "${repos[@]}"; do
+    reponame=$(echo $repo | cut -d":" -f1)
+    branch=$(echo $repo | cut -d":" -f2)
+    printf_yellow "[$repo]\n"
+    sshpass -p $user_passwd ssh sirius@$servnfs_hostname "cd $servnfs_repos_folder/$reponame; rm -rf dist build */*.egg-info *.egg-info"
+    sshpass -p $user_passwd ssh sirius@$servnfs_hostname "cd $servnfs_repos_folder/$reponame; git stash; git fetch --prune origin '+refs/tags/*:refs/tags/*'; git checkout $branch; git pull; git checkout $deploy_tag"
+    printf "\n"
+  done
+}
+
+function deploy_desktops {
+  printf_green "Deploying in desktops\n"
+  printf "\n"
+  for desktop in "${desktops[@]}"; do
+    printf_blue "[$desktop]\n"
+    sshpass -p $user_passwd ssh sirius@"$desktop" "sudo sirius-script-repos-install-update.bash"
+    sshpass -p $user_passwd ssh sirius@"$desktop" "sudo sirius-script-repos-install.bash"
+    printf "\n"
+  done
 }
 
 # --- command functions  ---
