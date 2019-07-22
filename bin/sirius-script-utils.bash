@@ -186,7 +186,7 @@ function get_tmpdir {
 function print_bbb_line {
   bbb=$1
   ip=$2
-  printf "%22s %16s" $bbb "($ip) ... "
+  printf "%27s %16s" $bbb "($ip) ... "
 }
 
 function print_header {
