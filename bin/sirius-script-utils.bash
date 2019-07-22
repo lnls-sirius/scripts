@@ -38,7 +38,7 @@ bbbs=("bbb-dclink-tb-ts"
       "bbb-bo-correctors-13")
 
 desktops=("lnls454-linux"
-          "lnls452-linux"
+          #"lnls452-linux"
           "lnls451-linux"
           "lnls449-linux"
           "lnls455-linux"
@@ -52,8 +52,9 @@ repos=("scripts:master"
        "hla:master"
        "linac-opi:master"
        "bbb-daemon:master"
-       "ARM:deploy-v0.32-2019-04-10"
-       "C28:deploy-v0.32-2019-04-10")
+       #"ARM:deploy-v0.32-2019-04-10"
+       #"C28:deploy-v0.32-2019-04-10"
+       )
 
 services_fac=(
          "sirius-ioc-tb-ma-dipoles.service"
@@ -119,13 +120,15 @@ services_fac=(
 
 mirror_repos_path=/home/sirius/repos
 
-servweb_hostname=sirius-consts.lnls.br
+#servweb_hostname=sirius-consts.lnls.br
+servweb_hostname=10.0.38.59
 
 servnfs_hostname=lnls454-linux
 
 servnfs_repos_folder=/home/nfs-shared/repos-lnls-sirius/
 
-servweb_repodir=/storage/misc/repository/control-system-constants/
+#servweb_repodir=/storage/misc/repository/control-system-constants/
+servweb_repodir=/home/con-srv/LA-disk0/misc-brick/repository/control-system-constants/
 
 
 # --- aux functions ---
