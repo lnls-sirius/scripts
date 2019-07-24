@@ -1,0 +1,4 @@
+/home/opi                          -fstype=nfs,ro 10.128.1.3:/home/sirius
+/home/sirius/repos                 -fstype=nfs,ro 10.128.254.205:/home/nfs-shared/repos-lnls-sirius
+/home/sirius/mounts/lost-and-found -fstype=nfs,rw 10.128.254.205:/home/nfs-shared/lost-and-found
+/home/sirius/mounts/screens-iocs   -fstype=nfs,rw 10.128.254.205:/home/nfs-shared/screens-iocs
