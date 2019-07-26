@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 bbbs=(
-      "bbb-dclinks-tbts"
+      "bbb-as-dclinks-tbts"
       "bbb-as-dclink-ia01"
       "bbb-as-dclink-ia02"
       "bbb-as-dclink-ia04"
