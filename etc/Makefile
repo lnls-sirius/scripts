@@ -32,3 +32,13 @@ install-bbb: uninstall
 	mkdir -p $(DEST_DIR)
 	cp $(SCRIPTS) $(DEST_DIR)
 	ln -sf $(DEST_DIR)/bashrc-sirius-bbb-facuser /home/fac/.bashrc; chown fac.fac /home/fac/.bashrc
+
+install-autofs:
+	apt-get install autofs
+	cp -f autofs-config/auto.master /etc/auto.master
+	cp -f autofs-config/auto.sirius /etc/auto.sirius
+	cp -f autofs-config/autofs.conf /etc/autofs.conf
+
+	systemctl enable  autofs
+	systemctl restart autofs
+
