@@ -77,7 +77,7 @@ services_ioc_ps=(
   "sirius-ioc-as-ps-dclink-ia20.service"
   "sirius-ioc-tb-ps-dipoles.service"
   "sirius-ioc-tb-ps-quadrupoles.service"
-  "sirius-ioc-tb-ps-sextupoles.service"
+  "sirius-ioc-tb-ps-correctors.service"
   "sirius-ioc-bo-ps-dipole-1.service"
   "sirius-ioc-bo-ps-dipole-2.service"
   "sirius-ioc-bo-ps-quadrupole-qf.service"
