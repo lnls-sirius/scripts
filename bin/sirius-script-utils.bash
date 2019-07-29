@@ -53,6 +53,7 @@ repos=(
   "control-system-constants:master"
   "dev-packages:master"
   "machine-applications:master"
+  "eth-bridge-pru-serial485:master"
   "hla:master"
   "linac-opi:master"
   "bbb-daemon:master"
@@ -412,6 +413,10 @@ function cmd_repo_install {
     ./setup.py install 1> ../../log-install-$repo.stdout 2> ../../log-install-$repo.stderr
   elif [ "$repo" == "machine-applications" ]; then
     make install 1> ../log-install-$repo.stdout 2> ../log-install-$repo.stderr
+  elif [ "$repo" == "eth-bridge-pru-serial485" ]; then
+    # to avoid generating unnecessary stderr content about __file__ variable
+    cd ./client
+    ./setup.py install 1> ../../log-install-$repo.stdout 2> ../../log-install-$repo.stderr
   elif [ "$repo" == "pydm" ]; then
     # to avoid generating unnecessary stderr content about __file__ variable
     sed -i "s/license='BSD',/license='BSD',\n    zip_safe=False,/g" setup.py
