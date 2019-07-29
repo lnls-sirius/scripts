@@ -6,13 +6,13 @@ trap _abort SIGINT;
 
 function print_help {
     printf "NAME\n"
-    printf "       sirius-script-services-fac.bash - Interact with services in FAC desktop\n"
+    printf "       sirius-script-services-ioc-fac.bash - Interact with FAC IOC services\n"
     printf "\n"
     printf "SINOPSIS\n"
-    printf "       sirius-script-services-fac.bash [--help] CMD...\n"
+    printf "       sirius-script-services-ioc-fac.bash [--help] CMD...\n"
     printf "\n"
     printf "DESCRIPTION\n"
-    printf "       Script used to interact with services running in FAC desktop\n"
+    printf "       Script used to interact with FAC IOC services\n"
     printf "\n"
     printf "       --help               print this help\n"
     printf "\n"
@@ -32,7 +32,7 @@ function run_systemctl {
   cmd=$1
   printf_blue "Runnnig systemctl $cmd for services.\n"
   printf "\n"
-  for service in ${services_fac[@]}; do
+  for service in ${services_ioc_fac[@]}; do
     printf_yellow "$service...\n"
     sudo systemctl $cmd $service
     printf "\n"
@@ -49,11 +49,11 @@ function run {
   fi
 
   host=$(hostname)
-  if [[ "$host" == "$servnfs_hostname" ]]; then
+  if [[ "$host" == "$server_services_ioc_fac" ]]; then
     run_systemctl $1
   else
-    get_password sirius $servnfs_hostname
-    sshpass -p $user_passwd ssh -t sirius@$servnfs_hostname "sudo sirius-script-services-fac.bash $1"
+    get_password sirius $server_services_ioc_fac
+    sshpass -p $user_passwd ssh -t sirius@$server_services_ioc_fac "sudo sirius-script-services-ioc-fac.bash $1"
   fi
 }
 

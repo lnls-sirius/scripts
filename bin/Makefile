@@ -4,7 +4,10 @@ DEST_DIR = /usr/local/bin
 GENERALSCRIPTS = \
 		sirius-script-utils.bash \
 		sirius-script-app-demag.py \
-		sirius-script-services-fac.bash \
+		sirius-script-services-ioc-fac.bash \
+		sirius-script-services-ioc-ps.bash \
+		sirius-script-services-ioc-ma.bash \
+		sirius-script-services-ioc-li-ps.bash \
 		sirius-script-ps-firmware-version.py \
 		sirius-script-li-egun-ramp.py
 
