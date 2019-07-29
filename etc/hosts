@@ -58,11 +58,11 @@ ff02::2 ip6-allrouters
 #10.0.38.39   sirius-dekstop5
 
 # --- linacopi1 --- MAC 40:a8:f0:5f:25:06
-10.128.1.35    linacopi1
-#10.0.38.40    sirius-linacopi1
+#10.128.254.    linacopi1
 
 # --- linacopi2 --- MAC 40:a8:f0:5f:25:10
-10.128.1.36    linacopi2
+10.128.254.206 linac-opi2
+
 
 #10.0.38.20     lnls209-linux linac-ctrl  # HWaddr ac:16:2d:34:6a:43 (also in Linac control network)
 #10.0.38.24     lnls208-linux linac-qg    # HWaddr ac:16:2d:34:c8:f3 (in our qg)
@@ -75,16 +75,8 @@ ff02::2 ip6-allrouters
 10.0.7.55      sirius-ns.lnls.br naming-service-wildfly
 10.0.7.55      sirius-ccdb.lnls.br ccdb
 10.0.7.55      sirius-cable.lnls.br cable
-
-#10.0.7.55      sirius-configdb.lnls.br servconf
 10.0.38.42     sirius-configdb.lnls.br servconf
-#10.128.255.5   sirius-configdb.lnls.br servconf
-
-#10.128.254.203 sirius-consts.lnls.br servweb
 10.0.38.42     sirius-consts.lnls.br servweb
-#10.128.255.5   sirius-consts.lnls.br servweb
-
-#10.128.254.203 sirius-nfs.lnls.br servnfs
 10.128.254.205 sirius-nfs.lnls.br servnfs
 10.0.38.42     sirius-logbook.lnls.br servolog
 10.0.38.42     sirius-archiver.lnls.br servarchiver
