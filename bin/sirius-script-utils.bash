@@ -40,24 +40,25 @@ bbbs=(
 
 desktops=(
   "lnls454-linux"
-  "lnls560-linux"
   #"lnls452-linux"
   "lnls451-linux"
   "lnls449-linux"
   "lnls455-linux"
-  "elp-pwrsupply")
+  "lnls560-linux"
+  "elp-pwrsupply"
+  )
 
 repos=(
   "scripts:master"
   "mathphys:master"
   "control-system-constants:master"
   "dev-packages:master"
-  "machine-applications:master"
   "eth-bridge-pru-serial485:master"
+  "machine-applications:master"
   "hla:master"
-  "linac-opi:master"
   "linac-ioc-ps:master"
-  "bbb-daemon:master"
+  "linac-opi:master"
+  #"bbb-daemon:master"
   #"ARM:deploy-v0.32-2019-04-10"
   #"C28:deploy-v0.32-2019-04-10"
   )
