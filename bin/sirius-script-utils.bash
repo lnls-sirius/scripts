@@ -56,6 +56,7 @@ repos=(
   "eth-bridge-pru-serial485:master"
   "hla:master"
   "linac-opi:master"
+  "linac-ioc-ps:master"
   "bbb-daemon:master"
   #"ARM:deploy-v0.32-2019-04-10"
   #"C28:deploy-v0.32-2019-04-10"
@@ -425,7 +426,9 @@ function cmd_repo_install {
     cd ./pyqt-apps
     make install 1> ../../log-install-$repo.stdout 2> ../../log-install-$repo.stderr
   elif [ "$repo" == "linac-opi" ]; then
-    make install 1> ../../log-install-$repo.stdout 2> ../../log-install-$repo.stderr
+    make install 1> ../log-install-$repo.stdout 2> ../log-install-$repo.stderr
+  elif [ "$repo" == "linac-ioc-ps" ]; then
+    make install 1> ../log-install-$repo.stdout 2> ../log-install-$repo.stderr
   elif [ "$repo" == "bbb-daemon" ]; then
     echo "" 1> ../log-install-$repo.stdout 2> ../log-install-$repo.stderr
   elif [ "$repo" == "control-system-constants" ]; then
@@ -452,6 +455,8 @@ function cmd_repo_clone_master {
   if [ "$repo" == "mathphys" ]; then
       git clone ssh://git@github.com/lnls-fac/$repo
   elif [ "$repo" == "linac-opi" ]; then
+      git clone lnls350-linux:/home/fac_files/repo/sirius/$repo
+  elif [ "$repo" == "linac-ioc-ps" ]; then
       git clone lnls350-linux:/home/fac_files/repo/sirius/$repo
   else
       git clone ssh://git@github.com/lnls-sirius/$repo
