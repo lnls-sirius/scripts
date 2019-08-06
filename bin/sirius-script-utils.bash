@@ -441,11 +441,6 @@ function cmd_repo_install {
   else
     echo "installation not defined for $repo !" 1> ../log-install-$repo.stdout 2> ../log-install-$repo.stderr
   fi
-  if [ "$repo" == "eth-bridge-pru-serial485" ]; then
-    var_error=""
-  else
-    var_error=$(check_repo_install $repo $tmpdir)
-  fi
 }
 
 function cmd_repo_clone_master {
