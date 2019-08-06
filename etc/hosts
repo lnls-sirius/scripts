@@ -58,7 +58,7 @@ ff02::2 ip6-allrouters
 #10.0.38.39   sirius-dekstop5
 
 # --- linacopi1 --- MAC 40:a8:f0:5f:25:06
-#10.128.254.    linacopi1
+10.128.254.208 linac-opi1
 
 # --- linacopi2 --- MAC 40:a8:f0:5f:25:10
 10.128.254.206 linac-opi2
