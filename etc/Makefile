@@ -11,18 +11,17 @@ SCRIPTS = $(GENERALSCRIPTS)
 FULLSCRIPTS = $(addprefix $(DEST_DIR)/, $(SCRIPTS))
 
 
-install: uninstall install-hosts install-rsyncd
+install: install-hosts install-rsyncd
 	cp $(SCRIPTS) $(DEST_DIR)
 
-develop: uninstall
+develop:
 	ln -srf $(SCRIPTS) $(DEST_DIR)
 
 uninstall:
 	rm -rf $(FULLSCRIPTS)
 
 install-hosts:
-	rm /etc/hosts
-	cp hosts /etc/hosts
+	cp -f hosts /etc/hosts
 	sed -i "s/#127.0.1.1 $(HOSTNAME)/127.0.1.1 $(HOSTNAME)/g" /etc/hosts
 
 install-rsyncd:
@@ -41,4 +40,3 @@ install-autofs:
 
 	systemctl enable  autofs
 	systemctl restart autofs
-
