@@ -36,7 +36,9 @@ bbbs=(
       "bbb-bo-correctors-ia14"
       "bbb-bo-correctors-ia16"
       "bbb-bo-correctors-ia17"
-      "bbb-bo-correctors-ia20")
+      "bbb-bo-correctors-ia20"
+      "bbb-si-dipole-1"
+      "bbb-si-dipole-2")
 
 desktops=(
   "lnls454-linux"
@@ -100,6 +102,8 @@ services_ioc_ps=(
   "sirius-ioc-bo-ps-correctors-ia16.service"
   "sirius-ioc-bo-ps-correctors-ia17.service"
   "sirius-ioc-bo-ps-correctors-ia20.service"
+  "sirius-ioc-si-ps-dipole-1.service"
+  "sirius-ioc-si-ps-dipole-2.service"
   )
 
 services_ioc_ma=(
