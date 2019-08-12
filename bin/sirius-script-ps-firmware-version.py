@@ -60,31 +60,27 @@ def select_psnames(psgroup):
                 psnames.append(ps)
     elif psgroup.lower() in ('li-dipole', 'li-spectrometer'):
         for ps in allps:
-            if ps.startswith('LA-CN:H1DPPS'):
+            if ps.startswith('LI-01:PS-Spect'):
                 psnames.append(ps)
     elif psgroup.lower() in ('li-quadrupoles', ):
         for ps in allps:
-            if 'H1DQPS' in ps or 'H1FQPS' in ps:
-                psnames.append(ps)
-    elif psgroup.lower() in ('li-long-correctors', ):
-        for ps in allps:
-            if 'H1LCPS' in ps:
+            if ':PS-QD' in ps or ':PS-QF' in ps:
                 psnames.append(ps)
     elif psgroup.lower() in ('li-magnetic-lenses', ):
         for ps in allps:
-            if 'H1MLPS' in ps:
+            if ':PS-Lens' in ps:
                 psnames.append(ps)
-    elif psgroup.lower() in ('li-short-correctors', ):
+    elif psgroup.lower() in ('li-correctors', ):
         for ps in allps:
-            if 'H1SCPS' in ps:
+            if ':PS-CH' in ps or ':PS-CV':
                 psnames.append(ps)
     elif psgroup.lower() in ('li-solenoids', ):
         for ps in allps:
-            if 'H1SLPS' in ps:
+            if ':PS-Slnd' in ps:
                 psnames.append(ps)
     elif psgroup.lower() == 'li':
         for ps in allps:
-            if ps.startswith('LA-CN'):
+            if ps.startswith('LI-01:'):
                 psnames.append(ps)
     return psnames
 
@@ -130,9 +126,7 @@ def print_help():
     print("")
     print("       li-quadrupoles       versions of LI quadrupoles")
     print("")
-    print("       li-short-correctors  versions of LI short correctors")
-    print("")
-    print("       li-long-correctors   versions of LI long correctors")
+    print("       li-correctors        versions of LI correctors")
     print("")
     print("       li-solenoids         versions of LI solenoids")
     print("")

@@ -13,48 +13,48 @@ class Egun:
     SINGLEBUNCH = 1
 
     def __init__(self):
-        self.pv_hv_volt_sp = _PV('egun:hvps:voltoutsoft')
-        self.pv_hv_volt_rb = _PV('egun:hvps:voltinsoft')
-        self.pv_hv_curlim_sp = _PV('egun:hvps:currentoutsoft')
-        self.pv_hv_curleak_mon = _PV('egun:hvps:currentinsoft')
-        self.pv_hv_enbl_sp = _PV('egun:hvps:enable')
-        self.pv_hv_enbl_rb = _PV('egun:hvps:enstatus')
-        self.pv_hv_switch_sp = _PV('egun:hvps:switch')
-        self.pv_hv_switch_rb = _PV('egun:hvps:swstatus')
+        self.pv_hv_volt_sp = _PV('LI-01:EG-HVPS:voltoutsoft')
+        self.pv_hv_volt_rb = _PV('LI-01:EG-HVPS:voltinsoft')
+        self.pv_hv_curlim_sp = _PV('LI-01:EG-HVPS:currentoutsoft')
+        self.pv_hv_curleak_mon = _PV('LI-01:EG-HVPS:currentinsoft')
+        self.pv_hv_enbl_sp = _PV('LI-01:EG-HVPS:enable')
+        self.pv_hv_enbl_rb = _PV('LI-01:EG-HVPS:enstatus')
+        self.pv_hv_switch_sp = _PV('LI-01:EG-HVPS:switch')
+        self.pv_hv_switch_rb = _PV('LI-01:EG-HVPS:swstatus')
 
-        self.pv_fila_cur_sp = _PV('egun:filaps:currentoutsoft')
-        self.pv_fila_cur_rb = _PV('egun:filaps:currentinsoft')
-        self.pv_fila_volt_mon = _PV('egun:filaps:voltinsoft')
-        self.pv_fila_switch_sp = _PV('egun:filaps:switch')
-        self.pv_fila_switch_rb = _PV('egun:filaps:swstatus')
+        self.pv_fila_cur_sp = _PV('LI-01:EG-FilaPS:currentoutsoft')
+        self.pv_fila_cur_rb = _PV('LI-01:EG-FilaPS:currentinsoft')
+        self.pv_fila_volt_mon = _PV('LI-01:EG-FilaPS:voltinsoft')
+        self.pv_fila_switch_sp = _PV('LI-01:EG-FilaPS:switch')
+        self.pv_fila_switch_rb = _PV('LI-01:EG-FilaPS:swstatus')
 
-        self.pv_bias_volt_sp = _PV('egun:biasps:voltoutsoft')
-        self.pv_bias_volt_rb = _PV('egun:biasps:voltinsoft')
-        self.pv_bias_cur_mon = _PV('egun:biasps:currentinsoft')
-        self.pv_bias_switch_sp = _PV('egun:biasps:switch')
-        self.pv_bias_switch_rb = _PV('egun:biasps:swstatus')
+        self.pv_bias_volt_sp = _PV('LI-01:EG-BiasPS:voltoutsoft')
+        self.pv_bias_volt_rb = _PV('LI-01:EG-BiasPS:voltinsoft')
+        self.pv_bias_cur_mon = _PV('LI-01:EG-BiasPS:currentinsoft')
+        self.pv_bias_switch_sp = _PV('LI-01:EG-BiasPS:switch')
+        self.pv_bias_switch_rb = _PV('LI-01:EG-BiasPS:swstatus')
 
-        self.pv_pulse_power_sp = _PV('egun:pulseps:poweroutsoft')
-        self.pv_pulse_power_rb = _PV('egun:pulseps:powerinsoft')
+        self.pv_pulse_power_sp = _PV('LI-01:EG-PulsePS:poweroutsoft')
+        self.pv_pulse_power_rb = _PV('LI-01:EG-PulsePS:powerinsoft')
 
-        self.pv_mult_sel_sp = _PV('egun:pulseps:multiselect')
-        self.pv_mult_sel_rb = _PV('egun:pulseps:multiselstatus')
-        self.pv_mult_swt_sp = _PV('egun:pulseps:multiswitch')
-        self.pv_mult_swt_rb = _PV('egun:pulseps:multiswstatus')
+        self.pv_mult_sel_sp = _PV('LI-01:EG-PulsePS:multiselect')
+        self.pv_mult_sel_rb = _PV('LI-01:EG-PulsePS:multiselstatus')
+        self.pv_mult_swt_sp = _PV('LI-01:EG-PulsePS:multiswitch')
+        self.pv_mult_swt_rb = _PV('LI-01:EG-PulsePS:multiswstatus')
 
-        self.pv_sngl_sel_sp = _PV('egun:pulseps:singleselect')
-        self.pv_sngl_sel_rb = _PV('egun:pulseps:singleselstatus')
-        self.pv_sngl_swt_sp = _PV('egun:pulseps:singleswitch')
-        self.pv_sngl_swt_rb = _PV('egun:pulseps:singleswstatus')
+        self.pv_sngl_sel_sp = _PV('LI-01:EG-PulsePS:singleselect')
+        self.pv_sngl_sel_rb = _PV('LI-01:EG-PulsePS:singleselstatus')
+        self.pv_sngl_swt_sp = _PV('LI-01:EG-PulsePS:singleswitch')
+        self.pv_sngl_swt_rb = _PV('LI-01:EG-PulsePS:singleswstatus')
 
-        self.pv_sys_start_sp = _PV('egun:system:start')
-        self.pv_sys_valve_mon = _PV('egun:valve:status')
-        self.pv_sys_gate_mon = _PV('egun:gate:status')
-        self.pv_sys_vacuum_mon = _PV('egun:vacuum:status')
+        self.pv_sys_start_sp = _PV('LI-01:EG-System:start')
+        self.pv_sys_valve_mon = _PV('LI-01:EG-Valve:status')
+        self.pv_sys_gate_mon = _PV('LI-01:EG-Gate:status')
+        self.pv_sys_vacuum_mon = _PV('LI-01:EG-Vacuum:status')
 
-        self.pv_trig_state_sp = _PV('egun:triggerps:enable')
-        self.pv_trig_state_rb = _PV('egun:triggerps:status')
-        self.pv_trig_allow_mon = _PV('egun:triggerps:allow')
+        self.pv_trig_state_sp = _PV('LI-01:EG-TriggerPS:enable')
+        self.pv_trig_state_rb = _PV('LI-01:EG-TriggerPS:status')
+        self.pv_trig_allow_mon = _PV('LI-01:EG-TriggerPS:allow')
 
         self.pv_mps_permit = _PV('LA-CN:H1MPS-1:GunPermit')
         self.pv_vacuum_ccg1 = _PV('LA-VA:H1VGC-01:RdPrs-1')
@@ -173,8 +173,6 @@ class Egun:
         print('Preparing Egun')
         self.pv_bias_volt_sp.value = self.bias_volt  # 3nC
 
-        self.set_fila_current(self.fila_curr)
-
         self.pv_trig_state_sp.value = self.beam_pulse if turn_on else False
         if self.pv_hv_enbl_rb.value == 0:
             self.pv_hv_enbl_sp.value = 1
@@ -197,12 +195,14 @@ class Egun:
         volt = self.goal_volt if turn_on else 0.0
         print('Setting HV from {0:.2f} to {1:.2f} kV'.format(
             self.pv_hv_volt_rb.value, volt))
+
+        self.set_fila_current(self.fila_curr)
         self.set_hv_volt(volt)
 
     def set_hv_volt(self, val):
-        npts = 30
-        duration = 90
-        ini_val = self.pv_hv_volt_rb.value
+        npts = 20
+        duration = 60 * 10
+        ini_val = 0  # self.pv_hv_volt_rb.value
         npts = int(npts * abs(val-ini_val)/90)
         if npts <= 0:
             return
@@ -210,7 +210,9 @@ class Egun:
             self.pv_hv_volt_sp.value = val
             return
         duration = duration * abs(val-ini_val)/90
-        y = _np.linspace(ini_val, val, npts)
+        x = _np.linspace(0, 1, npts)
+        y = self._get_ramp(x, val, False)
+        # y = _np.linspace(ini_val, val, npts)
 
         t_inter = duration / (npts-1)
         print('Starting HV ramp to {0:.3f} kV.'.format(val))
@@ -218,8 +220,10 @@ class Egun:
         for i, cur in enumerate(y[1:]):
             dur = str(_timedelta(seconds=duration - i*t_inter)).split('.')[0]
             print('RemTime: {0:s}  HV: {1:.3f} kV'.format(dur, cur), end='\r')
-            _time.sleep(t_inter)
             self.pv_hv_volt_sp.value = cur
+            _time.sleep(t_inter)
+            if not self._check_ok():
+                return
         print('HV Ready!' + 40*' ')
 
     def set_fila_current(self, val):
@@ -435,7 +439,8 @@ class Egun:
         isok = [out.value == 0 for out in self.pvs_mps_status_proc]
         allok = all(isok)
         allok &= self.pv_mps_permit.value == 1
-        allok &= self.pv_trig_allow_mon.value == 1
+        if self.beam_pulse:
+            allok &= self.pv_trig_allow_mon.value == 1
         allok &= self.pv_sys_valve_mon.value == 1
         allok &= self.pv_sys_gate_mon.value == 1
         allok &= self.pv_sys_vacuum_mon.value == 1
@@ -452,17 +457,17 @@ if __name__ == '__main__':
     parser.add_argument(
         'dowhat', type=str, help="Choose what to do.", choices=opts)
     parser.add_argument(
-        '-c', '--current', type=float, default=1.35,
-        help='Which current to put in the filament in A. (1.35 A)')
+        '-c', '--current', type=float, default=1.39,
+        help='Which current to put in the filament in A. (1.39 A)')
     parser.add_argument(
         '-v', '--volt', type=float, default=90,
-        help='Which Voltage to put in the HV in kV. (90 A)')
+        help='Which Voltage to put in the HV in kV. (90 kV)')
     parser.add_argument(
-        '-b', '--bias', type=float, default=-38,
-        help='Which Voltage to put in Bias in V. (-38 A)')
+        '-b', '--bias', type=float, default=-34,
+        help='Which Voltage to put in Bias in V. (-34 A)')
     parser.add_argument(
-        '-l', '--leak', type=float, default=8,
-        help='Maximum Leak current allowed in uA. (8 uA)')
+        '-l', '--leak', type=float, default=20,
+        help='Maximum Leak current allowed in uA. (20 uA)')
     parser.add_argument(
         '-p', '--pressure', type=float, default=8e-9,
         help='Pressure bellow which HV is set, in mBar. (8e-9 mBar)')
@@ -471,12 +476,15 @@ if __name__ == '__main__':
         help='How long should it last in minutes.' +
         'Put negative for infinity (-1)')
     parser.add_argument(
-        '-n', '--nrattempts', type=int, default=100,
+        '-n', '--nrattempts', type=int, default=200,
         help='Number of times to try to reset Egun when in keepon mode' +
-        ' (100 attempts).')
+        ' (200 attempts).')
     parser.add_argument(
         '-f', '--filahot', action='store_true', default=False,
         help="Whether egun's filament is hot (Default = False).")
+    parser.add_argument(
+        '--nobeam', action='store_true', default=False,
+        help="pass this argument if you don't want beam.")
 
     args = parser.parse_args()
     egun = Egun()
@@ -487,6 +495,7 @@ if __name__ == '__main__':
     egun.bias_volt = max(min(args.bias, -20), -110)  # -38 V --> 3 nC
     egun.leak_curr = min(max(0, args.leak), 20) * 1e-3  # mA
     egun.fila_ishot = args.filahot
+    egun.beam_pulse = not args.nobeam
     if args.dowhat == opts[0]:
         egun.set_fila_current(egun.fila_curr)
     elif args.dowhat == opts[1]:

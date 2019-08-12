@@ -63,11 +63,14 @@ execute create_bbb_repositories.sh
 execute install_python.sh
 execute install_epics.sh
 execute install_pyepics.sh
+execute install_edm.sh
 execute install_qt.sh
 execute install_sip.sh
 execute install_pyqt.sh
 
 execute install_fac_deps.sh
+exectute install_timechart.sh
+
 
 set_nfs
 

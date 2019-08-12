@@ -10,16 +10,16 @@
 #
 
 # --- lnls-sirius repos ---
-/home/nfs-shared/repos-lnls-sirius 10.128.254.0/24(rw,sync,no_subtree_check,no_root_squash,insecure)
-/home/nfs-shared/repos-lnls-sirius 10.0.38.0/24(rw,sync,no_subtree_check,no_root_squash,insecure)
+/home/nfs-shared/repos-lnls-sirius 10.128.254.0/24(rw,sync,no_subtree_check,no_root_squash,insecure)\
+                                   10.0.38.0/24(rw,sync,no_subtree_check,no_root_squash,insecure)
 
 # --- lost and found ---
-/home/nfs-shared/lost-and-found 10.128.254.0/24(rw,sync,no_subtree_check,no_root_squash,insecure)
-/home/nfs-shared/lost-and-found 10.0.38.0/24(rw,sync,no_subtree_check,no_root_squash,insecure)
+/home/nfs-shared/lost-and-found    10.128.254.0/24(rw,sync,no_subtree_check,no_root_squash,insecure)\
+                                   10.0.38.0/24(rw,sync,no_subtree_check,no_root_squash,insecure)
 
 # --- screens-iocs ---
-/home/nfs-shared/screens-iocs 10.128.254.0/24(rw,sync,no_subtree_check,no_root_squash,insecure)
-/home/nfs-shared/screens-iocs 10.0.38.0/24(rw,sync,no_subtree_check,no_root_squash,insecure)
+/home/nfs-shared/screens-iocs      10.128.254.0/24(rw,sync,no_subtree_check,no_root_squash,insecure)\
+                                   10.0.38.0/24(rw,sync,no_subtree_check,no_root_squash,insecure)
 
 # --- backups shared with lnls350-linux ---
-/home/nfs-shared/backups 10.0.7.55(rw,sync,no_subtree_check,no_root_squash,insecure)
+/home/nfs-shared/backups           10.0.7.55(rw,sync,no_subtree_check,no_root_squash,insecure)

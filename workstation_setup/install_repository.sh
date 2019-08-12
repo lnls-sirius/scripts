@@ -170,6 +170,13 @@ elif [ $repo == 'machine-applications' ]; then
 	fi
 	change_directory $sirius_repos/machine-applications
 	sudo make $action
+elif [ $repo == 'linac-opi' ]; then
+	if [ ! -d "$sirius_repos/linac-opi" ]; then
+		change_directory $sirius_repos
+		git clone "fac@lnls350-linux:/home/fac_files/repo/sirius/linac-opi.git"
+	fi
+	change_directory $sirius_repos/linac-opi
+	sudo make $action
 elif [ $repo == 'sirius-scripts' ]; then
 	if [ ! -d $sirius_repos/scripts ]; then
 		change_directory $sirius_repos
@@ -178,7 +185,7 @@ elif [ $repo == 'sirius-scripts' ]; then
 	change_directory $sirius_repos/scripts
 	sudo make $action
 
-	users=(fernando ximenes guilherme liulin ana alexandre murilo sirius facs)
+	users=(fernando ximenes liulin ana alexandre murilo sirius facs)
 	for user in ${users[@]}; do
 		if [ -d "/home/$user" ]; then
 			bash_path="/home/$user/.bashrc"

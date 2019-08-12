@@ -28,11 +28,13 @@ sudo apt-get install -y git
 execute install_python.sh
 execute install_epics.sh
 execute install_pyepics.sh
+execute install_edm.sh
 execute install_qt.sh
 execute install_sip.sh
 execute install_pyqt.sh
 
 execute install_fac_deps.sh
+exectute install_timechart.sh
 
 execute check_github_ssh_key.sh
 
@@ -46,6 +48,7 @@ execute install_repository.sh dev-packages develop ssh
 execute install_repository.sh pydm develop ssh
 execute install_repository.sh hla develop ssh
 execute install_repository.sh machine-applications develop ssh
+execute install_repository.sh linac-opi develop ssh
 execute install_repository.sh pruserial485 develop ssh
 execute install_repository.sh pyjob develop ssh
 
