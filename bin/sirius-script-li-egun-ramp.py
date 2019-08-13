@@ -457,17 +457,17 @@ if __name__ == '__main__':
     parser.add_argument(
         'dowhat', type=str, help="Choose what to do.", choices=opts)
     parser.add_argument(
-        '-c', '--current', type=float, default=1.35,
-        help='Which current to put in the filament in A. (1.35 A)')
+        '-c', '--current', type=float, default=1.39,
+        help='Which current to put in the filament in A. (1.39 A)')
     parser.add_argument(
         '-v', '--volt', type=float, default=90,
-        help='Which Voltage to put in the HV in kV. (90 A)')
+        help='Which Voltage to put in the HV in kV. (90 kV)')
     parser.add_argument(
-        '-b', '--bias', type=float, default=-38,
-        help='Which Voltage to put in Bias in V. (-38 A)')
+        '-b', '--bias', type=float, default=-34,
+        help='Which Voltage to put in Bias in V. (-34 A)')
     parser.add_argument(
-        '-l', '--leak', type=float, default=8,
-        help='Maximum Leak current allowed in uA. (8 uA)')
+        '-l', '--leak', type=float, default=20,
+        help='Maximum Leak current allowed in uA. (20 uA)')
     parser.add_argument(
         '-p', '--pressure', type=float, default=8e-9,
         help='Pressure bellow which HV is set, in mBar. (8e-9 mBar)')
@@ -476,9 +476,9 @@ if __name__ == '__main__':
         help='How long should it last in minutes.' +
         'Put negative for infinity (-1)')
     parser.add_argument(
-        '-n', '--nrattempts', type=int, default=100,
+        '-n', '--nrattempts', type=int, default=200,
         help='Number of times to try to reset Egun when in keepon mode' +
-        ' (100 attempts).')
+        ' (200 attempts).')
     parser.add_argument(
         '-f', '--filahot', action='store_true', default=False,
         help="Whether egun's filament is hot (Default = False).")

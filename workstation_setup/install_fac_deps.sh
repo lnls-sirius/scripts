@@ -10,6 +10,7 @@ sudo apt-get install -y libfreetype6-dev
 sudo apt-get install -y nmap
 sudo apt-get install -y dvipng
 sudo apt-get install -y sshpass
+sudo apt-get install -y wait-for-it
 
 sudo -HE pip-sirius install python-nmap wakeonlan requests pyqtgraph pandas \
 	                    psutil termcolor sh cairocffi matplotlib scipy jupyter \

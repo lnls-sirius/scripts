@@ -1,19 +1,20 @@
 #!/usr/bin/env bash
 
-bbbs=("bbb-dclink-tb-ts"
-      "bbb-dclink-bo-correctors-01"
-      "bbb-dclink-bo-correctors-02"
-      "bbb-dclink-bo-correctors-03"
-      "bbb-dclink-bo-correctors-04"
-      "bbb-dclink-bo-correctors-05"
-      "bbb-dclink-bo-correctors-06"
-      "bbb-dclink-bo-correctors-07"
-      "bbb-dclink-bo-correctors-08"
-      "bbb-dclink-bo-correctors-09"
-      "bbb-dclink-bo-correctors-10"
-      "bbb-dclink-bo-correctors-11"
-      "bbb-dclink-bo-correctors-12"
-      "bbb-dclink-bo-correctors-13"
+bbbs=(
+      "bbb-as-dclinks-tbts"
+      "bbb-as-dclink-ia01"
+      "bbb-as-dclink-ia02"
+      "bbb-as-dclink-ia04"
+      "bbb-as-dclink-ia05"
+      "bbb-as-dclink-ia07"
+      "bbb-as-dclink-ia08"
+      "bbb-as-dclink-ia10"
+      "bbb-as-dclink-ia11"
+      "bbb-as-dclink-ia13"
+      "bbb-as-dclink-ia14"
+      "bbb-as-dclink-ia16"
+      "bbb-as-dclink-ia17"
+      "bbb-as-dclink-ia20"
       "bbb-tb-dipoles"
       "bbb-tb-correctors"
       "bbb-tb-quadrupoles"
@@ -23,113 +24,206 @@ bbbs=("bbb-dclink-tb-ts"
       "bbb-bo-quadrupole-qd"
       "bbb-bo-sextupole-sf"
       "bbb-bo-sextupole-sd"
-      "bbb-bo-correctors-01"
-      "bbb-bo-correctors-02"
-      "bbb-bo-correctors-03"
-      "bbb-bo-correctors-04"
-      "bbb-bo-correctors-05"
-      "bbb-bo-correctors-06"
-      "bbb-bo-correctors-07"
-      "bbb-bo-correctors-08"
-      "bbb-bo-correctors-09"
-      "bbb-bo-correctors-10"
-      "bbb-bo-correctors-11"
-      "bbb-bo-correctors-12"
-      "bbb-bo-correctors-13")
+      "bbb-bo-correctors-ia01"
+      "bbb-bo-correctors-ia02"
+      "bbb-bo-correctors-ia04"
+      "bbb-bo-correctors-ia05"
+      "bbb-bo-correctors-ia07"
+      "bbb-bo-correctors-ia08"
+      "bbb-bo-correctors-ia10"
+      "bbb-bo-correctors-ia11"
+      "bbb-bo-correctors-ia13"
+      "bbb-bo-correctors-ia14"
+      "bbb-bo-correctors-ia16"
+      "bbb-bo-correctors-ia17"
+      "bbb-bo-correctors-ia20")
 
-desktops=("lnls454-linux"
-          #"lnls452-linux"
-          "lnls451-linux"
-          "lnls449-linux"
-          "lnls455-linux"
-          "elp-pwrsupply")
+desktops=(
+  "lnls454-linux"
+  #"lnls452-linux"
+  "lnls451-linux"
+  "lnls449-linux"
+  "lnls455-linux"
+  "lnls560-linux"
+  "elp-pwrsupply"
+  )
 
-repos=("scripts:master"
-       "mathphys:master"
-       "control-system-constants:master"
-       "dev-packages:master"
-       "machine-applications:master"
-       "hla:master"
-       "linac-opi:master"
-       "bbb-daemon:master"
-       #"ARM:deploy-v0.32-2019-04-10"
-       #"C28:deploy-v0.32-2019-04-10"
-       )
+repos=(
+  "scripts:master"
+  "mathphys:master"
+  "control-system-constants:master"
+  "dev-packages:master"
+  "eth-bridge-pru-serial485:master"
+  "machine-applications:master"
+  "hla:master"
+  "linac-ioc-ps:master"
+  "linac-opi:master"
+  #"bbb-daemon:master"
+  #"ARM:deploy-v0.32-2019-04-10"
+  #"C28:deploy-v0.32-2019-04-10"
+  )
 
-services_fac=(
-         "sirius-ioc-tb-ma-dipoles.service"
-         "sirius-ioc-tb-ma-quadrupoles.service"
-         "sirius-ioc-tb-ma-correctors.service"
-         "sirius-ioc-bo-ma-dipoles.service"
-         "sirius-ioc-bo-ma-quadrupoles.service"
-         "sirius-ioc-bo-ma-sextupoles.service"
-         "sirius-ioc-bo-ma-correctors-01.service"
-         "sirius-ioc-bo-ma-correctors-02.service"
-         "sirius-ioc-bo-ma-correctors-03.service"
-         "sirius-ioc-bo-ma-correctors-04.service"
-         "sirius-ioc-bo-ma-correctors-05.service"
-         "sirius-ioc-bo-ma-correctors-06.service"
-         "sirius-ioc-bo-ma-correctors-07.service"
-         "sirius-ioc-bo-ma-correctors-08.service"
-         "sirius-ioc-bo-ma-correctors-09.service"
-         "sirius-ioc-bo-ma-correctors-10.service"
-         "sirius-ioc-bo-ma-correctors-11.service"
-         "sirius-ioc-bo-ma-correctors-12.service"
-         "sirius-ioc-bo-ma-correctors-13.service"
+services_ioc_ps=(
+  "sirius-ioc-as-ps-dclink-tbts.service"
+  "sirius-ioc-as-ps-dclink-ia01.service"
+  "sirius-ioc-as-ps-dclink-ia02.service"
+  "sirius-ioc-as-ps-dclink-ia04.service"
+  "sirius-ioc-as-ps-dclink-ia05.service"
+  "sirius-ioc-as-ps-dclink-ia07.service"
+  "sirius-ioc-as-ps-dclink-ia08.service"
+  "sirius-ioc-as-ps-dclink-ia10.service"
+  "sirius-ioc-as-ps-dclink-ia11.service"
+  "sirius-ioc-as-ps-dclink-ia13.service"
+  "sirius-ioc-as-ps-dclink-ia14.service"
+  "sirius-ioc-as-ps-dclink-ia16.service"
+  "sirius-ioc-as-ps-dclink-ia17.service"
+  "sirius-ioc-as-ps-dclink-ia20.service"
+  "sirius-ioc-tb-ps-dipoles.service"
+  "sirius-ioc-tb-ps-quadrupoles.service"
+  "sirius-ioc-tb-ps-correctors.service"
+  "sirius-ioc-bo-ps-dipole-1.service"
+  "sirius-ioc-bo-ps-dipole-2.service"
+  "sirius-ioc-bo-ps-quadrupole-qf.service"
+  "sirius-ioc-bo-ps-quadrupole-qd.service"
+  "sirius-ioc-bo-ps-sextupole-sf.service"
+  "sirius-ioc-bo-ps-sextupole-sd.service"
+  "sirius-ioc-bo-ps-correctors-ia01.service"
+  "sirius-ioc-bo-ps-correctors-ia02.service"
+  "sirius-ioc-bo-ps-correctors-ia04.service"
+  "sirius-ioc-bo-ps-correctors-ia05.service"
+  "sirius-ioc-bo-ps-correctors-ia07.service"
+  "sirius-ioc-bo-ps-correctors-ia08.service"
+  "sirius-ioc-bo-ps-correctors-ia10.service"
+  "sirius-ioc-bo-ps-correctors-ia11.service"
+  "sirius-ioc-bo-ps-correctors-ia13.service"
+  "sirius-ioc-bo-ps-correctors-ia14.service"
+  "sirius-ioc-bo-ps-correctors-ia16.service"
+  "sirius-ioc-bo-ps-correctors-ia17.service"
+  "sirius-ioc-bo-ps-correctors-ia20.service"
+  )
 
-         "sirius-ioc-tb-ps-diag.service"
-         "sirius-ioc-bo-ps-diag.service"
-         # "sirius-ioc-ts-ps-diag.service"
-         # "sirius-ioc-si-ps-diag-fam.service"
-         # "sirius-ioc-si-ps-diag-ch.service"
-         # "sirius-ioc-si-ps-diag-cv.service"
-         # "sirius-ioc-si-ps-diag-qs.service"
-         # "sirius-ioc-si-ps-diag-fc.service"
-         # "sirius-ioc-si-ps-diag-trim-01.service"
-         # "sirius-ioc-si-ps-diag-trim-02.service"
+services_ioc_ma=(
+  "sirius-ioc-tb-ma-dipoles.service"
+  "sirius-ioc-tb-ma-quadrupoles.service"
+  "sirius-ioc-tb-ma-correctors.service"
+  "sirius-ioc-bo-ma-dipoles.service"
+  "sirius-ioc-bo-ma-quadrupoles.service"
+  "sirius-ioc-bo-ma-sextupoles.service"
+  "sirius-ioc-bo-ma-correctors-ia01.service"
+  "sirius-ioc-bo-ma-correctors-ia02.service"
+  "sirius-ioc-bo-ma-correctors-ia04.service"
+  "sirius-ioc-bo-ma-correctors-ia05.service"
+  "sirius-ioc-bo-ma-correctors-ia07.service"
+  "sirius-ioc-bo-ma-correctors-ia08.service"
+  "sirius-ioc-bo-ma-correctors-ia10.service"
+  "sirius-ioc-bo-ma-correctors-ia11.service"
+  "sirius-ioc-bo-ma-correctors-ia13.service"
+  "sirius-ioc-bo-ma-correctors-ia14.service"
+  "sirius-ioc-bo-ma-correctors-ia16.service"
+  "sirius-ioc-bo-ma-correctors-ia17.service"
+  "sirius-ioc-bo-ma-correctors-ia20.service"
+  "sirius-ioc-tb-pm-injsept.service"
+  "sirius-ioc-bo-pm-injkckr.service")
 
-         "sirius-ioc-tb-pm-injsept.service"
-         "sirius-ioc-bo-pm-injkckr.service"
+services_ioc_li_ps=(
+  "sirius-ioc-li-ps-ch1.service"
+  "sirius-ioc-li-ps-ch2.service"
+  "sirius-ioc-li-ps-ch3.service"
+  "sirius-ioc-li-ps-ch4.service"
+  "sirius-ioc-li-ps-ch5.service"
+  "sirius-ioc-li-ps-ch6.service"
+  "sirius-ioc-li-ps-ch7.service"
+  "sirius-ioc-li-ps-cv1.service"
+  "sirius-ioc-li-ps-cv2.service"
+  "sirius-ioc-li-ps-cv3.service"
+  "sirius-ioc-li-ps-cv4.service"
+  "sirius-ioc-li-ps-cv5.service"
+  "sirius-ioc-li-ps-cv6.service"
+  "sirius-ioc-li-ps-cv7.service"
+  "sirius-ioc-li-ps-lens-01.service"
+  "sirius-ioc-li-ps-lens-02.service"
+  "sirius-ioc-li-ps-lens-03.service"
+  "sirius-ioc-li-ps-lens-04.service"
+  "sirius-ioc-li-ps-lensrev.service"
+  "sirius-ioc-li-ps-qd1.service"
+  "sirius-ioc-li-ps-qd2.service"
+  "sirius-ioc-li-ps-qf1.service"
+  "sirius-ioc-li-ps-qf2.service"
+  "sirius-ioc-li-ps-qf3.service"
+  "sirius-ioc-li-ps-solenoid-01.service"
+  "sirius-ioc-li-ps-solenoid-02.service"
+  "sirius-ioc-li-ps-solenoid-03.service"
+  "sirius-ioc-li-ps-solenoid-04.service"
+  "sirius-ioc-li-ps-solenoid-05.service"
+  "sirius-ioc-li-ps-solenoid-06.service"
+  "sirius-ioc-li-ps-solenoid-07.service"
+  "sirius-ioc-li-ps-solenoid-08.service"
+  "sirius-ioc-li-ps-solenoid-09.service"
+  "sirius-ioc-li-ps-solenoid-10.service"
+  "sirius-ioc-li-ps-solenoid-11.service"
+  "sirius-ioc-li-ps-solenoid-12.service"
+  "sirius-ioc-li-ps-solenoid-13.service"
+  "sirius-ioc-li-ps-solenoid-14.service"
+  "sirius-ioc-li-ps-solenoid-15.service"
+  "sirius-ioc-li-ps-solenoid-16.service"
+  "sirius-ioc-li-ps-solenoid-17.service"
+  "sirius-ioc-li-ps-solenoid-18.service"
+  "sirius-ioc-li-ps-solenoid-19.service"
+  "sirius-ioc-li-ps-solenoid-20.service"
+  "sirius-ioc-li-ps-solenoid-21.service")
 
-         "sirius-ioc-as-ti-trig.service"
-         "sirius-ioc-li-ti-trig.service"
-         "sirius-ioc-tb-ti-trig.service"
-         "sirius-ioc-bo-ti-trig.service"
-         "sirius-ioc-ts-ti-trig.service"
-         "sirius-ioc-si-ti-trig.service"
+services_ioc_fac=(
+  "sirius-ioc-tb-ps-diag.service"
+  "sirius-ioc-bo-ps-diag.service"
+  # "sirius-ioc-ts-ps-diag.service"
+  # "sirius-ioc-si-ps-diag-fam.service"
+  # "sirius-ioc-si-ps-diag-ch.service"
+  # "sirius-ioc-si-ps-diag-cv.service"
+  # "sirius-ioc-si-ps-diag-qs.service"
+  # "sirius-ioc-si-ps-diag-fc.service"
+  # "sirius-ioc-si-ps-diag-trim-01.service"
+  # "sirius-ioc-si-ps-diag-trim-02.service"
+  "sirius-ioc-as-ti-trig.service"
+  "sirius-ioc-li-ti-trig.service"
+  "sirius-ioc-tb-ti-trig.service"
+  "sirius-ioc-bo-ti-trig.service"
+  "sirius-ioc-ts-ti-trig.service"
+  "sirius-ioc-si-ti-trig.service"
+  "sirius-ioc-bo-ap-currinfo-current.service"
+  "sirius-ioc-bo-ap-currinfo-lifetime.service"
+  #"sirius-ioc-si-ap-currinfo-charge.service"  # Broken!
+  "sirius-ioc-si-ap-currinfo-current.service"
+  "sirius-ioc-si-ap-currinfo-lifetime.service"
+  "sirius-ioc-tb-ap-posang.service"
+  "sirius-ioc-ts-ap-posang.service"
+  "sirius-ioc-tb-ap-sofb.service"
+  "sirius-ioc-bo-ap-sofb.service"
+  "sirius-ioc-ts-ap-sofb.service"
+  "sirius-ioc-si-ap-sofb.service"
+  "sirius-ioc-bo-ap-tunecorr.service"
+  "sirius-ioc-bo-ap-chromcorr.service"
+  "sirius-ioc-si-ap-tunecorr.service"
+  "sirius-ioc-si-ap-chromcorr.service")
 
-         "sirius-ioc-bo-ap-currinfo-current.service"
-         "sirius-ioc-bo-ap-currinfo-lifetime.service"
-         #"sirius-ioc-si-ap-currinfo-charge.service"  # Broken!
-         "sirius-ioc-si-ap-currinfo-current.service"
-         "sirius-ioc-si-ap-currinfo-lifetime.service"
 
-         "sirius-ioc-tb-ap-posang.service"
-         "sirius-ioc-ts-ap-posang.service"
-
-         "sirius-ioc-tb-ap-sofb.service"
-         "sirius-ioc-bo-ap-sofb.service"
-         "sirius-ioc-ts-ap-sofb.service"
-         "sirius-ioc-si-ap-sofb.service"
-
-         "sirius-ioc-bo-ap-tunecorr.service"
-         "sirius-ioc-bo-ap-chromcorr.service"
-         "sirius-ioc-si-ap-tunecorr.service"
-         "sirius-ioc-si-ap-chromcorr.service"
-         )
 
 mirror_repos_path=/home/sirius/repos
 
-#servweb_hostname=sirius-consts.lnls.br
 servweb_hostname=10.0.38.59
 
 servnfs_hostname=lnls454-linux
 
 servnfs_repos_folder=/home/nfs-shared/repos-lnls-sirius/
 
-#servweb_repodir=/storage/misc/repository/control-system-constants/
 servweb_repodir=/home/con-srv/LA-disk0/misc-brick/repository/control-system-constants/
 
+server_services_ioc_fac=lnls454-linux
+
+server_services_ioc_li_ps=lnls560-linux
+
+server_services_ioc_ps=lnls560-linux
+
+server_services_ioc_ma=lnls454-linux
 
 # --- aux functions ---
 
@@ -186,7 +280,7 @@ function get_tmpdir {
 function print_bbb_line {
   bbb=$1
   ip=$2
-  printf "%22s %16s" $bbb "($ip) ... "
+  printf "%27s %16s" $bbb "($ip) ... "
 }
 
 function print_header {
@@ -244,7 +338,7 @@ function checkout_tagged_repos_nfs_server {
     branch=$(echo $repo | cut -d":" -f2)
     printf_yellow "[$repo]\n"
     sshpass -p $user_passwd ssh sirius@$servnfs_hostname "cd $servnfs_repos_folder/$reponame; rm -rf dist build */*.egg-info *.egg-info"
-    sshpass -p $user_passwd ssh sirius@$servnfs_hostname "cd $servnfs_repos_folder/$reponame; git stash; git fetch --prune origin '+refs/tags/*:refs/tags/*'; git checkout $branch; git pull; git checkout $deploy_tag"
+    sshpass -p $user_passwd ssh sirius@$servnfs_hostname "cd $servnfs_repos_folder/$reponame; git checkout -- .; git fetch -p; git fetch --prune origin '+refs/tags/*:refs/tags/*'; git checkout $branch; git pull; git checkout $deploy_tag"
     printf "\n"
   done
 }
@@ -259,6 +353,7 @@ function deploy_desktops {
     printf "\n"
   done
 }
+
 
 # --- command functions  ---
 
@@ -320,6 +415,10 @@ function cmd_repo_install {
     ./setup.py install 1> ../../log-install-$repo.stdout 2> ../../log-install-$repo.stderr
   elif [ "$repo" == "machine-applications" ]; then
     make install 1> ../log-install-$repo.stdout 2> ../log-install-$repo.stderr
+  elif [ "$repo" == "eth-bridge-pru-serial485" ]; then
+    # to avoid generating unnecessary stderr content about __file__ variable
+    cd ./client
+    ./setup.py install 1> ../../log-install-$repo.stdout 2> ../../log-install-$repo.stderr
   elif [ "$repo" == "pydm" ]; then
     # to avoid generating unnecessary stderr content about __file__ variable
     sed -i "s/license='BSD',/license='BSD',\n    zip_safe=False,/g" setup.py
@@ -328,7 +427,9 @@ function cmd_repo_install {
     cd ./pyqt-apps
     make install 1> ../../log-install-$repo.stdout 2> ../../log-install-$repo.stderr
   elif [ "$repo" == "linac-opi" ]; then
-    make install 1> ../../log-install-$repo.stdout 2> ../../log-install-$repo.stderr
+    make install 1> ../log-install-$repo.stdout 2> ../log-install-$repo.stderr
+  elif [ "$repo" == "linac-ioc-ps" ]; then
+    make install 1> ../log-install-$repo.stdout 2> ../log-install-$repo.stderr
   elif [ "$repo" == "bbb-daemon" ]; then
     echo "" 1> ../log-install-$repo.stdout 2> ../log-install-$repo.stderr
   elif [ "$repo" == "control-system-constants" ]; then
@@ -340,7 +441,6 @@ function cmd_repo_install {
   else
     echo "installation not defined for $repo !" 1> ../log-install-$repo.stdout 2> ../log-install-$repo.stderr
   fi
-  var_error=$(check_repo_install $repo $tmpdir)
 }
 
 function cmd_repo_clone_master {
@@ -351,6 +451,8 @@ function cmd_repo_clone_master {
   if [ "$repo" == "mathphys" ]; then
       git clone ssh://git@github.com/lnls-fac/$repo
   elif [ "$repo" == "linac-opi" ]; then
+      git clone lnls350-linux:/home/fac_files/repo/sirius/$repo
+  elif [ "$repo" == "linac-ioc-ps" ]; then
       git clone lnls350-linux:/home/fac_files/repo/sirius/$repo
   else
       git clone ssh://git@github.com/lnls-sirius/$repo

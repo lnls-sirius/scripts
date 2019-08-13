@@ -109,8 +109,10 @@ parms = {
     'TB-02:PS-CV-1':   [0.5, 10, 24, 10, 48, False],  # 2.9 [A/s]
     'TB-02:PS-CH-2':   [0.5, 10, 24, 10, 48, False],  # 2.9 [A/s]
     'TB-02:PS-CV-2':   [0.5, 10, 24, 10, 48, False],  # 2.9 [A/s]
-    'TB-04:PS-CH':     [0.5, 10, 24, 10, 48, False],  # 2.9 [A/s]
+    'TB-04:PS-CH-1':   [0.5, 10, 24, 10, 48, False],  # 2.9 [A/s]
     'TB-04:PS-CV-1':   [0.5, 10, 24, 10, 48, False],  # 2.9 [A/s]
+    # NOTE: update TB-4 correctors maximum currents
+    'TB-04:PS-CH-2':   [0.5, 10, 24, 10, 48, False],  # 2.9 [A/s]
     'TB-04:PS-CV-2':   [0.5, 10, 24, 10, 48, False],  # 2.9 [A/s]
 
     'LA-CN:H1DPPS-1':  [0.5, 6.0, 24, 8, 48, False],
