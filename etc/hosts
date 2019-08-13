@@ -99,8 +99,7 @@ ff02::2 ip6-allrouters
 10.128.123.106  PA-RaPSE05--CO-PSCtrl-BO   bbb-bo-dipole-1          # BO-Fam:PS-B-1
 
 # --- SI
-10.128.123.107  PA-RaPSD04--CO-PSCtrl-SI1  bbb-si-dipole-1          # SI-Fam:PS-B1B2-1
-10.128.123.108  PA-RaPSD04--CO-PSCtrl-SI2  bbb-si-dipole-2          # SI-Fam:PS-B1B2-2
+10.128.123.107  PA-RaPSD04--CO-PSCtrl-SI   bbb-si-dipoles           # SI-Fam:PS-B1B2-1 SI-Fam:PS-B1B2-2
 
 
 # === Linac Area ===

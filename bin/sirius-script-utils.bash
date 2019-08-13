@@ -36,7 +36,8 @@ bbbs=(
       "bbb-bo-correctors-ia14"
       "bbb-bo-correctors-ia16"
       "bbb-bo-correctors-ia17"
-      "bbb-bo-correctors-ia20")
+      "bbb-bo-correctors-ia20"
+      "bbb-si-dipoles")
 
 desktops=(
   "lnls454-linux"
@@ -100,7 +101,7 @@ services_ioc_ps=(
   "sirius-ioc-bo-ps-correctors-ia16.service"
   "sirius-ioc-bo-ps-correctors-ia17.service"
   "sirius-ioc-bo-ps-correctors-ia20.service"
-  )
+  "sirius-ioc-si-ps-dipoles.service")
 
 services_ioc_ma=(
   "sirius-ioc-tb-ma-dipoles.service"
@@ -122,6 +123,7 @@ services_ioc_ma=(
   "sirius-ioc-bo-ma-correctors-ia16.service"
   "sirius-ioc-bo-ma-correctors-ia17.service"
   "sirius-ioc-bo-ma-correctors-ia20.service"
+  "sirius-ioc-si-ma-dipoles.service"
   "sirius-ioc-tb-pm-injsept.service"
   "sirius-ioc-bo-pm-injkckr.service")
 
@@ -451,9 +453,11 @@ function cmd_repo_clone_master {
   if [ "$repo" == "mathphys" ]; then
       git clone ssh://git@github.com/lnls-fac/$repo
   elif [ "$repo" == "linac-opi" ]; then
-      git clone lnls350-linux:/home/fac_files/repo/sirius/$repo
+      # git clone lnls350-linux:/home/fac_files/repo/sirius/$repo
+      git clone git@gitlab.cnpem.br:FACS/$repo
   elif [ "$repo" == "linac-ioc-ps" ]; then
-      git clone lnls350-linux:/home/fac_files/repo/sirius/$repo
+      # git clone lnls350-linux:/home/fac_files/repo/sirius/$repo
+      git clone git@gitlab.cnpem.br:FACS/$repo
   else
       git clone ssh://git@github.com/lnls-sirius/$repo
   fi
