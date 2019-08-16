@@ -116,6 +116,12 @@ ff02::2 ip6-allrouters
 # --- TB and TS DCLINKS
 10.128.121.102  LA-RaCtrl--CO-DCLinkCtrl   bbb-as-dclinks-tbts      # LA-RaPS06:PS-UDC-AS1 LA-RaPS06:PS-UDC-AS2
 
+# --- TS
+10.128.121.105  LA-RaCtrl--CO-PSCtrl-TS    bbb-ts-correctors        # TS-01:PS-CV-1 TS-01:PS-CH TS-01:PS-CV-2 TS-02:PS-CH 4 TS-02:PS-CV TS-03:PS-CH TS-03:PS-CV TS-04:PS-CV-1 TS-04:PS-CH TS-04:PS-CV-2
+10.128.121.106  LA-RaPS02--CO-PSCtrl-TS    bbb-ts-dipoles           # TS-Fam:PS-B
+10.128.121.107  LA-RaPS04--CO-PSCtrl-TS1   bbb-ts-quadrupoles-12    # TS-01:PS-QF1B TS-01:PS-QF1A TS-02:PS-QD2 TS-02:PS-QF2
+10.128.121.108  LA-RaPS04--CO-PSCtrl-TS2   bbb-ts-quadrupoles-34    # TS-04:PS-QD4B TS-04:PS-QD4A TS-04:PS-QF4 TS-03:PS-QF3
+
 
 # === Instrumentation Area ===
 

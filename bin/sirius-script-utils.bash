@@ -105,6 +105,10 @@ services_ioc_ps=(
   "sirius-ioc-bo-ps-correctors-ia16.service"
   "sirius-ioc-bo-ps-correctors-ia17.service"
   "sirius-ioc-bo-ps-correctors-ia20.service"
+  "sirius-ioc-ts-ps-dipoles.service"
+  "sirius-ioc-ts-ps-quadrupoles-12.service"
+  "sirius-ioc-ts-ps-quadrupoles-34.service"
+  "sirius-ioc-ts-ps-correctors.service"
   "sirius-ioc-si-ps-dipoles.service"
   "sirius-ioc-si-ps-quadrupoles-qf.service"
   "sirius-ioc-si-ps-quadrupoles-qd1.service"
@@ -132,11 +136,16 @@ services_ioc_ma=(
   "sirius-ioc-bo-ma-correctors-ia16.service"
   "sirius-ioc-bo-ma-correctors-ia17.service"
   "sirius-ioc-bo-ma-correctors-ia20.service"
-  "sirius-ioc-bo-pm-injkckr.service"
+  "sirius-ioc-ts-ma-dipoles.service"
+  "sirius-ioc-ts-ma-quadrupoles-12.service"
+  "sirius-ioc-ts-ma-quadrupoles-34.service"
+  "sirius-ioc-ts-ma-correctors.service"
   "sirius-ioc-si-ma-dipoles.service"
   "sirius-ioc-si-ma-quadrupoles-qf.service"
   "sirius-ioc-si-ma-quadrupoles-qd1.service"
-  "sirius-ioc-si-ma-quadrupoles-qd2.service")
+  "sirius-ioc-si-ma-quadrupoles-qd2.service"
+  "sirius-ioc-tb-pm-injsept.service"
+  "sirius-ioc-bo-pm-injkckr.service")
 
 services_ioc_li_ps=(
   "sirius-ioc-li-ps-ch1.service"
