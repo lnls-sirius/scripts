@@ -36,7 +36,12 @@ bbbs=(
       "bbb-bo-correctors-ia14"
       "bbb-bo-correctors-ia16"
       "bbb-bo-correctors-ia17"
-      "bbb-bo-correctors-ia20")
+      "bbb-bo-correctors-ia20"
+      "bbb-si-dipoles"
+      "bbb-si-quadrupoles-qf"
+      "bbb-si-quadrupoles-qd1"
+      "bbb-si-quadrupoles-qd2"
+      "bbb-si-quadrupoles-q")
 
 desktops=(
   "lnls454-linux"
@@ -104,12 +109,17 @@ services_ioc_ps=(
   "sirius-ioc-ts-ps-quadrupoles-12.service"
   "sirius-ioc-ts-ps-quadrupoles-34.service"
   "sirius-ioc-ts-ps-correctors.service"
-  )
+  "sirius-ioc-si-ps-dipoles.service"
+  "sirius-ioc-si-ps-quadrupoles-qf.service"
+  "sirius-ioc-si-ps-quadrupoles-qd1.service"
+  "sirius-ioc-si-ps-quadrupoles-qd2.service"
+  "sirius-ioc-si-ps-quadrupoles-q.service")
 
 services_ioc_ma=(
   "sirius-ioc-tb-ma-dipoles.service"
   "sirius-ioc-tb-ma-quadrupoles.service"
   "sirius-ioc-tb-ma-correctors.service"
+  "sirius-ioc-tb-pm-injsept.service"
   "sirius-ioc-bo-ma-dipoles.service"
   "sirius-ioc-bo-ma-quadrupoles.service"
   "sirius-ioc-bo-ma-sextupoles.service"
@@ -130,6 +140,10 @@ services_ioc_ma=(
   "sirius-ioc-ts-ma-quadrupoles-12.service"
   "sirius-ioc-ts-ma-quadrupoles-34.service"
   "sirius-ioc-ts-ma-correctors.service"
+  "sirius-ioc-si-ma-dipoles.service"
+  "sirius-ioc-si-ma-quadrupoles-qf.service"
+  "sirius-ioc-si-ma-quadrupoles-qd1.service"
+  "sirius-ioc-si-ma-quadrupoles-qd2.service"
   "sirius-ioc-tb-pm-injsept.service"
   "sirius-ioc-bo-pm-injkckr.service")
 
@@ -459,9 +473,11 @@ function cmd_repo_clone_master {
   if [ "$repo" == "mathphys" ]; then
       git clone ssh://git@github.com/lnls-fac/$repo
   elif [ "$repo" == "linac-opi" ]; then
-      git clone lnls350-linux:/home/fac_files/repo/sirius/$repo
+      # git clone lnls350-linux:/home/fac_files/repo/sirius/$repo
+      git clone git@gitlab.cnpem.br:FACS/$repo
   elif [ "$repo" == "linac-ioc-ps" ]; then
-      git clone lnls350-linux:/home/fac_files/repo/sirius/$repo
+      # git clone lnls350-linux:/home/fac_files/repo/sirius/$repo
+      git clone git@gitlab.cnpem.br:FACS/$repo
   else
       git clone ssh://git@github.com/lnls-sirius/$repo
   fi
