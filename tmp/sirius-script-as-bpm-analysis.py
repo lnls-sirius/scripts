@@ -1,6 +1,7 @@
 #!/usr/bin/env python-sirius
 
 import numpy as np
+import scipy.io as scio
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 import matplotlib.cm as cm
@@ -12,7 +13,8 @@ def get_fft(val):
     fft = np.fft.rfft(val, axis=0)
     absfft = np.abs(fft)
     freq = np.linspace(0, 0.5, absfft.shape[0])
-    return absfft, freq
+    d =  absfft.shape[1]//10
+    return absfft[d:-d], freq[d:-d]
 
 
 def update_colors(ax):
@@ -36,18 +38,25 @@ if __name__ == '__main__':
     pv_posy = PV('BO-Glob:AP-SOFB:MTurnOrbY-Mon')
     pv_poss = PV('BO-Glob:AP-SOFB:MTurnOrbSum-Mon')
 
-    posx = pv_posx.get().reshape(-1, nrb) / 1e6
-    posy = pv_posy.get().reshape(-1, nrb) / 1e6
-    poss = pv_posy.get().reshape(-1, nrb)
+    # posx = pv_posx.get().reshape(-1, nrb) / 1e6
+    # posy = pv_posy.get().reshape(-1, nrb) / 1e6
+    # poss = pv_posy.get().reshape(-1, nrb)
+    wave = scio.loadmat(
+        '/home/fernando/Downloads/' +
+        'data_boo_2019-05-07_tbt_several_injections.mat')
+    wave = wave['wvfs']
+    posx = np.mean(wave[:150, 0::3], axis=2)/1e3
+    posy = np.mean(wave[:150, 1::3], axis=2)/1e3
+    poss = np.mean(wave[:150, 2::3], axis=2)/2**28
     fftx, freqx = get_fft(posx)
     ffty, freqy = get_fft(posy)
 
     offsets = np.arange(nrb)[None, :] * 1
-    posx += np.max(posx) * offsets
-    posy += np.max(posy) * offsets
-    poss += np.max(poss) * offsets
-    fftx += np.max(fftx) * offsets
-    ffty += np.max(ffty) * offsets
+    posx += np.max(posx) * offsets * 0.1
+    posy += np.max(posy) * offsets * 0.1
+    poss += np.max(poss) * offsets * 0
+    fftx += np.max(fftx) * offsets * 1
+    ffty += np.max(ffty) * offsets * 1
 
     f = plt.figure(figsize=(11, 8))
     gs = gridspec.GridSpec(3, 2)
