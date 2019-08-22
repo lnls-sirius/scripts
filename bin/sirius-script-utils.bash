@@ -37,6 +37,10 @@ bbbs=(
       "bbb-bo-correctors-ia16"
       "bbb-bo-correctors-ia17"
       "bbb-bo-correctors-ia20"
+      "bbb-ts-correctors"
+      "bbb-ts-dipoles"
+      "bbb-ts-quadrupoles-12"
+      #"bbb-ts-quadrupoles-34"
       "bbb-si-dipoles"
       "bbb-si-quadrupoles-qf"
       "bbb-si-quadrupoles-qd1"
@@ -144,6 +148,7 @@ services_ioc_ma=(
   "sirius-ioc-si-ma-quadrupoles-qf.service"
   "sirius-ioc-si-ma-quadrupoles-qd1.service"
   "sirius-ioc-si-ma-quadrupoles-qd2.service"
+  "sirius-ioc-si-ma-quadrupoles-q.service"
   "sirius-ioc-tb-pm-injsept.service"
   "sirius-ioc-bo-pm-injkckr.service")
 
