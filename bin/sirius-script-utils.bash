@@ -153,6 +153,7 @@ services_ioc_ma=(
   "sirius-ioc-bo-pm-injkckr.service")
 
 services_ioc_li_ps=(
+  "sirius-ioc-li-ps-spect.service"
   "sirius-ioc-li-ps-ch1.service"
   "sirius-ioc-li-ps-ch2.service"
   "sirius-ioc-li-ps-ch3.service"
@@ -251,6 +252,8 @@ server_services_ioc_li_ps=lnls560-linux
 server_services_ioc_ps=lnls560-linux
 
 server_services_ioc_ma=lnls454-linux
+
+ansible_folder = /home/sirius/repos/lnls-ansible
 
 # --- aux functions ---
 
@@ -356,10 +359,16 @@ function update_servweb {
   printf "\n"
 }
 
-function checkout_tagged_repos_nfs_server {
-  printf_green "Checkout tagged repos in nfs server ($servnfs_hostname)\n"
+function update_deploy_file {
+  printf_green "Update deploy file in nfs server ($servnfs_hostname)\n"
   printf "\n"
   sshpass -p $user_passwd ssh sirius@$servnfs_hostname "cd $servnfs_repos_folder/; echo '$deploy_tag:  $comment' >> deploy.log"
+}
+
+function checkout_tagged_repos_nfs_server {
+  update_deploy_file
+  printf_green "Checkout tagged repos in nfs server ($servnfs_hostname)\n"
+  printf "\n"
   for repo in "${repos[@]}"; do
     reponame=$(echo $repo | cut -d":" -f1)
     branch=$(echo $repo | cut -d":" -f2)
