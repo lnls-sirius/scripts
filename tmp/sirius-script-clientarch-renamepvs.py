@@ -3,7 +3,6 @@
 import sys
 import getpass
 from siriuspy.clientarch import ClientArchiver
-import urllib3
 
 
 DEFAULT_FUNCTION = 'NONE'
@@ -78,17 +77,23 @@ def rename_dclinks():
         pvs = carch.getAllPVs(dclink_name_pvs)
         for old_pv in pvs:
             new_pv = old_pv.replace(old_name, new_name)
+            rename_pv(carch, old_pv, new_pv)
             print(' . {} -> {}'.format(old_pv, new_pv))
-            # pause
-            print('   pausing...')
-            carch.pausePVs(old_pv)
-            # rename
-            print('   renaming...')
-            carch.renamePV(old_pv, new_pv)
-            # resume
-            print('   resuming...')
-            carch.resumePVs(new_pv)
+            rename_pv(carch, old_name, new_name)
         print()
+
+
+def rename_pv(carch, old_pv, new_pv):
+    """."""
+    # pause
+    print('   pausing...')
+    carch.pausePVs(old_pv)
+    # rename
+    print('   renaming...')
+    carch.renamePV(old_pv, new_pv)
+    # resume
+    print('   resuming...')
+    carch.resumePVs(new_pv)
 
 
 def get_authentication():
@@ -121,7 +126,6 @@ def run():
     if len(sys.argv) > 2:
         print_help()
     else:
-        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
         func = get_function()
         func()
 
