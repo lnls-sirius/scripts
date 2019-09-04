@@ -40,12 +40,18 @@ bbbs=(
       "bbb-ts-correctors"
       "bbb-ts-dipoles"
       "bbb-ts-quadrupoles-12"
-      #"bbb-ts-quadrupoles-34"
+      "bbb-ts-quadrupoles-34"
       "bbb-si-dipoles"
       "bbb-si-quadrupoles-qf"
       "bbb-si-quadrupoles-qd1"
       "bbb-si-quadrupoles-qd2"
-      "bbb-si-quadrupoles-q")
+      "bbb-si-quadrupoles-q"
+      "bbb-si-sextupoles-sfb0-sdb01"
+      "bbb-si-sextupoles-sfa0p0-sda0p0"
+      "bbb-si-sextupoles-sda1b12"
+      "bbb-si-sextupoles-sfa12-sda3p1"
+      "bbb-si-sextupoles-sfb12-sdb3"
+      "bbb-si-sextupoles-sfp12-sdp23")
 
 desktops=(
   "lnls454-linux"

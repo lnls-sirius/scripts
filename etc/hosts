@@ -104,6 +104,12 @@ ff02::2 ip6-allrouters
 10.128.123.109  PA-RaPSA02--CO-PSCtrl-SI2  bbb-si-quadrupoles-qd1             # SI-Fam:PS-QDP2 SI-Fam:PS-QDP1 SI-Fam:PS-QDA
 10.128.123.110  PA-RaPSA05--CO-PSCtrl-SI1  bbb-si-quadrupoles-qd2             # SI-Fam:PS-QDB2 SI-Fam:PS-QDB1
 10.128.123.111  PA-RaPSA05--CO-PSCtrl-SI2  bbb-si-quadrupoles-q               # SI-Fam:PS-Q4 SI-Fam:PS-Q3 SI-Fam:PS-Q2 SI-Fam:PS-Q1
+10.128.123.112  PA-RaPSB02--CO-PSCtrl-SI1  bbb-si-sextupoles-sfb0-sdb01       # SI-Fam:PS-SDB1 SI-Fam:PS-SFB0 SI-Fam:PS-SDB0
+10.128.123.113  PA-RaPSB02--CO-PSCtrl-SI2  bbb-si-sextupoles-sfa0p0-sda0p0    # SI-Fam:PS-SFP0 SI-Fam:PS-SFA0 SI-Fam:PS-SDP0 SI-Fam:PS-SDA0
+10.128.123.114  PA-RaPSB06--CO-PSCtrl-SI1  bbb-si-sextupoles-sda1b12          # SI-Fam:PS-SDB2 SI-Fam:PS-SDA2 SI-Fam:PS-SDA1
+10.128.123.115  PA-RaPSB06--CO-PSCtrl-SI2  bbb-si-sextupoles-sfa12-sda3p1     # SI-Fam:PS-SFA1 SI-Fam:PS-SDA3 SI-Fam:PS-SDP1 SI-Fam:PS-SFA2
+10.128.123.116  PA-RaPSB09--CO-PSCtrl-SI1  bbb-si-sextupoles-sfb12-sdb3       # SI-Fam:PS-SDB3 SI-Fam:PS-SFB1 SI-Fam:PS-SFB2
+10.128.123.117  PA-RaPSB09--CO-PSCtrl-SI2  bbb-si-sextupoles-sfp12-sdp23      # SI-Fam:PS-SFP2 SI-Fam:PS-SFP1 SI-Fam:PS-SDP3 SI-Fam:PS-SDP2
 
 
 # === Linac Area ===
