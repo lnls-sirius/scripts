@@ -150,7 +150,10 @@ services_ioc_ma=(
   "sirius-ioc-si-ma-quadrupoles-qd2.service"
   "sirius-ioc-si-ma-quadrupoles-q.service"
   "sirius-ioc-tb-pm-injsept.service"
-  "sirius-ioc-bo-pm-injkckr.service")
+  "sirius-ioc-bo-pm-injkckr.service"
+  "sirius-ioc-bo-pm-ejekckr.service"
+  "sirius-ioc-ts-pm-ejeseptf.service"
+  "sirius-ioc-ts-pm-ejeseptg.service")
 
 services_ioc_li_ps=(
   "sirius-ioc-li-ps-ch1.service"
