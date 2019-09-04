@@ -56,12 +56,12 @@ def rename_dclinks():
         'IA-20RaCtrl:PS-DCLink-AS1': 'IA-20RaPS01:PS-DCLink-AS',
         'IA-20RaCtrl:PS-DCLink-AS2': 'IA-20RaPS02:PS-DCLink-SI'}
 
-    username, password = get_authentication()
-    # username, password = 'ximenes.resende', 'SENHA'
     carch = ClientArchiver()
 
     # authentication
     print('- authenticating...')
+    username, password = get_authentication()
+    # username, password = 'ximenes.resende', 'SENHA'
     ret = carch.login(username, password)
     if not ret:
         print('Could not be authenticated!')
