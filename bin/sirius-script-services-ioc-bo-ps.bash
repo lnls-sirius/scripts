@@ -6,10 +6,10 @@ trap _abort SIGINT;
 
 function print_help {
     printf "NAME\n"
-    printf "       sirius-script-services-ioc-ma.bash - Interact with IOC services for MA\n"
+    printf "       sirius-script-services-ioc-bo-ps.bash - Interact with IOC services for Power Supplies\n"
     printf "\n"
     printf "SINOPSIS\n"
-    printf "       sirius-script-services-ioc-ma.bash [--help] CMD...\n"
+    printf "       sirius-script-services-ioc-bo-ps.bash [--help] CMD...\n"
     printf "\n"
     printf "DESCRIPTION\n"
     printf "       Script used to interact with IOC services for power supplies\n"
@@ -33,7 +33,7 @@ function run_systemctl {
   host=$2
   printf_blue "Runnnig systemctl $cmd for services at $host.\n"
   printf "\n"
-  for service in ${services_ioc_ma[@]}; do
+  for service in ${services_ioc_bo_ps[@]}; do
     printf_yellow "$service...\n"
     sudo systemctl $cmd $service
     printf "\n"
@@ -50,11 +50,11 @@ function run {
   fi
 
   host=$(hostname)
-  if [[ "$host" == "$server_services_ioc_ma" ]]; then
-    run_systemctl $1 $server_services_ioc_ma
+  if [[ "$host" == "$server_services_ioc_bo_ps" ]]; then
+    run_systemctl $1 $server_services_ioc_bo_ps
   else
-    get_password sirius $server_services_ioc_ma
-    sshpass -p $user_passwd ssh -t sirius@$server_services_ioc_ma "sudo sirius-script-services-ioc-ma.bash $1"
+    get_password sirius $server_services_ioc_bo_ps
+    sshpass -p $user_passwd ssh -t sirius@$server_services_ioc_bo_ps "sudo sirius-script-services-ioc-bo-ps.bash $1"
   fi
 }
 
