@@ -4,15 +4,17 @@ DEST_DIR = /usr/local/etc
 
 GENERALSCRIPTS = \
 		bashrc-sirius \
-    bashrc-sirius-bbb-facuser
+		bashrc-sirius-bbb-facuser
 
 SCRIPTS = $(GENERALSCRIPTS)
 
 FULLSCRIPTS = $(addprefix $(DEST_DIR)/, $(SCRIPTS))
 
 
-install: install-hosts install-rsyncd
-	cp $(SCRIPTS) $(DEST_DIR)
+install: uninstall install-ansible
+
+install-ansible: install-hosts install-rsyncd
+	cp -f $(SCRIPTS) $(DEST_DIR)
 
 develop:
 	ln -srf $(SCRIPTS) $(DEST_DIR)
