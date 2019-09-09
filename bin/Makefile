@@ -50,7 +50,9 @@ install-repos-install:
 		cp sirius-script-repos-install.bash $(DEST_DIR)/
 		chmod 755 $(DEST_DIR)/sirius-script-repos-install.bash
 
-install: uninstall
+install: uninstall install-ansible
+
+install-ansible:
 		cp -a $(SCRIPTS) $(DEST_DIR)
 
 develop: uninstall
