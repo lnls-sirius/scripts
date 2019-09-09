@@ -19,6 +19,7 @@ GENERALSCRIPTS = \
 		sirius-script-services-ioc-ts-ma.bash \
 		sirius-script-services-ioc-ts-ps.bash \
 		sirius-script-ps-firmware-version.py \
+		sirius-script-ps-devices.py \
 		sirius-script-li-egun-ramp.py
 
 REPOSSCRIPTS = \
