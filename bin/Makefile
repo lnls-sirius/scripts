@@ -5,10 +5,19 @@ GENERALSCRIPTS = \
 		sirius-script-utils.bash \
 		sirius-script-app-demag.py \
 		sirius-script-app-ps-pvsprint.py \
+		sirius-script-services-ioc-bo-ma.bash \
+		sirius-script-services-ioc-bo-ps.bash \
+		sirius-script-services-ioc-dclinks-ps.bash \
 		sirius-script-services-ioc-fac.bash \
-		sirius-script-services-ioc-ps.bash \
-		sirius-script-services-ioc-ma.bash \
 		sirius-script-services-ioc-li-ps.bash \
+		sirius-script-services-ioc-si-ma-corr.bash \
+		sirius-script-services-ioc-si-ma-fam.bash \
+		sirius-script-services-ioc-si-ps-corr.bash \
+		sirius-script-services-ioc-si-ps-fam.bash \
+		sirius-script-services-ioc-tb-ma.bash \
+		sirius-script-services-ioc-tb-ps.bash \
+		sirius-script-services-ioc-ts-ma.bash \
+		sirius-script-services-ioc-ts-ps.bash \
 		sirius-script-ps-firmware-version.py \
 		sirius-script-li-egun-ramp.py
 
@@ -18,8 +27,8 @@ REPOSSCRIPTS = \
 		sirius-script-repos-install.bash \
 		sirius-script-repos-deletetags.bash \
 		sirius-script-repos-deploy.bash \
-		sirius-script-repos-deploytag.bash \
-		sirius-script-deploy-tag.bash
+		sirius-script-repos-deploytag.bash
+		# sirius-script-deploy-tag.bash
 
 BBBSCRIPTS = \
 		sirius-script-bbb-ping.bash \
