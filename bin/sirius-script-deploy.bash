@@ -33,15 +33,24 @@ function print_header_and_inputs {
   printf "\n"
 }
 
+function clone_ansible {
+  printf_green "Clonning Ansible\n"
+  ansible_folder=$(mktemp -d --suffix=-lnls-ansible)
+  git clone https://github.com/lnls-sirius/lnls-ansible $ansible_folder
+  printf "\n"
+}
+
 function run_ansible {
   printf_green "Running Ansible\n"
   cd $ansible_folder
-  make deploy-control-room-desktops
+  make ANSIBLE_EXTRA_VARS="--extra-vars \"global_deploy_tag=$deploy_tag global_import_nvidia_driver_role=false\"" deploy-control-room-desktops
 }
 
 function run {
   print_header_and_inputs
   create_tagged_repos
+  update_servweb
+  clone_ansible
   run_ansible
   update_deploy_file
 }
