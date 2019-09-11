@@ -122,7 +122,7 @@ bbbs=(
 
 desktops=(
   "lnls454-linux"
-  #"lnls452-linux"
+  "lnls452-linux"
   "lnls451-linux"
   "lnls449-linux"
   "lnls455-linux"
@@ -514,7 +514,6 @@ server_services_ioc_si_ma_fam=lnls454-linux
 
 server_services_ioc_si_ma_corr=lnls454-linux
 
-ansible_folder = /home/sirius/repos/lnls-ansible
 
 # --- aux functions ---
 
