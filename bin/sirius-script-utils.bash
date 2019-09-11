@@ -122,7 +122,7 @@ bbbs=(
 
 desktops=(
   "lnls454-linux"
-  #"lnls452-linux"
+  "lnls452-linux"
   "lnls451-linux"
   "lnls449-linux"
   "lnls455-linux"
