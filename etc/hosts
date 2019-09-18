@@ -247,8 +247,8 @@ ff02::2 ip6-allrouters
 
 # Linac
 # =====
-10.128.1.3     linac-serv-nfs
-10.128.1.4     linac-serv-arch
+10.128.1.3     linac-servnfs
+10.128.1.4     linac-servarch
 10.128.10.11   linac-egun
 10.128.1.13    linac-modulators
 10.128.1.14    linac-mps
