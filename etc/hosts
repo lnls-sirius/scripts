@@ -77,11 +77,15 @@ ff02::2 ip6-allrouters
 10.0.7.55      sirius-cable.lnls.br cable
 10.0.38.42     sirius-configdb.lnls.br servconf
 10.0.38.42     sirius-consts.lnls.br servweb
-10.128.254.205 sirius-nfs.lnls.br servnfs
+10.128.1.3     sirius-nfs.lnls.br servnfs
 10.0.38.42     sirius-logbook.lnls.br servolog
 10.0.38.42     sirius-archiver.lnls.br servarchiver
 10.128.255.5   sirius-bbbdaemon.lnls.br servbbbdaemon
 
+
+# SIRIUS Servers
+# ==============
+#10.128.255.8   lnlsfac-vm  # Host: 10.128.255.3
 
 
 # SIRIUS power supply beaglebones
