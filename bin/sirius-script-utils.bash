@@ -460,6 +460,7 @@ services_ioc_fac=(
   "sirius-ioc-bo-ti-trig.service"
   "sirius-ioc-ts-ti-trig.service"
   "sirius-ioc-si-ti-trig.service"
+  "sirius-ioc-li-di-charge.service"
   "sirius-ioc-bo-ap-currinfo-current.service"
   "sirius-ioc-bo-ap-currinfo-lifetime.service"
   #"sirius-ioc-si-ap-currinfo-charge.service"  # Broken!
