@@ -6,9 +6,6 @@ import epics
 from siriuspy.clientarch import ClientArchiver
 
 
-DEFAULT_FUNCTION = 'NONE'
-
-
 def get_authentication():
     """."""
     username = input('archiver username: ')
