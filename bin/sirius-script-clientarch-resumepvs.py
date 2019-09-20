@@ -19,8 +19,8 @@ def get_authentication():
 def create_carch():
     """."""
     carch = ClientArchiver()
-    # username, password = get_authentication()
-    username, password = 'ximenes.resende', 'SENHA'
+    username, password = get_authentication()
+    # username, password = 'ximenes.resende', 'SENHA'
     ret = carch.login(username, password)
     if not ret:
         print('Could not be authenticated!')
