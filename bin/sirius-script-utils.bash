@@ -460,6 +460,7 @@ services_ioc_fac=(
   "sirius-ioc-bo-ti-trig.service"
   "sirius-ioc-ts-ti-trig.service"
   "sirius-ioc-si-ti-trig.service"
+  "sirius-ioc-li-di-charge.service"
   "sirius-ioc-bo-ap-currinfo-current.service"
   "sirius-ioc-bo-ap-currinfo-lifetime.service"
   #"sirius-ioc-si-ap-currinfo-charge.service"  # Broken!
@@ -482,7 +483,7 @@ mirror_repos_path=/home/sirius/repos
 
 servweb_hostname=10.0.38.59
 
-servnfs_hostname=lnls454-linux
+servnfs_hostname=linac-servnfs
 
 servnfs_repos_folder=/home/nfs-shared/repos-lnls-sirius/
 
@@ -589,7 +590,7 @@ function get_password {
   hosttype=$2
   read -s -r -p "$username's password @ $hosttype: " user_passwd; echo ""
   if [ "$hosttype" == "desktops" ]; then
-    res=$( sshpass -p $user_passwd ssh sirius@$servnfs_hostname ls 2>&1 |grep denied)
+    res=$( sshpass -p $user_passwd ssh sirius@$server_services_ioc_fac ls 2>&1 |grep denied)
     if [ ! -z "$res" ]; then
       echo "Invalid Password."
       exit 1
