@@ -100,7 +100,6 @@ def get_authentication():
     """."""
     username = input('archiver username: ')
     password = getpass.getpass('username password: ')
-    # username, password = sys.argv[1], sys.argv[2]
     return username, password
 
 

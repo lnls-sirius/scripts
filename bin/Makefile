@@ -18,6 +18,8 @@ GENERALSCRIPTS = \
 		sirius-script-services-ioc-tb-ps.bash \
 		sirius-script-services-ioc-ts-ma.bash \
 		sirius-script-services-ioc-ts-ps.bash \
+		sirius-script-clientarch-resumepvs.py \
+		sirius-script-clientarch-renamepvs.py \
 		sirius-script-deploy.bash \
 		sirius-script-ps-firmware-version.py \
 		sirius-script-ps-devices.py \
