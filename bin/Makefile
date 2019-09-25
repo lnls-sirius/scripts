@@ -6,7 +6,8 @@ GENERALSCRIPTS = \
 		sirius-script-app-demag.py \
 		sirius-script-app-ps-pvsprint.py \
 		sirius-script-services-ioc-bo-ma.bash \
-		sirius-script-services-ioc-bo-ps.bash \
+		sirius-script-services-ioc-bo-ps-fam.bash \
+		sirius-script-services-ioc-bo-ps-corr.bash \
 		sirius-script-services-ioc-dclinks-ps.bash \
 		sirius-script-services-ioc-fac.bash \
 		sirius-script-services-ioc-li-ps.bash \
