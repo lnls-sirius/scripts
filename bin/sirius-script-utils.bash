@@ -223,13 +223,16 @@ services_ioc_tb_ps=(
   "sirius-ioc-tb-ps-correctors.service"
   )
 
-services_ioc_bo_ps=(
+services_ioc_bo_ps_fam=(
   "sirius-ioc-bo-ps-dipole-1.service"
   "sirius-ioc-bo-ps-dipole-2.service"
   "sirius-ioc-bo-ps-quadrupole-qf.service"
   "sirius-ioc-bo-ps-quadrupole-qd.service"
   "sirius-ioc-bo-ps-sextupole-sf.service"
   "sirius-ioc-bo-ps-sextupole-sd.service"
+  )
+
+services_ioc_bo_ps_corr=(
   "sirius-ioc-bo-ps-correctors-ia01.service"
   "sirius-ioc-bo-ps-correctors-ia02.service"
   "sirius-ioc-bo-ps-correctors-ia04.service"
@@ -244,6 +247,7 @@ services_ioc_bo_ps=(
   "sirius-ioc-bo-ps-correctors-ia17.service"
   "sirius-ioc-bo-ps-correctors-ia20.service"
   )
+
 
 services_ioc_ts_ps=(
   "sirius-ioc-ts-ps-dipoles.service"
@@ -479,6 +483,7 @@ services_ioc_fac=(
 
 
 
+
 mirror_repos_path=/home/sirius/repos
 
 servweb_hostname=10.0.38.59
@@ -491,13 +496,15 @@ servweb_repodir=/home/con-srv/LA-disk0/misc-brick/repository/control-system-cons
 
 server_services_ioc_fac=lnls454-linux
 
-server_services_ioc_dclinks_ps=lnls560-linux
+server_services_ioc_dclinks_ps=lnlsfac-vm
 
 server_services_ioc_li_ps=lnls560-linux
 
 server_services_ioc_tb_ps=lnls560-linux
 
-server_services_ioc_bo_ps=lnls560-linux
+server_services_ioc_bo_ps_fam=lnls560-linux
+
+server_services_ioc_bo_ps_corr=lnlsfac-vm
 
 server_services_ioc_ts_ps=lnls560-linux
 
