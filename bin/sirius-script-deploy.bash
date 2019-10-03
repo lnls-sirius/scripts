@@ -41,7 +41,7 @@ function clone_ansible {
 }
 
 function run_ansible {
-  printf_green "Running Ansible\n"
+  printf_green "Running Ansible (cloned master)\n"
   cd $ansible_folder
   make ANSIBLE_EXTRA_VARS="--extra-vars \"global_deploy_tag=$deploy_tag global_import_nvidia_driver_role=false\"" deploy-control-room-desktops
 }
@@ -52,6 +52,7 @@ function run {
   update_servweb
   clone_ansible
   run_ansible
+  checkout_tagged_repos_nfs_server
   update_deploy_file
 }
 
