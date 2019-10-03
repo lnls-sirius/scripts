@@ -634,15 +634,21 @@ function update_deploy_file {
 }
 
 function checkout_tagged_repos_nfs_server {
-  update_deploy_file
   printf_green "Checkout tagged repos in nfs server ($servnfs_hostname)\n"
   printf "\n"
   for repo in "${repos[@]}"; do
     reponame=$(echo $repo | cut -d":" -f1)
-    branch=$(echo $repo | cut -d":" -f2)
     printf_yellow "[$repo]\n"
-    sshpass -p $user_passwd ssh sirius@$servnfs_hostname "cd $servnfs_repos_folder/$reponame; rm -rf dist build */*.egg-info *.egg-info"
-    sshpass -p $user_passwd ssh sirius@$servnfs_hostname "cd $servnfs_repos_folder/$reponame; git checkout -- .; git fetch -p; git fetch --prune origin '+refs/tags/*:refs/tags/*'; git checkout $branch; git pull; git checkout $deploy_tag"
+    if [[ "$reponame" == "mathphys" ]]; then
+      cmd="cd $servnfs_repos_folder && rm -rf $reponame && git clone https://github.com/lnls-fac/$reponame && cd $reponame && git checkout $deploy_tag"
+    elif [[ "$reponame" == "linac-opi" ]]; then
+      cmd="cd $servnfs_repos_folder && rm -rf $reponame && git clone https://gitlab.cnpem.br/FACS/$reponame && cd $reponame && git checkout $deploy_tag"
+    elif [[ "$reponame" == "linac-ioc-ps" ]]; then
+      cmd="cd $servnfs_repos_folder && rm -rf $reponame && git clone https://gitlab.cnpem.br/FACS/$reponame && cd $reponame && git checkout $deploy_tag"
+    else
+      cmd="cd $servnfs_repos_folder && rm -rf $reponame && git clone https://github.com/lnls-sirius/$reponame && cd $reponame && git checkout $deploy_tag"
+    fi
+    sshpass -p $user_passwd ssh sirius@$servnfs_hostname $cmd
     printf "\n"
   done
 }
@@ -762,6 +768,28 @@ function cmd_repo_clone_master {
       git clone git@gitlab.cnpem.br:FACS/$repo
   else
       git clone ssh://git@github.com/lnls-sirius/$repo
+  fi
+  cd $repo
+  git checkout $branch
+}
+
+function cmd_repo_clone_tag_nfs {
+  tmpdir=$1
+  cd $tmpdir
+  if [ "$repo" == "mathphys" ]; then
+      git clone https://github.com/lnls-fac/$repo
+      cd $repo; git checkout $deploy_tag
+  elif [ "$repo" == "linac-opi" ]; then
+      # git clone lnls350-linux:/home/fac_files/repo/sirius/$repo
+      git clone https://gitlab.cnpem.br/FACS/$repo
+      cd $repo; git checkout $deploy_tag
+  elif [ "$repo" == "linac-ioc-ps" ]; then
+      # git clone lnls350-linux:/home/fac_files/repo/sirius/$repo
+      git clone https://gitlab.cnpem.br/FACS/$repo
+      cd $repo; git checkout $deploy_tag
+  else
+      git clone https://github.com/lnls-sirius/$repo
+      cd $repo; git checkout $deploy_tag
   fi
   cd $repo
   git checkout $branch
