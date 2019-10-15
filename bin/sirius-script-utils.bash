@@ -450,8 +450,8 @@ services_ioc_si_ma_corr=(
 services_ioc_fac=(
   "sirius-ioc-tb-ps-diag.service"
   "sirius-ioc-bo-ps-diag.service"
-  # "sirius-ioc-ts-ps-diag.service"
-  # "sirius-ioc-si-ps-diag-fam.service"
+  "sirius-ioc-ts-ps-diag.service"
+  "sirius-ioc-si-ps-diag-fam.service"
   # "sirius-ioc-si-ps-diag-ch.service"
   # "sirius-ioc-si-ps-diag-cv.service"
   # "sirius-ioc-si-ps-diag-qs.service"
@@ -467,7 +467,7 @@ services_ioc_fac=(
   "sirius-ioc-li-di-charge.service"
   "sirius-ioc-bo-ap-currinfo-current.service"
   "sirius-ioc-bo-ap-currinfo-lifetime.service"
-  #"sirius-ioc-si-ap-currinfo-charge.service"  # Broken!
+  # "sirius-ioc-si-ap-currinfo-charge.service"  # Broken!
   "sirius-ioc-si-ap-currinfo-current.service"
   "sirius-ioc-si-ap-currinfo-lifetime.service"
   "sirius-ioc-tb-ap-posang.service"
@@ -502,7 +502,7 @@ server_services_ioc_li_ps=lnls560-linux
 
 server_services_ioc_tb_ps=lnls560-linux
 
-server_services_ioc_bo_ps_fam=lnls560-linux
+server_services_ioc_bo_ps_fam=lnlsfac-vm
 
 server_services_ioc_bo_ps_corr=lnlsfac-vm
 
@@ -514,7 +514,7 @@ server_services_ioc_si_ps_corr=lnls560-linux
 
 server_services_ioc_tb_ma=lnls454-linux
 
-server_services_ioc_bo_ma=lnls454-linux
+server_services_ioc_bo_ma=lnlsfac-vm
 
 server_services_ioc_ts_ma=lnls454-linux
 
