@@ -506,21 +506,21 @@ server_services_ioc_bo_ps_fam=lnlsfac-vm
 
 server_services_ioc_bo_ps_corr=lnlsfac-vm
 
-server_services_ioc_ts_ps=lnls560-linux
+server_services_ioc_ts_ps=lnlsfac-srv1
 
-server_services_ioc_si_ps_fam=lnls560-linux
+server_services_ioc_si_ps_fam=lnlsfac-srv1
 
-server_services_ioc_si_ps_corr=lnls560-linux
+server_services_ioc_si_ps_corr=lnlsfac-srv1
 
 server_services_ioc_tb_ma=lnls454-linux
 
 server_services_ioc_bo_ma=lnlsfac-vm
 
-server_services_ioc_ts_ma=lnls454-linux
+server_services_ioc_ts_ma=lnlsfac-srv1
 
-server_services_ioc_si_ma_fam=lnls454-linux
+server_services_ioc_si_ma_fam=lnlsfac-srv1
 
-server_services_ioc_si_ma_corr=lnls454-linux
+server_services_ioc_si_ma_corr=lnlsfac-srv1
 
 
 # --- aux functions ---
