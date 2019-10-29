@@ -493,18 +493,17 @@ servnfs_repos_folder=/home/nfs-shared/repos-lnls-sirius/
 servweb_repodir=/home/con-srv/LA-disk0/misc-brick/repository/control-system-constants/
 
 
-server_services_ioc_fac=lnls454-linux
+server_services_ioc_li_ps=lnls560-linux
 
+
+server_services_ioc_fac=lnls454-linux
 
 server_services_ioc_dclinks_ps=lnlsfac-vm
 
 
-server_services_ioc_li_ps=lnls560-linux
+server_services_ioc_tb_ps=lnlsfac-srv1
 
-
-server_services_ioc_tb_ps=lnls560-linux
-
-server_services_ioc_tb_ma=lnls454-linux
+server_services_ioc_tb_ma=lnlsfac-srv1
 
 
 server_services_ioc_bo_ps_fam=lnlsfac-vm
