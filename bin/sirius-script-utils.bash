@@ -496,14 +496,12 @@ servweb_repodir=/home/con-srv/LA-disk0/misc-brick/repository/control-system-cons
 server_services_ioc_li_ps=lnls560-linux
 
 
-server_services_ioc_fac=lnls454-linux
-
 server_services_ioc_dclinks_ps=lnlsfac-vm
 
 
-server_services_ioc_tb_ps=lnlsfac-srv1
+server_services_ioc_tb_ps=lnlsfac-vm
 
-server_services_ioc_tb_ma=lnlsfac-srv1
+server_services_ioc_tb_ma=lnlsfac-vm
 
 
 server_services_ioc_bo_ps_fam=lnlsfac-vm
@@ -518,17 +516,18 @@ server_services_ioc_ts_ps=lnlsfac-srv1
 server_services_ioc_ts_ma=lnlsfac-srv1
 
 
-# server_services_ioc_si_ps_fam=lnlsfac-srv1
-server_services_ioc_si_ps_fam=lnls560-linux
+server_services_ioc_si_ps_fam=lnlsfac-srv1
 
-# server_services_ioc_si_ps_corr=lnlsfac-srv1
-server_services_ioc_si_ps_corr=lnls560-linux
+server_services_ioc_si_ps_corr=lnlsfac-srv1
 
-# server_services_ioc_si_ma_fam=lnlsfac-srv1
-server_services_ioc_si_ma_fam=lnls560-linux
 
-# server_services_ioc_si_ma_corr=lnlsfac-srv1
-server_services_ioc_si_ma_corr=lnls560-linux
+server_services_ioc_si_ma_fam=lnlsfac-srv1
+
+server_services_ioc_si_ma_corr=lnlsfac-srv1
+
+
+
+server_services_ioc_fac=lnls454-linux
 
 
 # --- aux functions ---
