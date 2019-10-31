@@ -145,7 +145,7 @@ repos=(
   #"C28:deploy-v0.32-2019-04-10"
   )
 
-services_ioc_dclinks_ps=(
+services_ioc_as_dclinks=(
   "sirius-ioc-as-ps-dclink-tbts.service"
   "sirius-ioc-as-ps-dclink-ia01.service"
   "sirius-ioc-as-ps-dclink-ia02.service"
@@ -542,7 +542,7 @@ servweb_repodir=/home/con-srv/LA-disk0/misc-brick/repository/control-system-cons
 server_services_ioc_li_ps=lnls560-linux
 
 
-server_services_ioc_dclinks_ps=lnlsfac-vm
+server_services_ioc_as_dclinks=lnlsfac-vm
 
 
 server_services_ioc_tb_ps=lnlsfac-vm
