@@ -511,6 +511,7 @@ services_ioc_fac=(
   "sirius-ioc-ts-ti-trig.service"
   "sirius-ioc-si-ti-trig.service"
   "sirius-ioc-li-di-charge.service"
+  "sirius-ioc-li-ap-energy.service"
   "sirius-ioc-bo-ap-currinfo.service"
   # "sirius-ioc-si-ap-currinfo.service"
   # "sirius-ioc-si-ap-currinfo-lifetime.service"
