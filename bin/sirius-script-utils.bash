@@ -539,7 +539,7 @@ servnfs_repos_folder=/home/nfs-shared/repos-lnls-sirius/
 servweb_repodir=/home/con-srv/LA-disk0/misc-brick/repository/control-system-constants/
 
 
-server_services_ioc_li_ps=lnls560-linux
+server_services_ioc_li_ps=lnlsfac-vm
 
 
 server_services_ioc_as_dclinks=lnlsfac-vm
