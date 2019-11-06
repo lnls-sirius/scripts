@@ -9,7 +9,8 @@ GENERALSCRIPTS = \
 		sirius-script-services-ioc-bo-ps-fam.bash \
 		sirius-script-services-ioc-bo-ps-corr.bash \
 		sirius-script-services-ioc-as-dclinks.bash \
-		sirius-script-services-ioc-fac.bash \
+		sirius-script-services-ioc-as-ap.bash \
+		sirius-script-services-ioc-as-ap-sofb.bash \
 		sirius-script-services-ioc-li-ps.bash \
 		sirius-script-services-ioc-si-ma-corr.bash \
 		sirius-script-services-ioc-si-ma-fam.bash \

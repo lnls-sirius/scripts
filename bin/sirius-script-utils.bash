@@ -493,7 +493,8 @@ services_ioc_si_ma_trim_qs=(
   "sirius-ioc-si-ma-trims-qs-c1234-ia20.service"
   )
 
-services_ioc_fac=(
+
+services_ioc_as_ap=(
   "sirius-ioc-tb-ps-diag.service"
   "sirius-ioc-bo-ps-diag.service"
   "sirius-ioc-ts-ps-diag.service"
@@ -516,15 +517,16 @@ services_ioc_fac=(
   # "sirius-ioc-si-ap-currinfo-lifetime.service"
   "sirius-ioc-tb-ap-posang.service"
   "sirius-ioc-ts-ap-posang.service"
-  "sirius-ioc-tb-ap-sofb.service"
-  "sirius-ioc-bo-ap-sofb.service"
-  "sirius-ioc-ts-ap-sofb.service"
-  "sirius-ioc-si-ap-sofb.service"
   "sirius-ioc-bo-ap-tunecorr.service"
   "sirius-ioc-bo-ap-chromcorr.service"
   "sirius-ioc-si-ap-tunecorr.service"
   "sirius-ioc-si-ap-chromcorr.service")
 
+services_ioc_as_ap_sofb=(
+  "sirius-ioc-tb-ap-sofb.service"
+  "sirius-ioc-bo-ap-sofb.service"
+  "sirius-ioc-ts-ap-sofb.service"
+  "sirius-ioc-si-ap-sofb.service")
 
 
 
@@ -537,6 +539,11 @@ servnfs_hostname=linac-servnfs
 servnfs_repos_folder=/home/nfs-shared/repos-lnls-sirius/
 
 servweb_repodir=/home/con-srv/LA-disk0/misc-brick/repository/control-system-constants/
+
+
+server_services_ioc_as_ap_sofb=lnls454-linux
+
+server_services_ioc_as_ap=lnlsfac-vm
 
 
 server_services_ioc_li_ps=lnlsfac-vm
@@ -562,9 +569,9 @@ server_services_ioc_ts_ps=lnlsfac-vm
 server_services_ioc_ts_ma=lnlsfac-vm
 
 
-server_services_ioc_si_ps_fam=lnlsfac-vm
+server_services_ioc_si_ps_fam=lnlsfac-srv1
 
-server_services_ioc_si_ma_fam=lnlsfac-vm
+server_services_ioc_si_ma_fam=lnlsfac-srv1
 
 
 server_services_ioc_si_ps_corr=lnlsfac-srv1
@@ -576,8 +583,6 @@ server_services_ioc_si_ps_trim_qs=lnlsfac-srv1
 
 server_services_ioc_si_ma_trim_qs=lnlsfac-srv1
 
-
-server_services_ioc_fac=lnls454-linux
 
 
 # --- aux functions ---
@@ -654,7 +659,7 @@ function get_password {
   hosttype=$2
   read -s -r -p "$username's password @ $hosttype: " user_passwd; echo ""
   if [ "$hosttype" == "desktops" ]; then
-    res=$( sshpass -p $user_passwd ssh sirius@$server_services_ioc_fac ls 2>&1 |grep denied)
+    res=$( sshpass -p $user_passwd ssh sirius@$server_services_ioc_as_ap ls 2>&1 |grep denied)
     if [ ! -z "$res" ]; then
       echo "Invalid Password."
       exit 1
