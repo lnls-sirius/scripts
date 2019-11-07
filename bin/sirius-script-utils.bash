@@ -498,13 +498,6 @@ services_ioc_as_ap=(
   "sirius-ioc-tb-ps-diag.service"
   "sirius-ioc-bo-ps-diag.service"
   "sirius-ioc-ts-ps-diag.service"
-  "sirius-ioc-si-ps-diag-fam.service"
-  # "sirius-ioc-si-ps-diag-ch.service"
-  # "sirius-ioc-si-ps-diag-cv.service"
-  # "sirius-ioc-si-ps-diag-qs.service"
-  # "sirius-ioc-si-ps-diag-fc.service"
-  # "sirius-ioc-si-ps-diag-trim-01.service"
-  # "sirius-ioc-si-ps-diag-trim-02.service"
   "sirius-ioc-as-ti-trig.service"
   "sirius-ioc-li-ti-trig.service"
   "sirius-ioc-tb-ti-trig.service"
@@ -529,6 +522,15 @@ services_ioc_as_ap_sofb=(
   "sirius-ioc-ts-ap-sofb.service"
   "sirius-ioc-si-ap-sofb.service")
 
+services_ioc_si_ps_diag=(
+  "sirius-ioc-si-ps-diag-fam.service"
+  "sirius-ioc-si-ps-diag-ch.service"
+  "sirius-ioc-si-ps-diag-cv.service"
+  "sirius-ioc-si-ps-diag-qs.service"
+  "sirius-ioc-si-ps-diag-trim-q1234.service"
+  "sirius-ioc-si-ps-diag-trim-qfqd.service"
+  # "sirius-ioc-si-ps-diag-fc.service"
+)
 
 
 mirror_repos_path=/home/sirius/repos
@@ -584,6 +586,8 @@ server_services_ioc_si_ps_trim_qs=lnlsfac-srv1
 
 server_services_ioc_si_ma_trim_qs=lnlsfac-srv1
 
+
+server_services_ioc_si_ps_diag=lnlsfac-srv1
 
 
 # --- aux functions ---
