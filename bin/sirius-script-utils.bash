@@ -493,17 +493,11 @@ services_ioc_si_ma_trim_qs=(
   "sirius-ioc-si-ma-trims-qs-c1234-ia20.service"
   )
 
-services_ioc_fac=(
+
+services_ioc_as_ap=(
   "sirius-ioc-tb-ps-diag.service"
   "sirius-ioc-bo-ps-diag.service"
   "sirius-ioc-ts-ps-diag.service"
-  "sirius-ioc-si-ps-diag-fam.service"
-  # "sirius-ioc-si-ps-diag-ch.service"
-  # "sirius-ioc-si-ps-diag-cv.service"
-  # "sirius-ioc-si-ps-diag-qs.service"
-  # "sirius-ioc-si-ps-diag-fc.service"
-  # "sirius-ioc-si-ps-diag-trim-01.service"
-  # "sirius-ioc-si-ps-diag-trim-02.service"
   "sirius-ioc-as-ti-trig.service"
   "sirius-ioc-li-ti-trig.service"
   "sirius-ioc-tb-ti-trig.service"
@@ -511,21 +505,32 @@ services_ioc_fac=(
   "sirius-ioc-ts-ti-trig.service"
   "sirius-ioc-si-ti-trig.service"
   "sirius-ioc-li-di-charge.service"
+  "sirius-ioc-li-ap-energy.service"
   "sirius-ioc-bo-ap-currinfo.service"
   # "sirius-ioc-si-ap-currinfo.service"
   # "sirius-ioc-si-ap-currinfo-lifetime.service"
   "sirius-ioc-tb-ap-posang.service"
   "sirius-ioc-ts-ap-posang.service"
-  "sirius-ioc-tb-ap-sofb.service"
-  "sirius-ioc-bo-ap-sofb.service"
-  "sirius-ioc-ts-ap-sofb.service"
-  "sirius-ioc-si-ap-sofb.service"
   "sirius-ioc-bo-ap-tunecorr.service"
   "sirius-ioc-bo-ap-chromcorr.service"
   "sirius-ioc-si-ap-tunecorr.service"
   "sirius-ioc-si-ap-chromcorr.service")
 
+services_ioc_as_ap_sofb=(
+  "sirius-ioc-tb-ap-sofb.service"
+  "sirius-ioc-bo-ap-sofb.service"
+  "sirius-ioc-ts-ap-sofb.service"
+  "sirius-ioc-si-ap-sofb.service")
 
+services_ioc_si_ps_diag=(
+  "sirius-ioc-si-ps-diag-fam.service"
+  "sirius-ioc-si-ps-diag-ch.service"
+  "sirius-ioc-si-ps-diag-cv.service"
+  "sirius-ioc-si-ps-diag-qs.service"
+  "sirius-ioc-si-ps-diag-trim-q1234.service"
+  "sirius-ioc-si-ps-diag-trim-qfqd.service"
+  # "sirius-ioc-si-ps-diag-fc.service"
+)
 
 
 mirror_repos_path=/home/sirius/repos
@@ -539,7 +544,12 @@ servnfs_repos_folder=/home/nfs-shared/repos-lnls-sirius/
 servweb_repodir=/home/con-srv/LA-disk0/misc-brick/repository/control-system-constants/
 
 
-server_services_ioc_li_ps=lnls560-linux
+server_services_ioc_as_ap_sofb=lnls454-linux
+
+server_services_ioc_as_ap=lnlsfac-vm
+
+
+server_services_ioc_li_ps=lnlsfac-vm
 
 
 server_services_ioc_as_dclinks=lnlsfac-vm
@@ -562,9 +572,9 @@ server_services_ioc_ts_ps=lnlsfac-vm
 server_services_ioc_ts_ma=lnlsfac-vm
 
 
-server_services_ioc_si_ps_fam=lnlsfac-vm
+server_services_ioc_si_ps_fam=lnlsfac-srv1
 
-server_services_ioc_si_ma_fam=lnlsfac-vm
+server_services_ioc_si_ma_fam=lnlsfac-srv1
 
 
 server_services_ioc_si_ps_corr=lnlsfac-srv1
@@ -577,7 +587,7 @@ server_services_ioc_si_ps_trim_qs=lnlsfac-srv1
 server_services_ioc_si_ma_trim_qs=lnlsfac-srv1
 
 
-server_services_ioc_fac=lnls454-linux
+server_services_ioc_si_ps_diag=lnlsfac-srv1
 
 
 # --- aux functions ---
@@ -654,7 +664,7 @@ function get_password {
   hosttype=$2
   read -s -r -p "$username's password @ $hosttype: " user_passwd; echo ""
   if [ "$hosttype" == "desktops" ]; then
-    res=$( sshpass -p $user_passwd ssh sirius@$server_services_ioc_fac ls 2>&1 |grep denied)
+    res=$( sshpass -p $user_passwd ssh sirius@$server_services_ioc_as_ap ls 2>&1 |grep denied)
     if [ ! -z "$res" ]; then
       echo "Invalid Password."
       exit 1
