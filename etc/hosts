@@ -85,8 +85,9 @@ ff02::2 ip6-allrouters
 
 # SIRIUS Servers
 # ==============
-#10.128.255.8   lnlsfac-vm    # Host: 10.128.255.3
+#10.128.255.8   lnlsfac-vm1    # Host: 10.128.255.3
 #10.128.255.9   lnlsfac-srv1  # IBM server at linac
+#10.128.255.10  lnlsfac-vm2    # Host: 10.128.255.4
 
 
 # SIRIUS power supply beaglebones
