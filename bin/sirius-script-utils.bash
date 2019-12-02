@@ -546,30 +546,30 @@ servweb_repodir=/home/con-srv/LA-disk0/misc-brick/repository/control-system-cons
 
 server_services_ioc_as_ap_sofb=lnls454-linux
 
-server_services_ioc_as_ap=lnlsfac-vm
+server_services_ioc_as_ap=lnlsfac-vm1
 
 
-server_services_ioc_li_ps=lnlsfac-vm
+server_services_ioc_li_ps=lnlsfac-vm1
 
 
-server_services_ioc_as_dclinks=lnlsfac-vm
+server_services_ioc_as_dclinks=lnlsfac-vm1
 
 
-server_services_ioc_tb_ps=lnlsfac-vm
+server_services_ioc_tb_ps=lnlsfac-vm1
 
-server_services_ioc_tb_ma=lnlsfac-vm
-
-
-server_services_ioc_bo_ps_fam=lnlsfac-vm
-
-server_services_ioc_bo_ps_corr=lnlsfac-vm
-
-server_services_ioc_bo_ma=lnlsfac-vm
+server_services_ioc_tb_ma=lnlsfac-vm1
 
 
-server_services_ioc_ts_ps=lnlsfac-vm
+server_services_ioc_bo_ps_fam=lnlsfac-vm1
 
-server_services_ioc_ts_ma=lnlsfac-vm
+server_services_ioc_bo_ps_corr=lnlsfac-vm1
+
+server_services_ioc_bo_ma=lnlsfac-vm1
+
+
+server_services_ioc_ts_ps=lnlsfac-vm1
+
+server_services_ioc_ts_ma=lnlsfac-vm1
 
 
 server_services_ioc_si_ps_fam=lnlsfac-srv1
