@@ -54,12 +54,12 @@ function run_ansible {
 
 function run {
   print_header_and_inputs $1
-  #create_tagged_repos
-  #update_servweb
-  #checkout_tagged_repos_nfs_server
-  #clone_ansible
-  #run_ansible $1
-  #update_deploy_file
+  create_tagged_repos
+  update_servweb
+  checkout_tagged_repos_nfs_server
+  clone_ansible
+  run_ansible $1
+  update_deploy_file
 }
 
 run $1
