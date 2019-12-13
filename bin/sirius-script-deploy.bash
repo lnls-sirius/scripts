@@ -19,7 +19,8 @@ function create_tagged_repos {
 }
 
 function print_header_and_inputs {
-  printf_blue "Deploy Sirius Repositories\n"
+  mode=$1
+  printf_blue "Deploy Sirius Repositories ("$mode")\n"
   printf "\n"
   get_password sirius desktops
   deploy_tag=$(create_deploy_tag)
@@ -41,19 +42,24 @@ function clone_ansible {
 }
 
 function run_ansible {
+  mode=$1
   printf_green "Running Ansible (cloned master)\n"
   cd $ansible_folder
-  make ANSIBLE_EXTRA_VARS="--extra-vars \"global_deploy_tag=$deploy_tag global_import_nvidia_driver_role=false\"" deploy-control-room-desktops
+  if [ ! "$mode" == 'fast' ]; then
+    make ANSIBLE_EXTRA_VARS="--extra-vars \"global_deploy_tag=$deploy_tag global_import_nvidia_driver_role=false\"" deploy-control-room-desktops-sirius
+  else
+    make ANSIBLE_EXTRA_VARS="--extra-vars \"global_deploy_tag=$deploy_tag global_import_nvidia_driver_role=false\"" deploy-control-room-desktops
+  fi
 }
 
 function run {
-  print_header_and_inputs
+  print_header_and_inputs $1
   create_tagged_repos
   update_servweb
   checkout_tagged_repos_nfs_server
   clone_ansible
-  run_ansible
+  run_ansible $1
   update_deploy_file
 }
 
-run
+run $1
