@@ -10,7 +10,8 @@ GENERALSCRIPTS = \
 		sirius-script-deploy.bash \
 		sirius-script-ps-firmware-version.py \
 		sirius-script-ps-devices.py \
-		sirius-script-li-egun-ramp.py
+		sirius-script-li-egun-ramp.py \
+		sirius-script-ps-wfmupdateauto-off.py
 
 REPOSSCRIPTS = \
 		sirius-script-repos-install-pristine.bash \
