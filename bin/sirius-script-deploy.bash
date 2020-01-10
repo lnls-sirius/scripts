@@ -9,6 +9,9 @@ function create_tagged_repos {
   printf "\n"
   tmpdir=$(get_tmpdir repos-deploy)
   mkdir -p $tmpdir
+  repos=(
+    "lnls-ansible:master"
+  )
   for repo in ${repos[@]}; do
     printf_yellow "[$repo]\n"
     cmd_repo_clone_master $repo $tmpdir
@@ -25,7 +28,7 @@ function print_header_and_inputs {
   get_password sirius desktops
   deploy_tag=$(create_deploy_tag)
   read -e -p "Enter deploy tag    : " -i "$deploy_tag" deploy_tag
-  read -r -p "Enter deploy comment: " comment; echo ""
+  # read -r -p "Enter deploy comment: " comment; echo ""
   read -r -p "Really deploy ? [yes|no]: " answer; echo ""
   if [ ! "$answer" == 'yes' ]; then
     printf_red "bailing out...\n"
@@ -34,17 +37,22 @@ function print_header_and_inputs {
   printf "\n"
 }
 
-function clone_ansible {
+function tag_ansible {
   printf_green "Clonning Ansible\n"
-  ansible_folder=$(mktemp -d --suffix=-lnls-ansible)
-  git clone https://github.com/lnls-sirius/lnls-ansible $ansible_folder
+  cd /home/sirius/repos/lnls-ansible
+  git stash
+  git fetch -p --all
+  git checkout master
+  git tag $deploy_tag
+  git push --tags
   printf "\n"
 }
 
 function run_ansible {
   mode=$1
-  printf_green "Running Ansible (cloned master)\n"
-  cd $ansible_folder
+  printf_green "Running Ansible\n"
+  cd /home/sirius/repos/lnls-ansible
+  checkout $deploy_tag
   if [ ! "$mode" == 'fast' ]; then
     make ANSIBLE_EXTRA_VARS="--extra-vars \"global_deploy_tag=$deploy_tag global_import_nvidia_driver_role=false\"" deploy-control-room-desktops-sirius
   else
@@ -54,12 +62,13 @@ function run_ansible {
 
 function run {
   print_header_and_inputs $1
-  create_tagged_repos
+
+  # move these tasks to ansible!
   update_servweb
-  checkout_tagged_repos_nfs_server
-  clone_ansible
+  #checkout_tagged_repos_nfs_server
+
+  tag_ansible
   run_ansible $1
-  update_deploy_file
 }
 
 run $1
