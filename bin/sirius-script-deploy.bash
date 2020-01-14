@@ -45,7 +45,7 @@ function run_ansible {
   mode=$1
   printf_green "Running Ansible (cloned master)\n"
   cd $ansible_folder
-  if [ ! "$mode" == 'fast' ]; then
+  if [ "$mode" == 'fast' ]; then
     make ANSIBLE_EXTRA_VARS="--extra-vars \"global_deploy_tag=$deploy_tag global_import_nvidia_driver_role=false\"" deploy-control-room-desktops-sirius
   else
     make ANSIBLE_EXTRA_VARS="--extra-vars \"global_deploy_tag=$deploy_tag global_import_nvidia_driver_role=false\"" deploy-control-room-desktops
