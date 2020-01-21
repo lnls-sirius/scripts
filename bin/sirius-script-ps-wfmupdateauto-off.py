@@ -6,7 +6,7 @@ import epics
 from siriuspy.search import PSSearch
 
 
-def get_pvs():
+def get_pvs_bo():
     """."""
     psnames = PSSearch.get_psnames()
     pvs = dict()
@@ -15,6 +15,20 @@ def get_pvs():
                 'FCH' not in psname and \
                 'FCV' not in psname and \
                 'PU' not in psname:
+            print(psname)
+            pvs[psname] = epics.PV(psname + ':WfmUpdateAuto-Sel')
+    return pvs
+
+def get_pvs_all():
+    """."""
+    psnames = PSSearch.get_psnames()
+    pvs = dict()
+    for psname in psnames:
+        if psname[:2] in ('TB', 'TS', 'SI') and \
+                'FCH' not in psname and \
+                'FCV' not in psname and \
+                'PU' not in psname:
+            print(psname)
             pvs[psname] = epics.PV(psname + ':WfmUpdateAuto-Sel')
     return pvs
 
@@ -40,7 +54,7 @@ def update_on_off(pvs, value):
 
 def run():
     """."""
-    pvs = get_pvs()
+    pvs = get_pvs_all()
     time.sleep(2.0)
     update_on_off(pvs, 0)
 

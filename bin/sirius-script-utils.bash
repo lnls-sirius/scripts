@@ -26,13 +26,15 @@ repos=(
 
 mirror_repos_path=/home/sirius/repos
 
-servweb_hostname=10.0.38.42
+
+servweb_hostname=10.0.38.59
+
+servweb_repodir=/home/con-srv/LA-disk0/misc-brick/repository/control-system-constants
+
 
 servnfs_hostname=linac-servnfs
 
 servnfs_repos_folder=/home/nfs-shared/repos-lnls-sirius/
-
-servweb_repodir=/storage/services/repository/control-system-constants/
 
 
 # --- aux functions ---
