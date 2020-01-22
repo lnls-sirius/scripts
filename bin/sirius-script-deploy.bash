@@ -4,23 +4,6 @@ source /usr/local/bin/sirius-script-utils.bash
 trap _abort SIGINT;
 
 
-function create_tagged_repos {
-  printf_green "Create tagged local repos\n"
-  printf "\n"
-  tmpdir=$(get_tmpdir repos-deploy)
-  mkdir -p $tmpdir
-  repos=(
-    "lnls-ansible:master"
-  )
-  for repo in ${repos[@]}; do
-    printf_yellow "[$repo]\n"
-    cmd_repo_clone_master $repo $tmpdir
-    git tag $deploy_tag
-    git push --tags
-    printf "\n"
-  done
-}
-
 function print_header_and_inputs {
   mode=$1
   printf_blue "Deploy Sirius Repositories ("$mode")\n"
