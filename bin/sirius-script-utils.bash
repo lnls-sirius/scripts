@@ -27,9 +27,8 @@ repos=(
 mirror_repos_path=/home/sirius/repos
 
 
-servweb_hostname=10.0.38.59
-
-servweb_repodir=/home/con-srv/LA-disk0/misc-brick/repository/control-system-constants
+#servweb_hostname=10.0.38.59
+#servweb_repodir=/home/con-srv/LA-disk0/misc-brick/repository/control-system-constants
 
 
 servnfs_hostname=linac-servnfs
@@ -131,35 +130,6 @@ function check_repo_install {
 function create_deploy_tag {
   timestamp=$(get_timestamp)
   echo "deploy-"$timestamp"_"$USER"_"$LINUX_HOSTNAME
-}
-
-function update_servweb {
-  printf_green "Update servweb ($servweb_hostname) (branch master!)\n"
-  printf "\n"
-  branch=master
-  sshpass -p $user_passwd ssh sirius@$servweb_hostname "cd $servweb_repodir; git stash; git fetch --prune origin '+refs/tags/*:refs/tags/*'; git checkout $branch; git pull"
-  printf "\n"
-}
-
-function checkout_tagged_repos_nfs_server {
-  printf_green "Checkout tagged repos in nfs server ($servnfs_hostname)\n"
-  printf "\n"
-  for repo in "${repos[@]}"; do
-    reponame=$(echo $repo | cut -d":" -f1)
-    printf_yellow "[$repo]\n"
-    echo $reponame
-    if [[ "$reponame" == "mathphys" ]]; then
-      cmd="cd $servnfs_repos_folder && rm -rf $reponame && git clone https://github.com/lnls-fac/$reponame && cd $reponame && git checkout master"
-    elif [[ "$reponame" == "linac-opi" ]]; then
-      cmd="cd $servnfs_repos_folder && rm -rf $reponame && git clone https://gitlab.cnpem.br/FACS/$reponame && cd $reponame && git checkout master"
-    elif [[ "$reponame" == "linac-ioc-ps" ]]; then
-      cmd="cd $servnfs_repos_folder && rm -rf $reponame && git clone https://gitlab.cnpem.br/FACS/$reponame && cd $reponame && git checkout master"
-    else
-      cmd="cd $servnfs_repos_folder && rm -rf $reponame && git clone https://github.com/lnls-sirius/$reponame && cd $reponame && git checkout master"
-    fi
-    sshpass -p $user_passwd ssh sirius@$servnfs_hostname $cmd
-    printf "\n"
-  done
 }
 
 function deploy_desktops {
