@@ -21,22 +21,19 @@ repos=(
   "hla:master"
   "linac-ioc-ps:master"
   "linac-opi:master"
-  #"bbb-daemon:master"
-  #"ARM:deploy-v0.32-2019-04-10"
-  #"C28:deploy-v0.32-2019-04-10"
   )
 
 
 mirror_repos_path=/home/sirius/repos
 
-servweb_hostname=10.0.38.42
+
+#servweb_hostname=10.0.38.59
+#servweb_repodir=/home/con-srv/LA-disk0/misc-brick/repository/control-system-constants
+
 
 servnfs_hostname=linac-servnfs
 
 servnfs_repos_folder=/home/nfs-shared/repos-lnls-sirius/
-
-# servweb_repodir=/home/con-srv/LA-disk0/misc-brick/repository/control-system-constants/
-servweb_repodir=/storage/services/repository/control-system-constants/
 
 
 # --- aux functions ---
@@ -133,40 +130,6 @@ function check_repo_install {
 function create_deploy_tag {
   timestamp=$(get_timestamp)
   echo "deploy-"$timestamp"_"$USER"_"$LINUX_HOSTNAME
-}
-
-function update_servweb {
-  printf_green "Update servweb ($servweb_hostname)\n"
-  printf "\n"
-  branch=master
-  sshpass -p $user_passwd ssh sirius@$servweb_hostname "cd $servweb_repodir; git stash; git fetch --prune origin '+refs/tags/*:refs/tags/*'; git checkout $branch; git pull; git checkout $deploy_tag"
-  printf "\n"
-}
-
-function update_deploy_file {
-  printf_green "Update deploy file in nfs server ($servnfs_hostname)\n"
-  printf "\n"
-  sshpass -p $user_passwd ssh sirius@$servnfs_hostname "cd $servnfs_repos_folder/; echo '$deploy_tag:  $comment' >> deploy.log"
-}
-
-function checkout_tagged_repos_nfs_server {
-  printf_green "Checkout tagged repos in nfs server ($servnfs_hostname)\n"
-  printf "\n"
-  for repo in "${repos[@]}"; do
-    reponame=$(echo $repo | cut -d":" -f1)
-    printf_yellow "[$repo]\n"
-    if [[ "$reponame" == "mathphys" ]]; then
-      cmd="cd $servnfs_repos_folder && rm -rf $reponame && git clone https://github.com/lnls-fac/$reponame && cd $reponame && git checkout $deploy_tag"
-    elif [[ "$reponame" == "linac-opi" ]]; then
-      cmd="cd $servnfs_repos_folder && rm -rf $reponame && git clone https://gitlab.cnpem.br/FACS/$reponame && cd $reponame && git checkout $deploy_tag"
-    elif [[ "$reponame" == "linac-ioc-ps" ]]; then
-      cmd="cd $servnfs_repos_folder && rm -rf $reponame && git clone https://gitlab.cnpem.br/FACS/$reponame && cd $reponame && git checkout $deploy_tag"
-    else
-      cmd="cd $servnfs_repos_folder && rm -rf $reponame && git clone https://github.com/lnls-sirius/$reponame && cd $reponame && git checkout $deploy_tag"
-    fi
-    sshpass -p $user_passwd ssh sirius@$servnfs_hostname $cmd
-    printf "\n"
-  done
 }
 
 function deploy_desktops {
