@@ -35,7 +35,7 @@ function run_ansible {
   mode=$1
   printf_green "Running Ansible\n"
   cd /home/sirius/repos/lnls-ansible
-  checkout $deploy_tag
+  git checkout $deploy_tag
   if [ "$mode" == 'fast' ]; then
     make ANSIBLE_EXTRA_VARS="--extra-vars \"global_deploy_tag=$deploy_tag global_import_nvidia_driver_role=false\"" deploy-control-room-desktops-sirius
   else
