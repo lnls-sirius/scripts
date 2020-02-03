@@ -26,6 +26,7 @@ function tag_ansible {
   git stash
   git fetch -p --all
   git checkout master
+  git pull
   git tag $deploy_tag
   git push --tags
   printf "\n"
