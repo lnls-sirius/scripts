@@ -8,7 +8,7 @@ function print_header_and_inputs {
   mode=$1
   printf_blue "Deploy Sirius Repositories ("$mode")\n"
   printf "\n"
-  get_password sirius desktops
+  # get_password sirius desktops
   deploy_tag=$(create_deploy_tag)
   read -e -p "Enter deploy tag    : " -i "$deploy_tag" deploy_tag
   # read -r -p "Enter deploy comment: " comment; echo ""
@@ -37,9 +37,9 @@ function run_ansible {
   cd /home/sirius/repos/lnls-ansible
   git checkout $deploy_tag
   if [ "$mode" == 'fast' ]; then
-    make ANSIBLE_EXTRA_VARS="--extra-vars \"global_deploy_tag=$deploy_tag global_import_nvidia_driver_role=false\"" deploy-control-room-desktops-sirius
+    make ANSIBLE_EXTRA_VARS="--extra-vars \"global_import_nvidia_driver_role=false\"" deploy-control-room-desktops-sirius-nfs
   else
-    make ANSIBLE_EXTRA_VARS="--extra-vars \"global_deploy_tag=$deploy_tag global_import_nvidia_driver_role=false\"" deploy-control-room-desktops
+    make ANSIBLE_EXTRA_VARS="--extra-vars \"global_import_nvidia_driver_role=false\"" deploy-control-room-desktops-nfs
   fi
 }
 
