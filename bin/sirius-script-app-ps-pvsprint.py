@@ -22,9 +22,21 @@ def select_psnames(psgroup):
     allps = get_all_psnames()
     if psgroup in allps:
         psnames.append(psgroup)
+    elif psgroup.lower() == 'tb':
+        for ps in allps:
+            if ps.sec == 'TB':
+                psnames.append(ps)
     elif psgroup.lower() == 'bo':
         for ps in allps:
             if ps.sec == 'BO':
+                psnames.append(ps)
+    elif psgroup.lower() == 'ts':
+        for ps in allps:
+            if ps.sec == 'TS':
+                psnames.append(ps)
+    elif psgroup.lower() == 'si':
+        for ps in allps:
+            if ps.sec == 'SI':
                 psnames.append(ps)
     if psgroup.lower() == 'bo-correctors':
         for ps in allps:
