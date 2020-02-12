@@ -46,6 +46,8 @@ def select_psnames(psgroup):
         for ps in allps:
             if ps.sec == 'LA' and ps.sub == 'CN':
                 psnames.append(ps)
+            if ps.sec == 'LI':
+                psnames.append(ps)
     elif psgroup.lower() in ('li-dipole', 'li-spectrometer'):
         for ps in allps:
             if ps.sec == 'LA' and ps.sub == 'CN' and ps.dis == 'H1DPPS':
