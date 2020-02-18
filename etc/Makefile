@@ -3,8 +3,7 @@ HOSTNAME=$(shell hostname)
 DEST_DIR = /usr/local/etc
 
 GENERALSCRIPTS = \
-		bashrc-sirius \
-		bashrc-sirius-bbb-facuser
+		bashrc-sirius
 
 SCRIPTS = $(GENERALSCRIPTS)
 
