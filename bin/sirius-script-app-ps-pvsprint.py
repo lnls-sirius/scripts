@@ -22,6 +22,8 @@ def select_psnames(psgroup):
     allps = get_all_psnames()
     if psgroup in allps:
         psnames.append(psgroup)
+    elif psgroup == 'all':
+        psnames = allps
     elif psgroup.lower() == 'tb':
         for ps in allps:
             if ps.sec == 'TB':
@@ -45,6 +47,8 @@ def select_psnames(psgroup):
     elif psgroup.lower() == 'li':
         for ps in allps:
             if ps.sec == 'LA' and ps.sub == 'CN':
+                psnames.append(ps)
+            if ps.sec == 'LI':
                 psnames.append(ps)
     elif psgroup.lower() in ('li-dipole', 'li-spectrometer'):
         for ps in allps:
@@ -73,7 +77,7 @@ def print_pvs(psnames):
 def run():
     """."""
     args = sys.argv[1:]
-    if len(args) == 0:
+    if not args:
         args = ['all']
     psnames = []
     for arg in args:
