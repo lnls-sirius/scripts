@@ -13,7 +13,10 @@ from siriuspy.pwrsupply.data import PSData
 def get_pvs(accelerator, pattern):
     """."""
     regexp = re.compile(pattern)
-    psnames = PSSearch.get_psnames({'sec': accelerator})
+    if accelerator:
+        psnames = PSSearch.get_psnames({'sec': accelerator})
+    else:
+        psnames = PSSearch.get_psnames()
     pvslist = []
     for psname in psnames:
         psdata = PSData(psname)
@@ -68,6 +71,13 @@ def check_estimated_storage_rate_kb_hour(accelerator, pattern):
         print('{:<60s} {}'.format(pvname, kb_hour))
 
 
+def list_pvnames(accelerator, pattern):
+    """."""
+    pvslist = get_pvs(accelerator, pattern)
+    for pvname in pvslist:
+        print(pvname)
+
+
 def run():
     """."""
     if len(sys.argv) != 4:
@@ -77,6 +87,7 @@ def run():
         print('    --connected')
         print('    --paused')
         print('    --storage-kb-hour')
+        print('    --list')
         return
     test_type = sys.argv[1]
     accelerator = sys.argv[2]
@@ -89,6 +100,8 @@ def run():
         check_is_paused(accelerator, pattern)
     elif test_type == '--storage-kb-hour':
         check_estimated_storage_rate_kb_hour(accelerator, pattern)
+    elif test_type == '--list':
+        list_pvnames(accelerator, pattern)
 
 
 run()
