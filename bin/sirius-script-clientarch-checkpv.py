@@ -4,13 +4,10 @@
 import sys
 import re
 
-# import matplotlib.pyplot as plt
-
 from siriuspy.clientarch import ClientArchiver
-from siriuspy.clientarch import PV, PVDetails
+from siriuspy.clientarch import PVDetails
 from siriuspy.search import PSSearch
 from siriuspy.pwrsupply.data import PSData
-
 
 
 def get_pvs(accelerator, pattern):
