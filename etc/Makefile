@@ -12,7 +12,7 @@ FULLSCRIPTS = $(addprefix $(DEST_DIR)/, $(SCRIPTS))
 
 install: uninstall install-ansible
 
-install-ansible: install-hosts install-rsyncd
+install-ansible: install-hosts
 	cp -f $(SCRIPTS) $(DEST_DIR)
 
 develop:
@@ -24,14 +24,6 @@ uninstall:
 install-hosts:
 	cp -f hosts /etc/hosts
 	sed -i "s/#127.0.1.1 $(HOSTNAME)/127.0.1.1 $(HOSTNAME)/g" /etc/hosts
-
-install-rsyncd:
-	cp rsyncd.conf /etc/rsyncd.conf
-
-install-bbb: uninstall
-	mkdir -p $(DEST_DIR)
-	cp $(SCRIPTS) $(DEST_DIR)
-	ln -sf $(DEST_DIR)/bashrc-sirius-bbb-facuser /home/fac/.bashrc; chown fac.fac /home/fac/.bashrc
 
 install-autofs:
 	apt-get install autofs

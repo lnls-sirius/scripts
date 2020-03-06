@@ -9,7 +9,7 @@ install:
 	$(MAKE) install -C bin/
 
 install-ansible:
-	$(MAKE) install-ansible -C etc/
+	# $(MAKE) install-ansible -C etc/
 	$(MAKE) install-ansible -C bin/
 
 develop:
