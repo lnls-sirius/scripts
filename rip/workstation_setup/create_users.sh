@@ -6,7 +6,7 @@ function user_exists {
 	echo $?
 }
 
-users=(fernando ximenes guilherme liulin ana alexandre murilo)
+users=(fernando ximenes analuisa liulin ana alexandre murilo)
 for user in ${users[@]}; do
 	if [ $(user_exists $user) -eq 0 ]; then
 		echo $user' user already exists'

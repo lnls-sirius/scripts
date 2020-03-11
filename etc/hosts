@@ -309,8 +309,8 @@ ff02::2 ip6-allrouters
 #10.0.38.50     sirius-fac-ana
 
 # --- lnls560-linux --- MAC d0:94:66:ae:7d:9b
-10.128.254.231 lnls560-linux fac-guilherme
-#10.0.38.49     sirius-fac-guilherme
+10.128.254.231 lnls560-linux fac-analuisa
+#10.0.38.49     sirius-fac-analuisa
 
 # --- lnls561-linux --- MAC d0:94:66:ae:7a:84
 10.128.254.233 lnls561-linux fac-ximenes
