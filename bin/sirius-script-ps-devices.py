@@ -132,7 +132,7 @@ def print_tree(*args, **kwargs):
 
 # from tree_format import format_tree_simple
 from siriuspy.search import PSSearch
-from siriuspy.csdevice.util import get_device_2_ioc_ip
+from siriuspy.csdev import get_device_2_ioc_ip
 
 
 def create_tree():
