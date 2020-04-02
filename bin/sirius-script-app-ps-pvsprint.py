@@ -2,7 +2,7 @@
 """."""
 
 import sys
-from siriuspy.search.ps_search import PSSearch
+from siriuspy.search import PSSearch
 from siriuspy.namesys import SiriusPVName
 from siriuspy.pwrsupply.data import PSData
 
