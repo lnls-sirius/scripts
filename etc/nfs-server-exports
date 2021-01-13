@@ -22,4 +22,4 @@
                                    10.0.38.0/24(rw,sync,no_subtree_check,no_root_squash,insecure)
 
 # --- backups shared with lnls350-linux ---
-/home/nfs-shared/backups           10.0.7.55(rw,sync,no_subtree_check,no_root_squash,insecure)
+/home/nfs-shared/backups           10.20.31.28(rw,sync,no_subtree_check,no_root_squash,insecure)
