@@ -5,19 +5,19 @@ set -e
 opi=$1
 
 if [ $opi = pulsed ]; then
-    CON=/home/sirius/.con
+    GCO=/home/sirius/.con
     ESS=/home/sirius/.ess-studio-con-SPIxCONV/CSS
 
-    if [ ! -d $CON/SPIxCONV ]; then
-        sudo -u sirius mkdir -p $CON
-        cd $CON
+    if [ ! -d $GCO/SPIxCONV ]; then
+        sudo -u sirius mkdir -p $GCO
+        cd $GCO
         sudo -u sirius git clone https://github.com/lnls-sirius/SPIxCONV
     else
         echo 'SPIxCONV already cloned.'
     fi
 
     sudo -u sirius mkdir -p $ESS
-    sudo ln -sf $CON/SPIxCONV/software/CSS $ESS/con-epp-opi
+    sudo ln -sf $GCO/SPIxCONV/software/CSS $ESS/con-epp-opi
 
     echo 'OPI for pulsed power supplies installed.'
 else
