@@ -21,7 +21,7 @@
 #127.0.1.1 lnls558-linux # fac-murilo
 #127.0.1.1 lnls559-linux # fac-ana
 #127.0.1.1 lnls560-linux # fac-ximenes
-#127.0.1.1 lnls561-linux
+#127.0.1.1 lnls561-linux # fac-jucelio
 
 
 # The following lines are desirable for IPv6 capable hosts
@@ -345,26 +345,26 @@ ff02::2 ip6-allrouters
 # =====================
 
 # --- lnls556-linux --- MAC d0:94:66:ae:7d:58
-10.128.254.234 fac-fernando
+10.20.31.30 lnls556-linux fac-fernando
 
 # --- lnls557-linux --- MAC d0:94:66:ae:7d:98
 10.128.254.224 lnls557-linux fac-liulin
 
 # --- lnls558-linux --- MAC d0:94:66:ae:7d:bf
-10.128.254.228 lnls558-linux fac-murilo
+10.20.31.36 lnls558-linux fac-murilo
 
 # --- lnls559-linux --- MAC d0:94:66:ae:71:ef
-10.128.254.221 lnls559-linux fac-ana
+# 10.128.254.221 lnls559-linux fac-ana
 
 # --- lnls560-linux --- MAC d0:94:66:ae:7d:9b
-10.128.254.231 lnls560-linux fac-analuisa
+10.20.31.17 lnls560-linux fac-ximenes
 
 # --- lnls561-linux --- MAC d0:94:66:ae:7a:84
-10.128.254.233 lnls561-linux fac-ximenes
+#10.128.254.233 lnls561-linux fac-jucelio
 
 
 # FAC workstations
 # ================
 10.20.31.28  lnls350-linux.abtlus.org.br lnls350-linux # --- MAC 00:25:90:e7:58:8b
-10.0.21.219  lnls377-linux
-10.0.21.131  lnls116-virtual # Ricardo's computer virtual machine
+#10.0.21.219  lnls377-linux # fac-laptop (GOP)
+#10.0.21.131  lnls116-virtual # Ricardo's computer virtual machine
