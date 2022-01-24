@@ -360,7 +360,7 @@ ff02::2 ip6-allrouters
 10.20.31.17 lnls560-linux fac-ximenes
 
 # --- lnls561-linux --- MAC d0:94:66:ae:7a:84
-#10.128.254.233 lnls561-linux fac-jucelio
+10.20.31.21 lnls561-linux fac-jucelio
 
 
 # FAC workstations
