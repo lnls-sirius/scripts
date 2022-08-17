@@ -1,6 +1,57 @@
 #!/usr/bin/env bash
 
+# Exit if any command fails
+# set -e
 
+##############################################################################
+# Parse arguments.
+# Adapted from: https://stackabuse.com/how-to-parse-command-line-arguments-in-bash/
+
+function help
+{
+    echo "Usage: sirius-script-create-mamba-env.bash
+               [ -c | --clone-repos ]
+               [ -h | --help  ]"
+    exit 2
+}
+
+SHORT=nh
+LONG=no-clone-repos,help
+OPTS=$(getopt -a -n weather --options $SHORT --longoptions $LONG -- "$@")
+
+# Returns the count of arguments that are in short or long options
+# VALID_ARGS=$#
+# if [ "$VALID_ARGS" -eq 0 ]; then
+#     help
+# fi
+
+eval set -- "$OPTS"
+
+CLONE="yes"
+# now enjoy the options in order and nicely split until we see --
+while true; do
+    case "$1" in
+        -n|--no-clone-repos)
+            CLONE="no"
+            shift
+            ;;
+        -h|--help)
+            help
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+        *)
+            echo "Unexpected option: $1"
+            help
+            ;;
+    esac
+done
+
+##############################################################################
+# Define some useful functions
 function printf_yellow {
   printf "\e[1;33m$1\e[0m"
 }
@@ -10,165 +61,347 @@ function printf_blue {
 function printf_green {
   printf "\e[1;32m$1\e[0m"
 }
+function printf_red {
+  printf "\e[1;31m$1\e[0m"
+}
 function _abort {
-  printf "\n"
+  printf_red "SIGINT received. Aborting...\n"
   exit
 }
+
+# Trap SIG INT to abort exectution:
 trap _abort SIGINT;
 
+function clone_or_find
+{
+    printf_blue " - $1"
+    if [ "$CLONE" == "yes" ]
+    then
+        cd $CONDA_PREFIX/repos
+        if ! [ -d "$1" ]
+        then
+            git clone https://github.com/$2/$1.git
+            printf_green "Repository $1 cloned!\n"
+        else
+            printf_red "Repository $1 already cloned. Skipping...\n"
+        fi
+        cd $1
+    else
+        VAR="$(find / -path */$1 2>/dev/null)"
+        VAR=($VAR)
+        VAR=${VAR[0]}
+        if [ "$VAR" ]
+        then
+            cd $VAR
+            printf_green "Repository $1 found in $VAR!\n"
+        else
+            printf_red "Package $1 not found! Skipping Installation..."
+            return 1
+        fi
+    fi
+}
 
-printf_yellow "Install and configure conda channels\n"
-printf_blue "Downloading and install conda...\n"
-wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
-sh Miniconda3-latest-Linux-x86_64.sh -b -p /opt/conda
-rm Miniconda3-latest-Linux-x86_64.sh
+##############################################################################
+printf_yellow "Install system dependencies.\n"
+sudo apt-get update
+sudo apt-get install -y wget git
 
-printf_blue "Create conda group\n"
-groupadd conda
-printf_blue "Adding sirius to conda group\n"
-adduser sirius conda
-printf_blue "Adjuste conda permissions\n"
-chgrp -R conda /opt/conda
+##############################################################################
+printf_yellow "Install and configure mamba\n"
 
-printf_blue "Adding conda to path\n" # (add to profile.d ?)
-source /opt/conda/etc/profile.d/conda.sh
+USER="$(whoami)"
+printf_blue "User $USER identified.\n"
 
-printf_blue "Configure conda channels\n"
-conda config --add channels conda-forge
-conda config --set channel_priority flexible
+printf_blue "Create group mamba in system: "
+GROUP="$(getent group mamba)"
+if ! [ $GROUP ]
+then
+    sudo groupadd mamba
+    printf_green "done!\n"
+else
+    printf_red "group already exists. Skipping...\n"
+fi
 
-printf_yellow "Create and prepare conda enviroment\n"
-printf_blue "Create new conda python environment\n"
-# conda create --name conda_sirius python=3.6.8 -y
-conda create --name conda_sirius python=3.9.2 -y
+printf_blue "Add user $USER to group mamba:\n"
+if ! [[ $GROUP == *"$USER"* ]]
+then
+    sudo adduser $USER mamba
+    printf_green "done!\n"
+else
+    printf_red "user $USER already a member of mamba. Skipping...\n"
+fi
 
-printf_blue "Activate conda enviroment\n"
-conda activate conda_sirius
+cd /opt
+printf_blue "Create folder /opt/mamba_files to allocate mamba installation: "
+if ! [ -d mamba_files ]
+then
+    sudo mkdir mamba_files
+    printf_green "done!\n"
+else
+    printf_red "folder already exists. Skipping...\n"
+fi
 
-printf_blue "Install conda dependencies\n"
-printf_green " - pyqt (5.12.3)\n"
-conda install -c conda-forge -y pyqt=5.12.3  # brings qt
-printf_green " - pyparsing (2.4.2)\n"
-conda install -c conda-forge -y pyparsing=2.4.2
-printf_green " - bottleneck (1.3.2)\n"
-conda install -c conda-forge -y bottleneck=1.3.2
-printf_green " - aiohttp (3.7.4)\n"
-conda install -c conda-forge -y aiohttp=3.7.4
-printf_green " - pyqtgraph (0.11.0)\n"
-conda install -c conda-forge -y pyqtgraph=0.11.0
-printf_green " - QtAwesome (0.7.2)\n"
-conda install -c conda-forge -y QtAwesome=0.7.2
-# printf_green " - matplotlib (3.1.2)\n"
-#conda install -c conda-forge -y matplotlib=3.1.2
-printf_green " - matplotlib (3.5.1)\n"
-conda install -c conda-forge -y matplotlib=3.5.1
-printf_green " - pytest (6.2.4)\n"
-conda install -c conda-forge -y pytest=6.2.4
-printf_green " - pyvisa (1.10.1)\n"
-conda install -c conda-forge -y pyvisa=1.10.1
-printf_green " - pyvisa-py (0.3.1)\n"
-conda install -c conda-forge -y pyvisa-py=0.3.1
+printf_blue "Change permissions of folder /opt/mamba_files.\n"
+sudo chown -R $USER:mamba mamba_files
+chmod 774 -R mamba_files
+cd ~/
 
-printf_blue "Install some packages using pip (to avoid install epics-base)\n"
-printf_green " - pyepics (3.4.0)\n"
-pip install pyepics==3.4.0
-printf_green " - pcaspy (0.7.3)\n"
-pip install pcaspy==0.7.3 # não consegui instalar pro python36 em debian11
-printf_green " - pydm (1.10.3)\n"
-pip install pydm==1.10.3
-printf_green " - timechart\n"
-pip install timechart
+##############################################################################
+printf_blue "Install mamba in path /opt/mamba_files/mamba: \n"
+cd /opt/mamba_files
+if ! [ -d mamba ]
+then
+    wget https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-Linux-x86_64.sh
+    sh Mambaforge-Linux-x86_64.sh -b -p /opt/mamba_files/mamba
+    rm Mambaforge-Linux-x86_64.sh
+    printf_green "done!\n"
+else
+    printf_red "there already is a mamba installation. Skipping..."
+fi
 
-printf_blue "Install and configure Jupyter notebook\n"
-conda install -c conda-forge -y jupyter notebook
-conda update jupyter_client  # não precisou pra python39
-conda install -c conda-forge -y jupyter_contrib_nbextensions=0.5.1
+printf_blue "Fix some folder permissions.\n"
+sudo chgrp -R mamba /opt/mamba_files/mamba
+sudo chmod 774 -R /opt/mamba_files/mamba
+sudo chown -R $USER.mamba ~/.conda
+
+printf_blue "Adding mamba and conda to path\n"
+source /opt/mamba_files/mamba/etc/profile.d/conda.sh
+source /opt/mamba_files/mamba/etc/profile.d/mamba.sh
+
+printf_blue "Adding mamba and conda paths to .bashrc\n"
+cd ~/
+if ! grep -q "MAMBA_ADD" .bashrc;
+then
+    cat >> ~/.bashrc <<'EOM'
+# add conda and mamba to path
+MAMBA_ADD=/opt/mamba_files/mamba/etc/profile.d/mamba.sh
+if [ -f "$MAMBA_ADD" ] ; then
+    source "$MAMBA_ADD"
+fi
+CONDA_ADD=/opt/mamba_files/mamba/etc/profile.d/conda.sh
+if [ -f "$CONDA_ADD" ] ; then
+    source "$CONDA_ADD"
+fi
+EOM
+    printf_green "done!\n"
+else
+    printf_red "paths already in ~/.bashrc file. Skipping..."
+fi
+
+##############################################################################
+printf_yellow "Create and prepare mamba enviroment\n"
+printf_blue "Create new mamba python environment named sirius:"
+if ! mamba env list | grep -q sirius
+then
+    mamba create --name sirius python=3.9.2 -y
+    printf_green "done!\n"
+else
+    printf_red "environment already exists. Skipping...\n"
+fi
+
+### Activate Environment and do stuff
+printf_blue "Activate sirius enviroment\n"
+mamba activate sirius
+
+printf_blue "create symbolic link for python-sirius inside the enviroment:"
+cd $CONDA_PREFIX/bin
+if ! [ -f python-sirius ]
+then
+    ln -s python3 python-sirius
+    printf_green "done!\n"
+else
+    printf_red "link alreay exists. Skipping...\n"
+fi
+
+printf_blue "Install some mamba packages in sirius environment.\n"
+COMM="mamba install --freeze-installed -y"
+
+printf_blue "First some system packages:\n"
+$COMM gxx make binutils swig build gsl libblas wmctrl
+printf_blue "Now some generic python packages:\n"
+$COMM pyparsing bottleneck aiohttp=3.7.4 scipy matplotlib pytest \
+    entrypoints requests pyvisa=1.10.1 pyvisa-py=0.3.1 pyqt=5.12.3 \
+    pyqtgraph=0.11.0 QtAwesome=0.7.2
+printf_blue "Install EPICS Base:\n"
+$COMM -c conda-forge/label/cf202003 epics-base=3.15.6
+printf_blue "And some other EPICS packages:\n"
+$COMM pyepics=3.5.0 pcaspy==0.7.3 pydm=1.10.3 timechart=1.2.3
+printf_blue "Install and configure jupyter notebook\n"
+$COMM jupyter notebook
+mamba update jupyter_client
+$COMM jupyter_contrib_nbextensions
+
 printf_blue "Adding conda environment to Jupyter kernels\n"
-python -m ipykernel install --name=conda_sirius
+sudo python -m ipykernel install --name=sirius
 
-printf_blue "Cloning and install our applications in repos\n"
-cd $CONDA_PREFIX
-mkdir repos
-cd repos
-
-printf_green " - MathPhys\n"
-git clone https://github.com/lnls-fac/mathphys.git && cd mathphys && git checkout improve-install && make install
-printf_green " - SiriusPy\n"
-cd $CONDA_PREFIX/repos && git clone https://github.com/lnls-sirius/dev-packages.git && cd dev-packages/siriuspy && git checkout improve-install && make install
-
-printf_green " - LNLS\n"
-cd $CONDA_PREFIX/repos && git clone https://github.com/lnls-fac/lnls.git && cd lnls && git checkout improve-install && make install
-printf_green " - TrackCpp\n"
-cd $CONDA_PREFIX/repos && git clone https://github.com/lnls-fac/trackcpp.git && cd trackcpp && git checkout improve-install && make clean && make install
-printf_green " - PyAccel\n"
-cd $CONDA_PREFIX/repos && git clone https://github.com/lnls-fac/pyaccel.git && cd pyaccel && git checkout improve-install && make install
-printf_green " - PyModels\n"
-cd $CONDA_PREFIX/repos && git clone https://github.com/lnls-fac/pymodels.git && cd pymodels && git checkout improve-install && make install
-printf_green " - Apsuite\n"
-cd $CONDA_PREFIX/repos && git clone https://github.com/lnls-fac/apsuite.git && cd apsuite && git checkout improve-install && make install
-
-printf_green " - HLA\n"
-cd $CONDA_PREFIX/repos && git clone https://github.com/lnls-sirius/hla.git && cd hla/pyqt-apps && git checkout improve-install && make install
-printf_green " - HLA FAC\n"
-cd $CONDA_PREFIX/repos && git clone https://github.com/lnls-fac/hlafac.git && cd hlafac && git checkout improve-install && make install
-
-printf_green " - Eth-bridge-pru-serial485\n"
-cd $CONDA_PREFIX/repos && git clone https://github.com/lnls-sirius/eth-bridge-pru-serial485.git && cd eth-bridge-pru-serial485 && cd client && git checkout v2.7.1 && pip install --no-deps --compile ./
-printf_green " - Machine Applications\n"
-cd $CONDA_PREFIX/repos && git clone https://github.com/lnls-sirius/machine-applications.git && cd machine-applications && git checkout improve-install && make install
+### Clone and install our repositories
+if [ "$CLONE" == "yes" ]
+then
+    printf_blue "Clone and install our applications in repos:\n"
+    if ! [ -d $CONDA_PREFIX/repos ]
+    then
+        mkdir $CONDA_PREFIX/repos
+        printf_green "Created folder repos!\n"
+    else
+        printf_red "Folder repos already exists. Skipping..."
+    fi
+else
+    printf_blue "Find and install our applications:\n"
+fi
+clone_or_find mathphys lnls-fac && make develop-install
+clone_or_find dev-packages lnls-sirius && cd siriuspy && make develop-install
+clone_or_find lnls lnls-fac && make develop-install
+clone_or_find trackcpp lnls-fac && git checkout fix-conda && make clean && \
+    make install-cpp  && make develop-install-py
+clone_or_find pyaccel lnls-fac && make develop-install
+clone_or_find pymodels lnls-fac && make develop-install
+clone_or_find apsuite lnls-fac && make develop-install
+clone_or_find hla lnls-sirius && pyqt-apps && make develop-install
+clone_or_find hlafac lnls-fac && make develop-install
+clone_or_find eth-bridge-pru-serial485 lnls-sirius && cd client && \
+    pip install --no-deps -e ./
+clone_or_find machine-applications lnls-sirius && make develop-install
+clone_or_find idanalysis lnls-fac && make develop-install
+clone_or_find Radia lnls-sirius && git checkout lnls-sirius && make install
+clone_or_find insertion-devices lnls-ima && \
+    git checkout feat-add-block-shape-and-mag-init && pip install -e ./
 
 printf_blue "Adding enviroment variables to conda environment\n"
-echo "# PyDM" > $CONDA_PREFIX/etc/conda/activate.d/pydm_app.sh
-echo "# ====" >> $CONDA_PREFIX/etc/conda/activate.d/pydm_app.sh
-echo "export PYDM_DESIGNER_ONLINE=True" >> $CONDA_PREFIX/etc/conda/activate.d/pydm_app.sh
-echo "export PYDM_DEFAULT_PROTOCOL=\"ca://\"" >> $CONDA_PREFIX/etc/conda/activate.d/pydm_app.sh
-echo "export PYDM_EPICS_LIB="PYEPICS"  # PYEPICS, PYCA, CAPROTO" >> $CONDA_PREFIX/etc/conda/activate.d/pydm_app.sh
-echo "export LC_NUMERIC=en_US.UTF-8" >> $CONDA_PREFIX/etc/conda/activate.d/pydm_app.sh
 
-echo "# PyQt" > $CONDA_PREFIX/etc/conda/activate.d/sirius_hla.sh
-echo "# ====" >> $CONDA_PREFIX/etc/conda/activate.d/sirius_hla.sh
-echo "export PYQTDESIGNERPATH=$CONDA_PREFIX/repos/hla/pyqt-apps" >> $CONDA_PREFIX/etc/conda/activate.d/sirius_hla.sh
+#### Cria arquivo para configurar ativação do ambiente
+cat > $CONDA_PREFIX/etc/conda/activate.d/sirius_env.sh <<'EOM'
+# Define function to set variable and save previous state
+function defvar ()
+{
+    tmp="${1}"
+    if ! [ -z "${!tmp+x}" ]
+    then
+        export $1_OLD="${!tmp}"
+    fi
+    export $1="${2}"
+}
+# EPICS
+# =====
+defvar "EPICS_BASE" "${CONDA_PREFIX}/epics"
+defvar "EPICS_HOST_ARCH" 'linux-x86_64'
+defvar "EPICS_CA_ADDR_LIST" '10.0.38.46:60000 10.0.38.59:60000'
+defvar "EPICS_PVA_ADDR_LIST" '10.0.38.46:60000 10.0.38.59:60000'
+defvar "SIRIUS_URL_RBAC_AUTH" "https://sirius-rbac-auth.lnls.br"
+defvar "SIRIUS_URL_RBAC" "https://rbac:8445"
+defvar "SIRIUS_URL_NS" "http://naming-service-wildfly:8089"
+defvar "SIRIUS_URL_CCDB" "http://ccdb:8083"
+defvar "SIRIUS_URL_CABLES" "http://cable:8086"
+defvar "SIRIUS_URL_CONSTS" "http://10.0.38.59/control-system-constants"
+defvar "SIRIUS_URL_CONSTS_2" "http://10.0.38.46/control-system-constants"
+defvar "SIRIUS_URL_CONFIGDB" "http://10.0.38.59/config-db"
+defvar "SIRIUS_URL_CONFIGDB_2" "http://10.0.38.46/config-db"
+defvar "SIRIUS_URL_LOGBOOK" "http://sirius-logbook.lnls.br/Olog"
+defvar "SIRIUS_URL_ARCHIVER" "https://10.0.38.42"
+defvar "EPICS_CA_MAX_ARRAY_BYTES" "10000000"
+defvar "CONDA_EPICS_BIN" "${EPICS_BASE}/bin/${EPICS_HOST_ARCH}"
+defvar "PATH" "${CONDA_EPICS_BIN}:${PATH}"
+# PyDM
+# ====
+defvar "PYDM_DESIGNER_ONLINE" "True"
+defvar "PYDM_DEFAULT_PROTOCOL" "ca://"
+defvar "PYDM_EPICS_LIB" "PYEPICS"
+defvar "LC_NUMERIC" "en_US.UTF-8"
+# PyQt
+# ====
+defvar "PYQTDESIGNERPATH" "$CONDA_PREFIX/repos/hla/pyqt-apps"
+# Aliases
+# ======="
+alias g-conda="cd $CONDA_PREFIX"
+alias g-conda-repos="cd $CONDA_PREFIX/repos"
+EOM
 
-echo "# PyDM" > $CONDA_PREFIX/etc/conda/deactivate.d/pydm_app.sh
-echo "# ====" >> $CONDA_PREFIX/etc/conda/deactivate.d/pydm_app.sh
-echo "unset PYDM_DESIGNER_ONLINE" >> $CONDA_PREFIX/etc/conda/deactivate.d/pydm_app.sh
-echo "unset PYDM_DEFAULT_PROTOCOL" >> $CONDA_PREFIX/etc/conda/deactivate.d/pydm_app.sh
-echo "unset PYDM_EPICS_LIB" >> $CONDA_PREFIX/etc/conda/deactivate.d/pydm_app.sh
-echo "unset LC_NUMERIC" >> $CONDA_PREFIX/etc/conda/deactivate.d/pydm_app.sh
-
-echo "# PyQt" > $CONDA_PREFIX/etc/conda/deactivate.d/sirius_hla.sh
-echo "# ====" >> $CONDA_PREFIX/etc/conda/deactivate.d/sirius_hla.sh
-echo "unset PYQTDESIGNERPATH" >> $CONDA_PREFIX/etc/conda/deactivate.d/sirius_hla.sh
-
-printf_blue "Create python-sirius symlink (necessary for scripts)\n"
-cd $CONDA_PREFIX/bin && ln -s python3 python-sirius
+#### Cria arquivo para configurar desativação do ambiente
+cat > $CONDA_PREFIX/etc/conda/deactivate.d/sirius_env.sh <<'EOM'
+# Define function to unset variable with previous state
+function undefvar ()
+{
+    tmp="${1}"
+    old="${tmp}_OLD"
+    if [ -z "${!old+x}" ]
+    then
+        unset "${tmp}"
+    else
+        export $tmp="${!old}"
+        unset "${old}"
+    fi
+}
+# EPICS
+# =====
+undefvar "EPICS_BASE"
+undefvar "EPICS_HOST_ARCH"
+export PATH=`echo $PATH | sed "s|${CONDA_EPICS_BIN}:||"`
+undefvar "CONDA_EPICS_BIN"
+undefvar "EPICS_CA_ADDR_LIST"
+undefvar "EPICS_PVA_ADDR_LIST"
+undefvar "SIRIUS_URL_RBAC_AUTH"
+undefvar "SIRIUS_URL_RBAC"
+undefvar "SIRIUS_URL_NS"
+undefvar "SIRIUS_URL_CCDB"
+undefvar "SIRIUS_URL_CABLES"
+undefvar "SIRIUS_URL_CONSTS"
+undefvar "SIRIUS_URL_CONSTS_2"
+undefvar "SIRIUS_URL_CONFIGDB"
+undefvar "SIRIUS_URL_CONFIGDB_2"
+undefvar "SIRIUS_URL_LOGBOOK"
+undefvar "SIRIUS_URL_ARCHIVER"
+undefvar "EPICS_CA_MAX_ARRAY_BYTES"
+# PyDM
+# ====
+undefvar "PYDM_DESIGNER_ONLINE"
+undefvar "PYDM_DEFAULT_PROTOCOL"
+undefvar "PYDM_EPICS_LIB"
+undefvar "LC_NUMERIC"
+# PyQt
+# ====
+undefvar "PYQTDESIGNERPATH"
+# Aliases
+# =======
+unalias g-conda
+unalias g-conda-repos
+EOM
 
 printf_blue "Deactivate conda enviroment\n"
-conda deactivate
+mamba deactivate
 
-printf_blue "Fix permissions in /opt/conda/pkgs after install root environments\n"
-chgrp -R conda /opt/conda/pkgs  # necessary for conda clone...
-chmod -R o+r /opt/conda/pkgs  # necessary for conda clone...
-chmod -R g+r /opt/conda/pkgs  # necessary for conda clone...
-chmod -R g+w /opt/conda/pkgs/cache/*.json  # necessary for conda search...
+##############################################################################
+printf_blue "Fix permissions of some files\n"
+# needed for mamba clone
+sudo chgrp -R mamba /opt/mamba_files/mamba/pkgs
+sudo chmod -R og+r /opt/mamba_files/mamba/pkgs
+# needed for mamba search
+sudo chmod -R g+w /opt/mamba_files/mamba/pkgs/cache/*.json
+
 
 printf_blue "Create scripts to access apps in conda environment\n"
+
 printf_green " - jupyter-sirius \n"
-echo "#!/bin/bash" > /usr/local/bin/jupyter-sirius
-echo "bash -c \"source /opt/conda/etc/profile.d/conda.sh && conda activate conda_sirius && jupyter notebook\"" >> /usr/local/bin/jupyter-sirius
-chmod +x /usr/local/bin/jupyter-sirius
+sudo cat > /usr/local/bin/jupyter-sirius <<'EOM'
+#!/bin/bash
+bash -c "source /opt/mamba_files/mamba/etc/profile.d/conda.sh && conda activate sirius && jupyter notebook"
+EOM
 
 printf_green " - ipython-sirius \n"
-echo "#!/bin/bash" > /usr/local/bin/ipython-sirius
-echo "bash -c \"source /opt/conda/etc/profile.d/conda.sh && conda activate conda_sirius && ipython\"" >> /usr/local/bin/ipython-sirius
-chmod +x /usr/local/bin/ipython-sirius
+sudo cat > /usr/local/bin/ipython-sirius <<'EOM'
+#!/bin/bash
+bash -c "source /opt/mamba_files/mamba/etc/profile.d/conda.sh && conda activate sirius && ipython"
+EOM
 
 printf_green " - designer-sirius \n"
-echo "#!/bin/bash" > /usr/local/bin/designer-sirius
-echo "bash -c \"source /opt/conda/etc/profile.d/conda.sh && conda activate conda_sirius && designer\"" >> /usr/local/bin/designer-sirius
-chmod +x /usr/local/bin/designer-sirius
+sudo cat > /usr/local/bin/designer-sirius <<'EOM'
+#!/bin/bash
+bash -c "source /opt/mamba_files/mamba/etc/profile.d/conda.sh && conda activate sirius && designer"
+EOM
 
 printf_green " - sirius-hla-as-ap-launcher \n"
-echo "#!/bin/bash" > /usr/local/bin/sirius-hla-as-ap-launcher
-echo "bash -c \"source /opt/conda/etc/profile.d/conda.sh && conda activate conda_sirius && sirius-hla-as-ap-launcher.py\"" >> /usr/local/bin/sirius-hla-as-ap-launcher
-chmod +x /usr/local/bin/sirius-hla-as-ap-launcher
+sudo cat > /usr/local/bin/sirius-hla-as-ap-launcher <<'EOM'
+#!/bin/bash
+bash -c "source /opt/mamba_files/mamba/etc/profile.d/conda.sh && conda activate sirius && sirius-hla-as-ap-launcher.py"
+EOM
+
+cd /usr/local/bin
+sudo chmod +x jupyter-sirius ipython-sirius designer-sirius sirius-hla-as-ap-launcher
