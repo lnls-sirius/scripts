@@ -10,13 +10,20 @@
 function help
 {
     echo "Usage: sirius-script-create-mamba-env.bash
-               [ -c | --clone-repos ]
-               [ -h | --help  ]"
-    exit 2
+    [ -n | --no-clone-repos ] Instead of cloning, find repos in system
+    [ --no-sim ] Do not install simulation packages.
+    [ --no-ioc ] Do not install IOC related packages.
+    [ --no-ima ] Do not install magnets simulation packages.
+    [ --no-colleff ] Do not install collective effects packages.
+    [ --root-lnls-fac ] Root folder for lnls-fac repos. Defaults to /.
+    [ --root-lnls-sirius ] Root folder for lnls-sirius repos. Defaults to /.
+    [ --root-lnls-ima ] Root folder for lnls-imas repos. Defaults to /.
+    [ -h | --help  ] Print help and exit."
 }
 
 SHORT=nh
-LONG=no-clone-repos,help
+LONG+=no-clone-repos,no-sim,no-ioc,no-ima,no-colleff,root-lnls-fac:,
+LONG+=root-lnls-sirius:,root-lnls-ima:,help
 OPTS=$(getopt -a -n weather --options $SHORT --longoptions $LONG -- "$@")
 
 # Returns the count of arguments that are in short or long options
@@ -28,6 +35,13 @@ OPTS=$(getopt -a -n weather --options $SHORT --longoptions $LONG -- "$@")
 eval set -- "$OPTS"
 
 CLONE="yes"
+INST_SIM="yes"
+INST_IOC="yes"
+INST_IMA="yes"
+INST_COL="yes"
+ROOT_SIR="/"
+ROOT_FAC="/"
+ROOT_IMA="/"
 # now enjoy the options in order and nicely split until we see --
 while true; do
     case "$1" in
@@ -35,9 +49,38 @@ while true; do
             CLONE="no"
             shift
             ;;
+        --no-sim)
+            INST_SIM="no"
+            shift
+            ;;
+        --no-ioc)
+            INST_IOC="no"
+            shift
+            ;;
+        --no-ima)
+            INST_IMA="no"
+            shift
+            ;;
+        --no-colleff)
+            INST_COL="no"
+            shift
+            ;;
+        --root-lnls-fac)
+            ROOT_FAC="$2"
+            shift 2
+            ;;
+        --root-lnls-sirius)
+            ROOT_SIR="$2"
+            shift 2
+            ;;
+        --root-lnls-ima)
+            ROOT_IMA="$2"
+            shift 2
+            ;;
         -h|--help)
             help
             shift
+            exit 0
             ;;
         --)
             shift
@@ -46,6 +89,7 @@ while true; do
         *)
             echo "Unexpected option: $1"
             help
+            exit 2
             ;;
     esac
 done
@@ -72,9 +116,10 @@ function _abort {
 # Trap SIG INT to abort exectution:
 trap _abort SIGINT;
 
+# takes three input variables: repo name, organization, and repo tag/branch
 function clone_or_find
 {
-    printf_blue " - $1"
+    printf_blue " - $1\n"
     if [ "$CLONE" == "yes" ]
     then
         cd $CONDA_PREFIX/repos
@@ -87,7 +132,15 @@ function clone_or_find
         fi
         cd $1
     else
-        VAR="$(find / -path */$1 2>/dev/null)"
+        ROO=$ROOT_SIR
+        if [ $2 == "lnls-fac" ]
+        then
+            ROO=$ROOT_FAC
+        elif [$2 == "lnls-ima" ]
+        then
+            ROO=$ROOT_IMA
+        fi
+        VAR="$(find $ROO -path */$1 2>/dev/null)"
         VAR=($VAR)
         VAR=${VAR[0]}
         if [ "$VAR" ]
@@ -95,10 +148,11 @@ function clone_or_find
             cd $VAR
             printf_green "Repository $1 found in $VAR!\n"
         else
-            printf_red "Package $1 not found! Skipping Installation..."
+            printf_red "Package $1 not found in $ROO Skipping install...\n"
             return 1
         fi
     fi
+    git checkout $3
 }
 
 ##############################################################################
@@ -107,7 +161,7 @@ sudo apt-get update
 sudo apt-get install -y wget git
 
 ##############################################################################
-printf_yellow "Install and configure mamba\n"
+printf_yellow "Configure system for mamba installation\n"
 
 USER="$(whoami)"
 printf_blue "User $USER identified.\n"
@@ -137,17 +191,15 @@ if ! [ -d mamba_files ]
 then
     sudo mkdir mamba_files
     printf_green "done!\n"
+    printf_blue "Change permissions of folder /opt/mamba_files.\n"
+    sudo chown -R $USER:mamba mamba_files
+    chmod 774 -R mamba_files
 else
     printf_red "folder already exists. Skipping...\n"
 fi
 
-printf_blue "Change permissions of folder /opt/mamba_files.\n"
-sudo chown -R $USER:mamba mamba_files
-chmod 774 -R mamba_files
-cd ~/
-
 ##############################################################################
-printf_blue "Install mamba in path /opt/mamba_files/mamba: \n"
+printf_yellow "Install mamba in path /opt/mamba_files/mamba: \n"
 cd /opt/mamba_files
 if ! [ -d mamba ]
 then
@@ -156,7 +208,7 @@ then
     rm Mambaforge-Linux-x86_64.sh
     printf_green "done!\n"
 else
-    printf_red "there already is a mamba installation. Skipping..."
+    printf_red "there already is a mamba installation. Skipping...\n"
 fi
 
 printf_blue "Fix some folder permissions.\n"
@@ -185,7 +237,7 @@ fi
 EOM
     printf_green "done!\n"
 else
-    printf_red "paths already in ~/.bashrc file. Skipping..."
+    printf_red "paths already in ~/.bashrc file. Skipping...\n"
 fi
 
 ##############################################################################
@@ -217,22 +269,37 @@ printf_blue "Install some mamba packages in sirius environment.\n"
 COMM="mamba install --freeze-installed -y"
 
 printf_blue "First some system packages:\n"
-$COMM gxx make binutils swig build gsl libblas wmctrl
+$COMM gxx make binutils swig build gsl libblas wmctrl fftw
+
 printf_blue "Now some generic python packages:\n"
-$COMM pyparsing bottleneck aiohttp=3.7.4 scipy matplotlib pytest \
-    entrypoints requests pyvisa=1.10.1 pyvisa-py=0.3.1 pyqt=5.12.3 \
-    pyqtgraph=0.11.0 QtAwesome=0.7.2
+$COMM pyparsing bottleneck aiohttp=3.7.4 scipy matplotlib pytest mpmath \
+    entrypoints requests pyvisa=1.10.1 pyvisa-py=0.3.1 pyqt=5.12.3 pandas \
+    pyqtgraph=0.11.0 QtAwesome=0.7.2 numexpr tk sh
+
 printf_blue "Install EPICS Base:\n"
 $COMM -c conda-forge/label/cf202003 epics-base=3.15.6
+
 printf_blue "And some other EPICS packages:\n"
 $COMM pyepics=3.5.0 pcaspy==0.7.3 pydm=1.10.3 timechart=1.2.3
+# remove the activate and deactivate files created by pyepics and pydm:
+cd $CONDA_PREFIX/etc/conda/activate.d
+if [ -f "pydm.bat" ]
+then
+    rm pydm.bat pydm.sh pyepics_activate.sh epics_base.sh
+fi
+cd $CONDA_PREFIX/etc/conda/deactivate.d
+if [ -f "pydm.sh" ]
+then
+    rm pydm.sh pyepics_deactivate.sh epics_base.sh
+fi
+
 printf_blue "Install and configure jupyter notebook\n"
 $COMM jupyter notebook
 mamba update jupyter_client
 $COMM jupyter_contrib_nbextensions
 
-printf_blue "Adding conda environment to Jupyter kernels\n"
-sudo python -m ipykernel install --name=sirius
+# printf_blue "Adding conda environment to Jupyter kernels\n"
+# sudo python-sirius -m ipykernel install --name=sirius
 
 ### Clone and install our repositories
 if [ "$CLONE" == "yes" ]
@@ -243,30 +310,53 @@ then
         mkdir $CONDA_PREFIX/repos
         printf_green "Created folder repos!\n"
     else
-        printf_red "Folder repos already exists. Skipping..."
+        printf_red "Folder repos already exists. Skipping...\n"
     fi
 else
     printf_blue "Find and install our applications:\n"
 fi
-clone_or_find mathphys lnls-fac && make develop-install
-clone_or_find dev-packages lnls-sirius && cd siriuspy && make develop-install
-clone_or_find lnls lnls-fac && make develop-install
-clone_or_find trackcpp lnls-fac && git checkout fix-conda && make clean && \
-    make install-cpp  && make develop-install-py
-clone_or_find pyaccel lnls-fac && make develop-install
-clone_or_find pymodels lnls-fac && make develop-install
-clone_or_find apsuite lnls-fac && make develop-install
-clone_or_find hla lnls-sirius && pyqt-apps && make develop-install
-clone_or_find hlafac lnls-fac && make develop-install
-clone_or_find eth-bridge-pru-serial485 lnls-sirius && cd client && \
-    pip install --no-deps -e ./
-clone_or_find machine-applications lnls-sirius && make develop-install
-clone_or_find idanalysis lnls-fac && make develop-install
-clone_or_find Radia lnls-sirius && git checkout lnls-sirius && make install
-clone_or_find insertion-devices lnls-ima && \
-    git checkout feat-add-block-shape-and-mag-init && pip install -e ./
 
-printf_blue "Adding enviroment variables to conda environment\n"
+printf_blue "Installing SIRIUS Control System related packages.\n"
+clone_or_find mathphys lnls-fac master && make develop-install
+clone_or_find dev-packages lnls-sirius master && cd siriuspy && \
+    make develop-install
+clone_or_find hla lnls-sirius master && cd pyqt-apps && make develop-install
+clone_or_find hlafac lnls-fac master && make develop-install
+if [ "$INST_SIM" == "yes" ]
+then
+    printf_blue "Installing accelerators simulation packages.\n"
+    clone_or_find lnls lnls-fac master && make develop-install
+    clone_or_find trackcpp lnls-fac master && make clean && \
+        make install-cpp && make develop-install-py
+    clone_or_find pyaccel lnls-fac master && make develop-install
+    clone_or_find pymodels lnls-fac master && make develop-install
+    clone_or_find apsuite lnls-fac master && make develop-install
+fi
+if [ "$INST_COL" == "yes" ]
+then
+    printf_blue "Installing collective effects simulation packages.\n"
+    clone_or_find collective_effects lnls-fac master && cd cppcolleff && \
+        make clean && make install-cpp && make develop-install-py && \
+        cd ../pycolleff && make develop-install
+fi
+if [ "$INST_IOC" == "yes" ]
+then
+    printf_blue "Installing SIRIUS IOCs related packages.\n"
+    clone_or_find eth-bridge-pru-serial485 lnls-sirius master && cd client && \
+        pip install --no-deps -e ./
+    clone_or_find machine-applications lnls-sirius master && \
+        make develop-install
+fi
+if [ "$INST_IMA" == "yes" ]
+then
+    printf_blue "Installing magnets simulation packages.\n"
+    clone_or_find fieldmaptrack lnls-fac master && make develop-install
+    clone_or_find Radia lnls-sirius lnls-sirius && make install
+    clone_or_find idanalysis lnls-fac master && make develop-install
+    clone_or_find insertion-devices lnls-ima master && pip install -e ./
+fi
+
+printf_blue "Add enviroment variables to conda environment\n"
 
 #### Cria arquivo para configurar ativação do ambiente
 cat > $CONDA_PREFIX/etc/conda/activate.d/sirius_env.sh <<'EOM'
@@ -369,39 +459,40 @@ printf_blue "Deactivate conda enviroment\n"
 mamba deactivate
 
 ##############################################################################
-printf_blue "Fix permissions of some files\n"
+printf_yellow "Fix permissions of some files\n"
 # needed for mamba clone
 sudo chgrp -R mamba /opt/mamba_files/mamba/pkgs
 sudo chmod -R og+r /opt/mamba_files/mamba/pkgs
 # needed for mamba search
 sudo chmod -R g+w /opt/mamba_files/mamba/pkgs/cache/*.json
 
+##############################################################################
+printf_yellow "Create scripts to access apps in conda environment\n"
 
-printf_blue "Create scripts to access apps in conda environment\n"
-
+cd /usr/local/bin
 printf_green " - jupyter-sirius \n"
-sudo cat > /usr/local/bin/jupyter-sirius <<'EOM'
+sudo tee jupyter-sirius >/dev/null <<'EOM'
 #!/bin/bash
 bash -c "source /opt/mamba_files/mamba/etc/profile.d/conda.sh && conda activate sirius && jupyter notebook"
 EOM
 
 printf_green " - ipython-sirius \n"
-sudo cat > /usr/local/bin/ipython-sirius <<'EOM'
+sudo tee ipython-sirius >/dev/null <<'EOM'
 #!/bin/bash
 bash -c "source /opt/mamba_files/mamba/etc/profile.d/conda.sh && conda activate sirius && ipython"
 EOM
 
 printf_green " - designer-sirius \n"
-sudo cat > /usr/local/bin/designer-sirius <<'EOM'
+sudo tee designer-sirius >/dev/null <<'EOM'
 #!/bin/bash
 bash -c "source /opt/mamba_files/mamba/etc/profile.d/conda.sh && conda activate sirius && designer"
 EOM
 
 printf_green " - sirius-hla-as-ap-launcher \n"
-sudo cat > /usr/local/bin/sirius-hla-as-ap-launcher <<'EOM'
+sudo tee sirius-hla-as-ap-launcher >/dev/null <<'EOM'
 #!/bin/bash
 bash -c "source /opt/mamba_files/mamba/etc/profile.d/conda.sh && conda activate sirius && sirius-hla-as-ap-launcher.py"
 EOM
 
-cd /usr/local/bin
-sudo chmod +x jupyter-sirius ipython-sirius designer-sirius sirius-hla-as-ap-launcher
+sudo chmod +x jupyter-sirius ipython-sirius designer-sirius \
+    sirius-hla-as-ap-launcher
