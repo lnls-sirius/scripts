@@ -135,10 +135,11 @@ function get_branch
 {
     for BRAN in "${BRANCHES[@]}"
     do
-        if [[ "$BRAN" == *"$1"* ]]
+        BR=(${BRAN//:/ })  # split string in array in delimiter ":"
+        if [ "${BR[0]}" == "$1" ]
         then
-            BR=(${BRAN//:/ })  # split string in array in delimiter ":"
             echo ${BR[1]}
+            break
         fi
     done
 }
@@ -163,31 +164,47 @@ function clone_or_find
         if [ $2 == "lnls-fac" ]
         then
             ROO=$ROOT_FAC
-        elif [$2 == "lnls-ima" ]
+        elif [ $2 == "lnls-ima" ]
         then
             ROO=$ROOT_IMA
         fi
+
         printf_blue "Searching repo $1 in $ROO: "
         VAR="$(find $ROO -path */$1 2>/dev/null)"
         VAR=($VAR)
-        VAR=${VAR[0]}
-        if [ "$VAR" ]
+        PTH=
+        for V in "${VAR[@]}"
+        do
+            cd $V
+            if git rev-parse --is-inside-work-tree 1>/dev/null 2>&1
+            then
+                PH=`git rev-parse --show-toplevel`
+                NAME="$(basename $PH)"
+                if [ "$NAME" == "$1" ]
+                then
+                    PTH="$PH"
+                    break
+                fi
+            fi
+        done
+
+        if [ "$PTH" ]
         then
-            cd $VAR
-            printf_green "Found in $VAR!\n"
+            cd $PTH
+            printf_green "Found in $PTH!\n"
         else
             printf_red "Not found! Skipping install...\n"
             return 1
         fi
     fi
-    VAR="$(get_branch $1)"
-    if ! [ $VAR ]
+    BRAN="$(get_branch $1)"
+    if ! [ "$BRAN" ]
     then
-        VAR="$(get_branch all)"
+        BRAN="$(get_branch all)"
     fi
-    if [ $VAR ]
+    if [ "$BRAN" ]
     then
-        git checkout $VAR
+        git checkout $BRAN
     fi
 }
 
@@ -366,7 +383,7 @@ then
     printf_blue "Installing accelerators simulation packages.\n"
     clone_or_find lnls lnls-fac && make develop-install
     clone_or_find trackcpp lnls-fac && make clean && \
-        make install-cpp && make develop-install-py
+        make install-cpp 2>/dev/null && make develop-install-py 2>/dev/null
     clone_or_find pyaccel lnls-fac && make develop-install
     clone_or_find pymodels lnls-fac && make develop-install
     clone_or_find apsuite lnls-fac && make develop-install
@@ -375,7 +392,8 @@ if [ "$INST_COL" == "yes" ]
 then
     printf_blue "Installing collective effects simulation packages.\n"
     clone_or_find collective_effects lnls-fac && cd cppcolleff && \
-        make clean && make install-cpp && make develop-install-py && \
+        make clean && make install-cpp 2>/dev/null && \
+        make develop-install-py 2>/dev/null && \
         cd ../pycolleff && make develop-install
 fi
 if [ "$INST_IOC" == "yes" ]
@@ -390,7 +408,7 @@ if [ "$INST_IMA" == "yes" ]
 then
     printf_blue "Installing magnets simulation packages.\n"
     clone_or_find fieldmaptrack lnls-fac && make develop-install
-    clone_or_find Radia lnls-sirius && make install
+    clone_or_find Radia lnls-sirius && make install 2>/dev/null
     clone_or_find idanalysis lnls-fac && make develop-install
     clone_or_find insertion-devices lnls-ima && pip install -e ./
 fi
