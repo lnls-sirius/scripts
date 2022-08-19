@@ -158,7 +158,10 @@ function clone_or_find
 ##############################################################################
 printf_yellow "Install system dependencies.\n"
 sudo apt-get update
-sudo apt-get install -y wget git
+# libgl1-mesa-glx is needed for pyqt to work properly.
+# See discussion in:
+#    https://github.com/conda-forge/pygridgen-feedstock/issues/10
+sudo apt-get install -y wget git libgl1-mesa-glx
 
 ##############################################################################
 printf_yellow "Configure system for mamba installation\n"
