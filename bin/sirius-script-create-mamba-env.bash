@@ -18,12 +18,22 @@ function help
     [ --root-lnls-fac ] Root folder for lnls-fac repos. Defaults to /.
     [ --root-lnls-sirius ] Root folder for lnls-sirius repos. Defaults to /.
     [ --root-lnls-ima ] Root folder for lnls-imas repos. Defaults to /.
+    [ -b | --branches ] Branches to install. For each package you want to force a branch you must provide:
+            <package1>:<branch1>,<package2>:<branch2>,...,<packagen>:<branchn>
+        Please note there is no spaces in the string.
+        If you want to force all packages to have the same branch you can do:
+            all:<branch>
+        If you want to force some specific branch for a given package and some
+        other to all other packages, you can do:
+            <packagei>:<branchi>,all:<def_branch>
+        If nothing is passed or if some package is missing in this definition,
+        the current branch will be installed.
     [ -h | --help  ] Print help and exit."
 }
 
 SHORT=nh
 LONG+=no-clone-repos,no-sim,no-ioc,no-ima,no-colleff,root-lnls-fac:,
-LONG+=root-lnls-sirius:,root-lnls-ima:,help
+LONG+=root-lnls-sirius:,root-lnls-ima:,branches:,help
 OPTS=$(getopt -a -n weather --options $SHORT --longoptions $LONG -- "$@")
 
 # Returns the count of arguments that are in short or long options
@@ -42,6 +52,7 @@ INST_COL="yes"
 ROOT_SIR="/"
 ROOT_FAC="/"
 ROOT_IMA="/"
+BRANCHES=
 # now enjoy the options in order and nicely split until we see --
 while true; do
     case "$1" in
@@ -75,6 +86,10 @@ while true; do
             ;;
         --root-lnls-ima)
             ROOT_IMA="$2"
+            shift 2
+            ;;
+        -b|--branches)
+            BRANCHES=(${2//,/ })  # split string in array in delimiter ","
             shift 2
             ;;
         -h|--help)
@@ -116,6 +131,18 @@ function _abort {
 # Trap SIG INT to abort exectution:
 trap _abort SIGINT;
 
+function get_branch
+{
+    for BRAN in "${BRANCHES[@]}"
+    do
+        if [[ "$BRAN" == *"$1"* ]]
+        then
+            BR=(${BRAN//:/ })  # split string in array in delimiter ":"
+            echo ${BR[1]}
+        fi
+    done
+}
+
 # takes three input variables: repo name, organization, and repo tag/branch
 function clone_or_find
 {
@@ -140,19 +167,28 @@ function clone_or_find
         then
             ROO=$ROOT_IMA
         fi
+        printf_blue "Searching repo $1 in $ROO: "
         VAR="$(find $ROO -path */$1 2>/dev/null)"
         VAR=($VAR)
         VAR=${VAR[0]}
         if [ "$VAR" ]
         then
             cd $VAR
-            printf_green "Repository $1 found in $VAR!\n"
+            printf_green "Found in $VAR!\n"
         else
-            printf_red "Package $1 not found in $ROO Skipping install...\n"
+            printf_red "Not found! Skipping install...\n"
             return 1
         fi
     fi
-    git checkout $3
+    VAR="$(get_branch $1)"
+    if ! [ $VAR ]
+    then
+        VAR="$(get_branch all)"
+    fi
+    if [ $VAR ]
+    then
+        git checkout $VAR
+    fi
 }
 
 ##############################################################################
@@ -320,43 +356,43 @@ else
 fi
 
 printf_blue "Installing SIRIUS Control System related packages.\n"
-clone_or_find mathphys lnls-fac master && make develop-install
-clone_or_find dev-packages lnls-sirius master && cd siriuspy && \
+clone_or_find mathphys lnls-fac && make develop-install
+clone_or_find dev-packages lnls-sirius && cd siriuspy && \
     make develop-install
-clone_or_find hla lnls-sirius master && cd pyqt-apps && make develop-install
-clone_or_find hlafac lnls-fac master && make develop-install
+clone_or_find hla lnls-sirius && cd pyqt-apps && make develop-install
+clone_or_find hlafac lnls-fac && make develop-install
 if [ "$INST_SIM" == "yes" ]
 then
     printf_blue "Installing accelerators simulation packages.\n"
-    clone_or_find lnls lnls-fac master && make develop-install
-    clone_or_find trackcpp lnls-fac master && make clean && \
+    clone_or_find lnls lnls-fac && make develop-install
+    clone_or_find trackcpp lnls-fac && make clean && \
         make install-cpp && make develop-install-py
-    clone_or_find pyaccel lnls-fac master && make develop-install
-    clone_or_find pymodels lnls-fac master && make develop-install
-    clone_or_find apsuite lnls-fac master && make develop-install
+    clone_or_find pyaccel lnls-fac && make develop-install
+    clone_or_find pymodels lnls-fac && make develop-install
+    clone_or_find apsuite lnls-fac && make develop-install
 fi
 if [ "$INST_COL" == "yes" ]
 then
     printf_blue "Installing collective effects simulation packages.\n"
-    clone_or_find collective_effects lnls-fac master && cd cppcolleff && \
+    clone_or_find collective_effects lnls-fac && cd cppcolleff && \
         make clean && make install-cpp && make develop-install-py && \
         cd ../pycolleff && make develop-install
 fi
 if [ "$INST_IOC" == "yes" ]
 then
     printf_blue "Installing SIRIUS IOCs related packages.\n"
-    clone_or_find eth-bridge-pru-serial485 lnls-sirius master && cd client && \
+    clone_or_find eth-bridge-pru-serial485 lnls-sirius && cd client && \
         pip install --no-deps -e ./
-    clone_or_find machine-applications lnls-sirius master && \
+    clone_or_find machine-applications lnls-sirius && \
         make develop-install
 fi
 if [ "$INST_IMA" == "yes" ]
 then
     printf_blue "Installing magnets simulation packages.\n"
-    clone_or_find fieldmaptrack lnls-fac master && make develop-install
-    clone_or_find Radia lnls-sirius lnls-sirius && make install
-    clone_or_find idanalysis lnls-fac master && make develop-install
-    clone_or_find insertion-devices lnls-ima master && pip install -e ./
+    clone_or_find fieldmaptrack lnls-fac && make develop-install
+    clone_or_find Radia lnls-sirius && make install
+    clone_or_find idanalysis lnls-fac && make develop-install
+    clone_or_find insertion-devices lnls-ima && pip install -e ./
 fi
 
 printf_blue "Add enviroment variables to conda environment\n"
