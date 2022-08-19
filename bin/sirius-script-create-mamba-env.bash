@@ -114,6 +114,9 @@ done
 function printf_yellow {
   printf "\e[1;33m$1\e[0m"
 }
+function printf_yellow_clear {
+  printf "\e[0;33m$1\e[0m"
+}
 function printf_blue {
   printf "\e[1;34m$1\e[0m"
 }
@@ -147,16 +150,17 @@ function get_branch
 # takes three input variables: repo name, organization, and repo tag/branch
 function clone_or_find
 {
-    printf_blue " - $1\n"
+    printf_yellow " - $1\n"
     if [ "$CLONE" == "yes" ]
     then
+        printf_yellow_clear "Cloning repo $1 in $CONDA_PREFIX/repos: "
         cd $CONDA_PREFIX/repos
         if ! [ -d "$1" ]
         then
             git clone https://github.com/$2/$1.git
-            printf_green "Repository $1 cloned!\n"
+            printf_green "done\n"
         else
-            printf_red "Repository $1 already cloned. Skipping...\n"
+            printf_blue "already cloned. Skipping...\n"
         fi
         cd $1
     else
@@ -169,7 +173,7 @@ function clone_or_find
             ROO=$ROOT_IMA
         fi
 
-        printf_blue "Searching repo $1 in $ROO: "
+        printf_yellow_clear "Searching repo $1 in $ROO: "
         VAR="$(find $ROO -path */$1 2>/dev/null)"
         VAR=($VAR)
         PTH=
@@ -191,9 +195,9 @@ function clone_or_find
         if [ "$PTH" ]
         then
             cd $PTH
-            printf_green "Found in $PTH!\n"
+            printf_green "Found in $PTH\n"
         else
-            printf_red "Not found! Skipping install...\n"
+            printf_blue "Not found. Skipping install...\n"
             return 1
         fi
     fi
@@ -204,6 +208,7 @@ function clone_or_find
     fi
     if [ "$BRAN" ]
     then
+        printf_yellow_clear "Checking out to branch $BRAN.\n"
         git checkout $BRAN
     fi
 }
@@ -220,42 +225,42 @@ sudo apt-get install -y wget git libgl1-mesa-glx
 printf_yellow "Configure system for mamba installation\n"
 
 USER="$(whoami)"
-printf_blue "User $USER identified.\n"
+printf_yellow_clear "User $USER identified.\n"
 
-printf_blue "Create group mamba in system: "
+printf_yellow_clear "Create group mamba in system: "
 GROUP="$(getent group mamba)"
 if ! [ $GROUP ]
 then
     sudo groupadd mamba
     printf_green "done!\n"
 else
-    printf_red "group already exists. Skipping...\n"
+    printf_blue "group already exists. Skipping...\n"
 fi
 
-printf_blue "Add user $USER to group mamba:\n"
+printf_yellow_clear "Add user $USER to group mamba: "
 if ! [[ $GROUP == *"$USER"* ]]
 then
     sudo adduser $USER mamba
     printf_green "done!\n"
 else
-    printf_red "user $USER already a member of mamba. Skipping...\n"
+    printf_blue "already a member. Skipping...\n"
 fi
 
 cd /opt
-printf_blue "Create folder /opt/mamba_files to allocate mamba installation: "
+printf_yellow_clear "Create folder /opt/mamba_files for mamba installation: "
 if ! [ -d mamba_files ]
 then
     sudo mkdir mamba_files
     printf_green "done!\n"
-    printf_blue "Change permissions of folder /opt/mamba_files.\n"
+    printf_yellow_clear "Change permissions of folder /opt/mamba_files.\n"
     sudo chown -R $USER:mamba mamba_files
     chmod 774 -R mamba_files
 else
-    printf_red "folder already exists. Skipping...\n"
+    printf_blue "folder already exists. Skipping...\n"
 fi
 
 ##############################################################################
-printf_yellow "Install mamba in path /opt/mamba_files/mamba: \n"
+printf_yellow_clear "Install mamba in path /opt/mamba_files/mamba: "
 cd /opt/mamba_files
 if ! [ -d mamba ]
 then
@@ -264,19 +269,19 @@ then
     rm Mambaforge-Linux-x86_64.sh
     printf_green "done!\n"
 else
-    printf_red "there already is a mamba installation. Skipping...\n"
+    printf_blue "there already is a mamba installation. Skipping...\n"
 fi
 
-printf_blue "Fix some folder permissions.\n"
+printf_yellow_clear "Fix some folder permissions.\n"
 sudo chgrp -R mamba /opt/mamba_files/mamba
 sudo chmod 774 -R /opt/mamba_files/mamba
 sudo chown -R $USER.mamba ~/.conda
 
-printf_blue "Adding mamba and conda to path\n"
+printf_yellow_clear "Adding mamba and conda to path\n"
 source /opt/mamba_files/mamba/etc/profile.d/conda.sh
 source /opt/mamba_files/mamba/etc/profile.d/mamba.sh
 
-printf_blue "Adding mamba and conda paths to .bashrc\n"
+printf_yellow_clear "Adding mamba and conda paths to .bashrc: "
 cd ~/
 if ! grep -q "MAMBA_ADD" .bashrc;
 then
@@ -293,49 +298,49 @@ fi
 EOM
     printf_green "done!\n"
 else
-    printf_red "paths already in ~/.bashrc file. Skipping...\n"
+    printf_blue "paths already in ~/.bashrc file. Skipping...\n"
 fi
 
 ##############################################################################
 printf_yellow "Create and prepare mamba enviroment\n"
-printf_blue "Create new mamba python environment named sirius:"
+printf_yellow_clear "Create new mamba python environment named sirius: "
 if ! mamba env list | grep -q sirius
 then
     mamba create --name sirius python=3.9.2 -y
     printf_green "done!\n"
 else
-    printf_red "environment already exists. Skipping...\n"
+    printf_blue "environment already exists. Skipping...\n"
 fi
 
 ### Activate Environment and do stuff
-printf_blue "Activate sirius enviroment\n"
+printf_yellow_clear "Activate sirius enviroment\n"
 mamba activate sirius
 
-printf_blue "create symbolic link for python-sirius inside the enviroment:"
+printf_yellow_clear "create link for python-sirius inside the enviroment: "
 cd $CONDA_PREFIX/bin
 if ! [ -f python-sirius ]
 then
     ln -s python3 python-sirius
     printf_green "done!\n"
 else
-    printf_red "link alreay exists. Skipping...\n"
+    printf_blue "link alreay exists. Skipping...\n"
 fi
 
-printf_blue "Install some mamba packages in sirius environment.\n"
+printf_yellow "Install some mamba packages in sirius environment.\n"
 COMM="mamba install --freeze-installed -y"
 
-printf_blue "First some system packages:\n"
+printf_yellow_clear "- First some system packages:\n"
 $COMM gxx make binutils swig build gsl libblas wmctrl fftw
 
-printf_blue "Now some generic python packages:\n"
+printf_yellow_clear "- Now some generic python packages:\n"
 $COMM pyparsing bottleneck aiohttp=3.7.4 scipy matplotlib pytest mpmath \
     entrypoints requests pyvisa=1.10.1 pyvisa-py=0.3.1 pyqt=5.12.3 pandas \
     pyqtgraph=0.11.0 QtAwesome=0.7.2 numexpr tk sh
 
-printf_blue "Install EPICS Base:\n"
+printf_yellow_clear "- Install EPICS Base:\n"
 $COMM -c conda-forge/label/cf202003 epics-base=3.15.6
 
-printf_blue "And some other EPICS packages:\n"
+printf_yellow_clear "- And some other EPICS packages:\n"
 $COMM pyepics=3.5.0 pcaspy==0.7.3 pydm=1.10.3 timechart=1.2.3
 # remove the activate and deactivate files created by pyepics and pydm:
 cd $CONDA_PREFIX/etc/conda/activate.d
@@ -349,30 +354,28 @@ then
     rm pydm.sh pyepics_deactivate.sh epics_base.sh
 fi
 
-printf_blue "Install and configure jupyter notebook\n"
+printf_yellow_clear "- Install and configure jupyter notebook\n"
 $COMM jupyter notebook
 mamba update jupyter_client
 $COMM jupyter_contrib_nbextensions
 
-# printf_blue "Adding conda environment to Jupyter kernels\n"
-# sudo python-sirius -m ipykernel install --name=sirius
-
 ### Clone and install our repositories
 if [ "$CLONE" == "yes" ]
 then
-    printf_blue "Clone and install our applications in repos:\n"
+    printf_yellow "Clone and install our applications.\n"
+    printf_yellow_clear "Creating folder $CONDA_PREFIX/repos: "
     if ! [ -d $CONDA_PREFIX/repos ]
     then
         mkdir $CONDA_PREFIX/repos
-        printf_green "Created folder repos!\n"
+        printf_green "done!\n"
     else
-        printf_red "Folder repos already exists. Skipping...\n"
+        printf_blue "already exists. Skipping...\n"
     fi
 else
-    printf_blue "Find and install our applications:\n"
+    printf_yellow "Find and install our applications.\n"
 fi
 
-printf_blue "Installing SIRIUS Control System related packages.\n"
+printf_yellow_clear "Installing SIRIUS Control System related packages.\n"
 clone_or_find mathphys lnls-fac && make develop-install
 clone_or_find dev-packages lnls-sirius && cd siriuspy && \
     make develop-install
@@ -380,7 +383,7 @@ clone_or_find hla lnls-sirius && cd pyqt-apps && make develop-install
 clone_or_find hlafac lnls-fac && make develop-install
 if [ "$INST_SIM" == "yes" ]
 then
-    printf_blue "Installing accelerators simulation packages.\n"
+    printf_yellow_clear "Installing accelerators simulation packages.\n"
     clone_or_find lnls lnls-fac && make develop-install
     clone_or_find trackcpp lnls-fac && make clean && \
         make install-cpp 2>/dev/null && make develop-install-py 2>/dev/null
@@ -390,7 +393,7 @@ then
 fi
 if [ "$INST_COL" == "yes" ]
 then
-    printf_blue "Installing collective effects simulation packages.\n"
+    printf_yellow_clear "Installing collective effects simulation packages.\n"
     clone_or_find collective_effects lnls-fac && cd cppcolleff && \
         make clean && make install-cpp 2>/dev/null && \
         make develop-install-py 2>/dev/null && \
@@ -398,7 +401,7 @@ then
 fi
 if [ "$INST_IOC" == "yes" ]
 then
-    printf_blue "Installing SIRIUS IOCs related packages.\n"
+    printf_yellow_clear "Installing SIRIUS IOCs related packages.\n"
     clone_or_find eth-bridge-pru-serial485 lnls-sirius && cd client && \
         pip install --no-deps -e ./
     clone_or_find machine-applications lnls-sirius && \
@@ -406,14 +409,14 @@ then
 fi
 if [ "$INST_IMA" == "yes" ]
 then
-    printf_blue "Installing magnets simulation packages.\n"
+    printf_yellow_clear "Installing magnets simulation packages.\n"
     clone_or_find fieldmaptrack lnls-fac && make develop-install
     clone_or_find Radia lnls-sirius && make install 2>/dev/null
     clone_or_find idanalysis lnls-fac && make develop-install
     clone_or_find insertion-devices lnls-ima && pip install -e ./
 fi
 
-printf_blue "Add enviroment variables to conda environment\n"
+printf_yellow "Add enviroment variables to conda environment\n"
 
 #### Cria arquivo para configurar ativação do ambiente
 cat > $CONDA_PREFIX/etc/conda/activate.d/sirius_env.sh <<'EOM'
@@ -512,7 +515,7 @@ unalias g-conda
 unalias g-conda-repos
 EOM
 
-printf_blue "Deactivate conda enviroment\n"
+printf_yellow_clear "Deactivate conda enviroment\n"
 mamba deactivate
 
 ##############################################################################
@@ -527,29 +530,29 @@ sudo chmod -R g+w /opt/mamba_files/mamba/pkgs/cache/*.json
 printf_yellow "Create scripts to access apps in conda environment\n"
 
 cd /usr/local/bin
-printf_green " - jupyter-sirius \n"
-sudo tee jupyter-sirius >/dev/null <<'EOM'
+printf_yellow_clear " - jupyter-mamba-sirius \n"
+sudo tee jupyter-mamba-sirius >/dev/null <<'EOM'
 #!/bin/bash
 bash -c "source /opt/mamba_files/mamba/etc/profile.d/conda.sh && conda activate sirius && jupyter notebook"
 EOM
 
-printf_green " - ipython-sirius \n"
-sudo tee ipython-sirius >/dev/null <<'EOM'
+printf_yellow_clear " - ipython-mamba-sirius \n"
+sudo tee ipython-mamba-sirius >/dev/null <<'EOM'
 #!/bin/bash
 bash -c "source /opt/mamba_files/mamba/etc/profile.d/conda.sh && conda activate sirius && ipython"
 EOM
 
-printf_green " - designer-sirius \n"
-sudo tee designer-sirius >/dev/null <<'EOM'
+printf_yellow_clear " - designer-mamba-sirius \n"
+sudo tee designer-mamba-sirius >/dev/null <<'EOM'
 #!/bin/bash
 bash -c "source /opt/mamba_files/mamba/etc/profile.d/conda.sh && conda activate sirius && designer"
 EOM
 
-printf_green " - sirius-hla-as-ap-launcher \n"
-sudo tee sirius-hla-as-ap-launcher >/dev/null <<'EOM'
+printf_yellow_clear " - sirius-hla-as-ap-launcher-mamba-sirius \n"
+sudo tee sirius-hla-as-ap-launcher-mamba-sirius >/dev/null <<'EOM'
 #!/bin/bash
 bash -c "source /opt/mamba_files/mamba/etc/profile.d/conda.sh && conda activate sirius && sirius-hla-as-ap-launcher.py"
 EOM
 
-sudo chmod +x jupyter-sirius ipython-sirius designer-sirius \
-    sirius-hla-as-ap-launcher
+sudo chmod +x jupyter-mamba-sirius ipython-mamba-sirius designer-mamba-sirius \
+    sirius-hla-as-ap-launcher-mamba-sirius
