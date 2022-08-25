@@ -34,7 +34,8 @@ function help
 SHORT=nh
 LONG+=no-clone-repos,no-sim,no-ioc,no-ima,no-colleff,root-lnls-fac:,
 LONG+=root-lnls-sirius:,root-lnls-ima:,branches:,help
-OPTS=$(getopt -a -n weather --options $SHORT --longoptions $LONG -- "$@")
+OPTS=$(getopt -a -n sirius-script-mamba-env-create.bash \
+    --options $SHORT --longoptions $LONG -- "$@")
 
 # Returns the count of arguments that are in short or long options
 # VALID_ARGS=$#
