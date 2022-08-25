@@ -9,7 +9,7 @@
 
 function help
 {
-    echo "Usage: sirius-script-create-mamba-env.bash
+    echo "Usage: sirius-script-mamba-env-create.bash
     [ -n | --no-clone-repos ] Instead of cloning, find repos in system
     [ --no-sim ] Do not install simulation packages.
     [ --no-ioc ] Do not install IOC related packages.
