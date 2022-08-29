@@ -5,6 +5,9 @@ import time
 import epics
 
 
+from siriuspy.search import PSSearch
+
+
 USER_SHIFT = True
 
 
@@ -20,7 +23,7 @@ def s01_macshift_update():
     return True
 
 
-def close_gamma_shutter():
+def s02_close_gamma_shutter():
     """Mensagem na para fechar o Gama."""
     print('close_gamma_shutter...')
     msg = (
@@ -31,7 +34,7 @@ def close_gamma_shutter():
     return True
 
 
-def ids_parking(): 
+def s03_ids_parking():
     """."""
     if USER_SHIFT:
         return
@@ -57,7 +60,7 @@ def ids_parking():
     epics.caput('SI-09SA:ID-APU22:Phase-SP', p1)
     epics.caput('SI-11SP:ID-APU58:Phase-SP', p2)  # seta a phase para 29.
     time.sleep(1.0)
-    epics.caput('SI-06SB:ID-APU22:DevCtrl-Cmd', start)
+    epics.caput('SI-06SB:ID-APU22:DevCtrl-Cmd', start)  # movimenta os Onduladores para a posição escolhida
     epics.caput('SI-07SP:ID-APU22:DevCtrl-Cmd', start)
     epics.caput('SI-08SB:ID-APU22:DevCtrl-Cmd', start)
     epics.caput('SI-09SA:ID-APU22:DevCtrl-Cmd', start)
@@ -68,7 +71,7 @@ def ids_parking():
     return True
 
 
-def sofb_turnoff():
+def s04_sofb_turnoff():
     """Desliga o SOFB."""
     if USER_SHIFT:
         return
@@ -82,7 +85,7 @@ def sofb_turnoff():
     return True
 
 
-def bbb_turnoff():
+def s05_bbb_turnoff():
     """Desabilita o bbb Hor, Vert e Long."""
     if USER_SHIFT:
         return
@@ -117,32 +120,32 @@ def beam_kill():
     return True
 
 
-def config_timmming():
-    """Configura timming."""
-    return True
-
-
-def opmode_to_slowref():
+def s07_opmode_to_slowref():
     """Altera o modo das fontes de OpMode para SlowRef."""
+    if USER_SHIFT:
+        return False
+    print('opmode_to_slowref...')
+
+    #  falta definir modo global para ajustar todas as fontes LI, TB, TS, BO e SI
     return True
 
 
-def zero_current():
+def s08_zero_current():
     """Seleciona e zera a corrente de todas as fontes dos aceleradores."""
     return True
 
 
-def ps_turnoff():
+def s09_ps_turnoff():
     """Desliga todas as fontes.#desliga todas as fontes."""
     return True
 
 
-def dclinks_turnoff():
+def s10_dclinks_turnoff():
     """Desliga os DC links das fontes."""
     return True
 
 
-def modulator_turnoff():
+def s11_modulator_turnoff():
     """Desliga os moduladores do Linac desabilitando os botões TrigOut e Charge."""
     if USER_SHIFT:
         return
@@ -160,7 +163,7 @@ def modulator_turnoff():
     return True
 
 
-def ajust_bias():
+def s12_ajust_bias():
     """Ajusta a tensão de Bias do canhão em -100V."""
     if USER_SHIFT:
         return
@@ -171,7 +174,7 @@ def ajust_bias():
     return True
 
 
-def ajust_filament():
+def s13_ajust_filament():
     """Ajusta a corrente de filamento em 1A."""
     if USER_SHIFT:
         return
@@ -182,17 +185,17 @@ def ajust_filament():
     return True
 
 
-def borf_turnoff():
+def s14_borf_turnoff():
     """Altera no campo 'Command' para Safe Stop e aguarda executar, depois desliga chave Pin SW e amplificadores DC/DC e 300VDC."""
     return True
 
 
-def sirf_turnoff():
+def s15_sirf_turnoff():
     """Ajusta a potência da cavidade do anel para 60mV( inc. rate) e confirma em Reference Amplitude, desabilita o loop de controle, Chave Pin SW e amplificadores DC/DC e AC TDK."""
     return True
 
 
-def start_counter():
+def s16_start_counter():
     """verificar visualmente no supervisório se a contagem regressiva para liberar acesso ao túnel iniciou."""
     print('start_counter')
     msg = ('Clique no botão Sirius PPS do supervisório e confirme se a contagem regressiva para liberar acesso ao túnel iniciou')
@@ -201,7 +204,7 @@ def start_counter():
     return True
 
 
-def free_access():
+def s17_free_access():
     """Aguardar o contador chegar em 0, após 6 horas, para liberar acesso ao túnel."""
     print('free_access')
     msg('Aguarde o contador chegar em 0, após 6 horas, para liberar acessoa ao túnel')
@@ -217,7 +220,7 @@ def execute_procedure(): #executa na sequencia os passos acima.
     s03_ids_parking()
     s04_sofb_turnoff()
     s05_bbb_turnoff()
-    if not s06_beam_kill()
+    if not s06_beam_kill():
         return
     s07_config_timing()    
     s08_opmode_to_slowref()
@@ -226,13 +229,14 @@ def execute_procedure(): #executa na sequencia os passos acima.
     s11_dclinks_turnoff()
     s12_modulator_turnoff()
     s13_ajust_bias()
-    ajust_filament()
-    borf_turnoff()
-    sirf_turnoff()
-    start_counter()
-    free_access()
+    s14_ajust_filament()
+    s15_borf_turnoff()
+    s16_sirf_turnoff()
+    s17_start_counter()
+    s18_free_access()
 
 
 if __name__ == '__main__':
     """."""
-    execute_procedure()
+    # execute_procedure()
+    psnames = PSSearch().get_psname()
