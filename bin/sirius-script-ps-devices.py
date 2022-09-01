@@ -22,6 +22,8 @@
 
 """Library for formatting trees."""
 
+import sys
+from datetime import datetime
 import itertools
 from operator import itemgetter
 
@@ -116,15 +118,30 @@ def format_ascii_tree(tree, format_node, get_children):
                        ASCII_OPTIONS)
 
 
-def format_tree_simple(tree):
+def format_tree_simple(tree, options=None):
     """."""
     return format_tree(
-        tree, format_node=itemgetter(0), get_children=itemgetter(1))
+        tree, format_node=itemgetter(0),
+        get_children=itemgetter(1), options=options)
 
 
 def print_tree(*args, **kwargs):
     """Print tree."""
     print(format_tree(*args, **kwargs))
+
+
+def print_header():
+
+    tstamp = datetime.today().strftime('%Y-%m-%d')
+    text = [
+        '# The file is generated with script',
+        '# https://github.com/lnls-sirius/scripts/blob/master/bin/sirius-script-ps-devices.py',
+        '# using argument "--ascii"',
+        '# last update: ' + tstamp,
+        '',
+        ]
+    for line in text:
+        print(line)
 
 
 # ---
@@ -174,5 +191,10 @@ def create_tree():
     return tree
 
 
-tree = create_tree()
-print(format_tree_simple(tree))
+if __name__ == "__main__":
+    tree = create_tree()
+    if len(sys.argv) == 1:
+        print(format_tree_simple(tree, options=None))
+    elif sys.argv[1] == '--ascii':
+        print_header()
+        print(format_tree_simple(tree, options=ASCII_OPTIONS))
