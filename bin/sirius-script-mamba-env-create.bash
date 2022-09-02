@@ -15,9 +15,9 @@ function help
     [ --no-ioc ] Do not install IOC related packages.
     [ --no-ima ] Do not install magnets simulation packages.
     [ --no-colleff ] Do not install collective effects packages.
-    [ --root-lnls-fac ] Root folder for lnls-fac repos. Defaults to /.
-    [ --root-lnls-sirius ] Root folder for lnls-sirius repos. Defaults to /.
-    [ --root-lnls-ima ] Root folder for lnls-imas repos. Defaults to /.
+    [ --root-lnls-fac ] Root folder for lnls-fac repos. Default: \"/\".
+    [ --root-lnls-sirius ] Root folder for lnls-sirius repos. Default: \"/\".
+    [ --root-lnls-ima ] Root folder for lnls-imas repos. Default: \"/\".
     [ -b | --branches ] Branches to install. For each package you want to force a branch you must provide:
             <package1>:<branch1>,<package2>:<branch2>,...,<packagen>:<branchn>
         Please note there is no spaces in the string.
