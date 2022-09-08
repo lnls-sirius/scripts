@@ -54,7 +54,7 @@ INST_COL="yes"
 ROOT_SIR="/"
 ROOT_FAC="/"
 ROOT_IMA="/"
-BRANCHES=
+BRANCHES="Radia:lnls-sirius"
 # now enjoy the options in order and nicely split until we see --
 while true; do
     case "$1" in
@@ -91,7 +91,9 @@ while true; do
             shift 2
             ;;
         -b|--branches)
-            BRANCHES=(${2//,/ })  # split string in array in delimiter ","
+            BRANCHES="$2,$BRANCHES"
+            # split string in array at delimiter ",":
+            BRANCHES=(${BRANCHES//,/ })
             shift 2
             ;;
         -h|--help)
