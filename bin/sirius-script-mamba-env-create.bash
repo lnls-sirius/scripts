@@ -157,7 +157,7 @@ function clone_or_find
     printf_yellow " - $1\n"
     if [ "$CLONE" == "yes" ]
     then
-        printf_yellow_clear "Cloning repo $1 in $CONDA_PREFIX/repos: "
+        printf_yellow_clear "Cloning repo $1 in $CONDA_PREFIX/repos: \n"
         cd $CONDA_PREFIX/repos
         if ! [ -d "$1" ]
         then
@@ -339,7 +339,9 @@ $COMM gxx make binutils swig build gsl libblas wmctrl fftw
 printf_yellow_clear "- Now some generic python packages:\n"
 $COMM pyparsing bottleneck aiohttp==3.7.4 scipy matplotlib pytest mpmath \
     entrypoints requests pyvisa=1.10.1 pyvisa-py=0.3.1 pyqt=5.12.3 pandas \
-    pyqtgraph=0.11.0 QtAwesome=0.7.2 numexpr tk sh
+    pyqtgraph=0.11.0 QtAwesome=0.7.2 numexpr tk sh pywavelets scikit-image \
+    scikit-learn pydocstyle pycodestyle pylama
+
 
 printf_yellow_clear "- Install EPICS Base:\n"
 $COMM -c conda-forge/label/cf202003 epics-base=3.15.6
