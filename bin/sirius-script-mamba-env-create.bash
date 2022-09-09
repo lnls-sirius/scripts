@@ -38,7 +38,7 @@ LONG+=root-lnls-sirius:,root-lnls-ima:,branches:,help
 OPTS=$(getopt -a -n sirius-script-mamba-env-create.bash \
     --options $SHORT --longoptions $LONG -- "$@")
 
-# Returns the count of arguments that are in short or long options
+# Exit in case getopt return with error:
 if [ $? -ne 0 ]
 then
     help
