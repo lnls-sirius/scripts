@@ -32,8 +32,8 @@ function help
     [ -h | --help  ] Print help and exit."
 }
 
-SHORT=nh
-LONG+=no-clone-repos,no-sim,no-ioc,no-ima,no-colleff,root-lnls-fac:,
+SHORT=ndh
+LONG+=no-clone-repos,develop,no-sim,no-ioc,no-ima,no-colleff,root-lnls-fac:,
 LONG+=root-lnls-sirius:,root-lnls-ima:,branches:,help
 OPTS=$(getopt -a -n sirius-script-mamba-env-create.bash \
     --options $SHORT --longoptions $LONG -- "$@")
