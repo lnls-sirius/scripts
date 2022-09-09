@@ -425,9 +425,8 @@ if [ "$INST_IOC" == "yes" ]
 then
     printf_yellow_clear "Installing SIRIUS IOCs related packages.\n"
     clone_or_find eth-bridge-pru-serial485 lnls-sirius && cd client && \
-        pip install --no-deps -e ./
-    clone_or_find machine-applications lnls-sirius && \
         make $TARGET
+    clone_or_find machine-applications lnls-sirius && make $TARGET
 fi
 if [ "$INST_IMA" == "yes" ]
 then
