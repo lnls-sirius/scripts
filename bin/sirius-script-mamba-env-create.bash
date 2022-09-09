@@ -418,14 +418,13 @@ then
     printf_yellow_clear "Installing collective effects simulation packages.\n"
     clone_or_find collective_effects lnls-fac && cd cppcolleff && \
         make clean && make install-cpp 2>/dev/null && \
-        make $TARGET-py 2>/dev/null && \
-        cd ../pycolleff && make $TARGET
+        make $TARGET-py 2>/dev/null && cd ../pycolleff && make $TARGET
 fi
 if [ "$INST_IOC" == "yes" ]
 then
     printf_yellow_clear "Installing SIRIUS IOCs related packages.\n"
-    clone_or_find eth-bridge-pru-serial485 lnls-sirius && cd client && \
-        make $TARGET
+    clone_or_find eth-bridge-pru-serial485 lnls-sirius && \
+        cd client && make $TARGET
     clone_or_find machine-applications lnls-sirius && make $TARGET
 fi
 if [ "$INST_IMA" == "yes" ]
@@ -434,7 +433,7 @@ then
     clone_or_find fieldmaptrack lnls-fac && make $TARGET
     clone_or_find Radia lnls-sirius && make install 2>/dev/null
     clone_or_find idanalysis lnls-fac && make $TARGET
-    clone_or_find insertion-devices lnls-ima && pip install -e ./
+    clone_or_find insertion-devices lnls-ima && make $TARGET
 fi
 
 printf_yellow "Add enviroment variables to conda environment\n"
