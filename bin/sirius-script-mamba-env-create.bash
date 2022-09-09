@@ -10,7 +10,8 @@
 function help
 {
     echo "Usage: sirius-script-mamba-env-create.bash
-    [ -n | --no-clone-repos ] Instead of cloning, find repos in system
+    [ -n | --no-clone-repos ] Instead of cloning, find repos in system.
+    [ -d | --develop ] Install sirius packages in develop mode.
     [ --no-sim ] Do not install simulation packages.
     [ --no-ioc ] Do not install IOC related packages.
     [ --no-ima ] Do not install magnets simulation packages.
@@ -47,6 +48,7 @@ fi
 eval set -- "$OPTS"
 
 CLONE="yes"
+DEVELOP="no"
 INST_SIM="yes"
 INST_IOC="yes"
 INST_IMA="yes"
@@ -60,6 +62,10 @@ while true; do
     case "$1" in
         -n|--no-clone-repos)
             CLONE="no"
+            shift
+            ;;
+        -d|--develop)
+            DEVELOP="yes"
             shift
             ;;
         --no-sim)
@@ -381,29 +387,39 @@ else
     printf_yellow "Find and install our applications.\n"
 fi
 
+TARGET="install"
+printf_yellow "\nSIRIUS packages will be installed in: "
+if [ "$DEVELOP" == "yes" ]
+then
+    TARGET="develop-install"
+    printf_green "Develop mode.\n\n"
+else
+    printf_green "Install mode.\n\n"
+fi
+
 printf_yellow_clear "Installing SIRIUS Control System related packages.\n"
-clone_or_find mathphys lnls-fac && make develop-install
+clone_or_find mathphys lnls-fac && make $TARGET
 clone_or_find dev-packages lnls-sirius && cd siriuspy && \
-    make develop-install
-clone_or_find hla lnls-sirius && cd pyqt-apps && make develop-install
-clone_or_find hlafac lnls-fac && make develop-install
+    make $TARGET
+clone_or_find hla lnls-sirius && cd pyqt-apps && make $TARGET
+clone_or_find hlafac lnls-fac && make $TARGET
 if [ "$INST_SIM" == "yes" ]
 then
     printf_yellow_clear "Installing accelerators simulation packages.\n"
-    clone_or_find lnls lnls-fac && make develop-install
+    clone_or_find lnls lnls-fac && make $TARGET
     clone_or_find trackcpp lnls-fac && make clean && \
-        make install-cpp 2>/dev/null && make develop-install-py 2>/dev/null
-    clone_or_find pyaccel lnls-fac && make develop-install
-    clone_or_find pymodels lnls-fac && make develop-install
-    clone_or_find apsuite lnls-fac && make develop-install
+        make install-cpp 2>/dev/null && make $TARGET-py 2>/dev/null
+    clone_or_find pyaccel lnls-fac && make $TARGET
+    clone_or_find pymodels lnls-fac && make $TARGET
+    clone_or_find apsuite lnls-fac && make $TARGET
 fi
 if [ "$INST_COL" == "yes" ]
 then
     printf_yellow_clear "Installing collective effects simulation packages.\n"
     clone_or_find collective_effects lnls-fac && cd cppcolleff && \
         make clean && make install-cpp 2>/dev/null && \
-        make develop-install-py 2>/dev/null && \
-        cd ../pycolleff && make develop-install
+        make $TARGET-py 2>/dev/null && \
+        cd ../pycolleff && make $TARGET
 fi
 if [ "$INST_IOC" == "yes" ]
 then
@@ -411,14 +427,14 @@ then
     clone_or_find eth-bridge-pru-serial485 lnls-sirius && cd client && \
         pip install --no-deps -e ./
     clone_or_find machine-applications lnls-sirius && \
-        make develop-install
+        make $TARGET
 fi
 if [ "$INST_IMA" == "yes" ]
 then
     printf_yellow_clear "Installing magnets simulation packages.\n"
-    clone_or_find fieldmaptrack lnls-fac && make develop-install
+    clone_or_find fieldmaptrack lnls-fac && make $TARGET
     clone_or_find Radia lnls-sirius && make install 2>/dev/null
-    clone_or_find idanalysis lnls-fac && make develop-install
+    clone_or_find idanalysis lnls-fac && make $TARGET
     clone_or_find insertion-devices lnls-ima && pip install -e ./
 fi
 
