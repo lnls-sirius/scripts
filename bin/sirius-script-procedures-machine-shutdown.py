@@ -74,7 +74,7 @@ def s03_ids_parking():
     epics.caput('SI-08SB:ID-APU22:BeamLineCtrlEnbl-Sel', 'Dsbl')
     epics.caput('SI-09SA:ID-APU22:BeamLineCtrlEnbl-Sel', 'Dsbl')
     epics.caput('SI-11SP:ID-APU58:BeamLineCtrlEnbl-Sel', 'Dsbl')
-    epics.sleep(1.0)  # aguarda 1 seg.
+    time.sleep(1.0)  # aguarda 1 seg.
     epics.caput('SI-06SB:ID-APU22:DevCtrl-Cmd', stop)  # para a movimentação dos shhutters.
     epics.caput('SI-07SP:ID-APU22:DevCtrl-Cmd', stop)
     epics.caput('SI-08SB:ID-APU22:DevCtrl-Cmd', stop)
@@ -291,12 +291,57 @@ def s14_ajust_filament():
 
 def s15_borf_turnoff():
     """Altera no campo 'Command' para Safe Stop e aguarda executar, depois desliga chave Pin SW e amplificadores DC/DC e 300VDC."""
-    return True
+    if DISABLE_SETPOINTS:
+        return
+    print('borf_turnoff...') # mensagem a ser impressa na tela para o desligamento da RF do Booster
+    Command = ''
+    epics.caput('AS-Glob:AP-MachShift:Mode-Sel', Command) # Altera o campo Command para Safe Stop 
+    time.sleep(1.0) # Aguarda 1s
+
+    print('Desligando a chave PIN...')
+    epics.caput('RA-RaBO01:RF-LLRFPreAmp:PinSwDsbl-Cmd', 1)
+    time.sleep(1.0)
+
+    print('Desligando os Amplificador DC/DC...')
+    epics.caput('RA-ToBO:RF-SSAmpTower:PwrCnvDsbl-Sel', 1)
+    time.sleep(1.0)
+
+    print('Desligando os Amplificador 300VDC...')
+    epics.caput('RA-ToBO:RF-ACDCPanel:300VdcDsbl-Sel', 1)
+    time.sleep(1.0)
 
 
 def s16_sirf_turnoff():
-    """Ajusta a potência da cavidade do anel para 60mV( inc. rate) e confirma em Reference Amplitude, desabilita o loop de controle, Chave Pin SW e amplificadores DC/DC e AC TDK."""
-    return True
+    """Ajusta a potência da cavidade do anel para 60 mV( inc. rate) e confirma em Reference Amplitude, desabilita o loop de controle, Chave Pin SW e amplificadores DC/TDK e AC TDK."""
+    if DISABLE_SETPOINTS:
+        return True
+    print('sirf_turnoff...')
+    print('Ajustando a potência da cavidade em 60 mV...')
+
+    init_value = epics.caget('SR-RF-DLLRF-01:mV:AL:REF-SP')
+    for i in range(init_value, 60.00, -10.0): # Ajusta a potencia da cavidade em 60mV.
+        print('Amplitude de referẽncia [mV]: ', i)
+        epics.caput('SR-RF-DLLRF-01:mV:AL:REF-SP', i)
+        time.sleep(0.2)
+
+    print('Desabilitando o looop de controle...')
+    epics.caput('SR-RF-DLLRF-01:SL:S', 1)
+    time.sleep(1.0)
+
+    print('Desligando a Chave PIN...')
+    epics.caput('RA-RaSIA01:RF-LLRFPreAmp-1:PINSw1Dsbl-Cmd', 1)
+    time.sleep(1.0)
+    epics.caput('RA-RaSIA02:RF-LLRFPreAmp-1:PINSw2Dsbl-Cmd', 1)
+    time.sleep(1.0)
+    print('Desligando os amplificadores DC/TDK...')
+    epics.caput('RA-ToSIA01:RF-TDKSource:PwrDCDsbl-Sel', 1)
+    time.sleep(1.0)
+    epics.caput('RA-ToSIA02:RF-TDKSource:PwrDCDsbl-Sel', 1)
+    time.sleep(1.0)
+    epics.caput('RA-ToSIA01:RF-ACPanel:PwrACDsbl-Sel', 1)
+    time.sleep(1.0)
+    epics.caput('RA-ToSIA02:RF-ACPanel:PwrACDsbl-Sel', 1)
+    time.sleep(1.0)
 
 
 def s17_start_counter():
