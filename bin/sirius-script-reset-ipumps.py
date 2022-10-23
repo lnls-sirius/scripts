@@ -20,7 +20,7 @@ CONTROLLERS = {
          'SI-03C2FE:VA-SIP150-MD',
          'SI-03BCFE:VA-SIP150-MD',
          'SI-RA03:VA-SIPC-05:C4',
-        ],
+        ], 
 }
 
 
