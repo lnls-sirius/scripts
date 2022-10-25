@@ -102,7 +102,7 @@ def s03_ids_parking():
     ]
     value_targets = [p1, p1, p1, p1, p2]
     value_tols = [0.1, 0.1, 0.1, 0.1, 0.1]
-    return wait_value_set(pvnames, value_targets, value_tols, timeout=30)
+    return wait_value_set(pvnames, value_targets, value_tols, timeout=70)
 
 
 def s04_sofb_turnoff():
