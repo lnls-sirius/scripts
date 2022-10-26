@@ -7,20 +7,30 @@ CONTROLLERS = {
     'SI-RA01:VA-SIPC-06':
         ['SI-01SAFE:VA-SIP150-MD',
          'SI-01C2FE:VA-SIP150-MD',
-         'SI-0102BCFE:VA-SIP150-MD',
-         'SR-RA01:VA-SIPC-06:C4'],
+         'SI-01BCFE:VA-SIP150-MD',
+         'SR-RA01:VA-SIPC-06:C4',
+         ],
+
     'SI-RA02:VA-SIPC-05':
         ['SI-02C4:VA-SIP20-BG',
          'SI-03M1:VA-SIP20-BG',
          'SI-02SBFE:VA-SIP150-MD',
          'SI-02BCFE:VA-SIP150-MD',
         ],
+
     'SI-RA03:VA-SIPC-05':
         ['SI-03SPFE:VA-SIP150-MD',
          'SI-03C2FE:VA-SIP150-MD',
          'SI-03BCFE:VA-SIP150-MD',
          'SI-RA03:VA-SIPC-05:C4',
         ], 
+
+    'SI-RA04:VA-SIPC-04':
+        ['SI-04C4:VA-SIP20-BG',
+         'SI-05M1:VA-SIP20-BG',
+         'SI-04SBFE:VA-SIP150-MD',
+         'SI-04BCFE:VA-SIP150-MD',
+        ],
 
     'SI-RA05:VA-SIPC-05':
         ['SI-05SAFE:VA-SIP150-MD',
@@ -41,6 +51,13 @@ CONTROLLERS = {
          'SI-07C2FE:VA-SIP150-MD',
          'SI-07BCFE:VA-SIP150-MD',
          'SR-RA07:VA-SIPC-05:C4',
+        ],
+
+    'SI-RA08:VA-SIPC-04':
+        ['SI-08C4:VA-SIP20-BG',
+         'SI-09M1:VA-SIP20-BG',
+         'SI-08SBFE:VA-SIP150-MD',
+         'SI-08BCFE:VA-SIP150-MD',
         ],
 
     'SI-RA09:VA-SIPC-05':
