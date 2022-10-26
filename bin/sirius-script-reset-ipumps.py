@@ -214,6 +214,14 @@ def create_ion_pumps_currents_pvs(ion_pumps, timeout=10):
     return pvs
 
 
+def create_ion_pumps_voltage_target_pvs(ion_pumps, timeout=10):
+    pvs = {ion_pump:epics.PV(ion_pump + ':VoltageTarget-SP') for ion_pump in ion_pumps}
+    for pv in pvs.values():
+        if not pv.wait_for_connection(timeout=timeout):
+            print('timeout in {}'.format(pv.pvname))
+    return pvs
+
+
 # pvs = create_ion_pumps_currents_pvs(ION_PUMPS)
 # check_currents(pvs, threshold=2e-7)
 
