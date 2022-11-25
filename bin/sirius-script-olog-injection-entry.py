@@ -1,8 +1,16 @@
 #!/usr/bin/env python-sirius
 
+import sys, time
+from pickle import TRUE
+from datetime import datetime, timedelta
 from optparse import Values
 from random import randint
+
+import matplotlib.pyplot as plt
+import numpy as np
+
 from turtle import right
+
 from openpyxl import Workbook
 from openpyxl.compat import safe_string
 from openpyxl.descriptors import Bool, MinMax, Min, Alias, NoneSet
@@ -10,13 +18,10 @@ from openpyxl.descriptors.serialisable import Serialisable
 from openpyxl.styles import PatternFill, Border, Side, Alignment, Protection, Font, Color
 from openpyxl.styles import colors
 from openpyxl.cell import Cell
-from pickle import TRUE
-# from time import time
-from datetime import datetime, timedelta
-import epics, sys, time
+
+import epics
+
 from siriuspy.clientarch import PVDataSet, Time
-import matplotlib.pyplot as plt
-import numpy as np
 
 
 RAD_PVS = [
