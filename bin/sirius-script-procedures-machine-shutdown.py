@@ -547,28 +547,50 @@ class MachineShutdown:
 
     def execute_procedure(self):
         """Executa na sequencia os passos a seguir."""
-        self.s01_close_gamma_shutter()
-        self.s02_macshift_update()
-        self.s03_ids_parking()
-        self.s04_sofb_fofb_turnoff()
-        self.s05_bbb_turnoff()
-        self.s06_beam_kill()
+        if not self.s01_close_gamma_shutter():
+            return False
+        if not self.s02_macshift_update():
+            return False
+        if self.s03_ids_parking():
+            return False
+        if self.s04_sofb_fofb_turnoff():
+            return False
+        if self.s05_bbb_turnoff():
+            return False
+        if self.s06_beam_kill():
+            return False
         if not self.s06_beam_kill():
-            return
-        self.s07_disable_ps_triggers()
-        self.s08_turn_off_sofbmode()
-        self.s09_set_ps_and_dclinks_to_slowref()
-        self.s10_set_ps_current_to_zero()
-        self.s11_reset_ps_and_dclinks()
-        self.s12_turn_ps_off()
-        self.s13_turn_dclinks_off()
-        self.s14_modulator_turnoff()
-        self.s15_ajust_bias()
-        self.s16_ajust_filament()
-        self.s17_borf_turnoff()
-        self.s18_sirf_turnoff()
-        self.s19_start_counter()
-        self.s20_free_access()
+            return False
+        if not self.s07_disable_ps_triggers():
+            return False
+        if not self.s08_turn_off_sofbmode():
+            return False
+        if not self.s09_set_ps_and_dclinks_to_slowref():
+            return False
+        if not self.s10_set_ps_current_to_zero():
+            return False
+        if not self.s11_reset_ps_and_dclinks():
+            return False
+        if not self.s12_turn_ps_off():
+            return False
+        if not self.s13_turn_dclinks_off():
+            return False
+        if not self.s14_modulator_turnoff():
+            return False
+        if not self.s15_ajust_bias():
+            return False
+        if not self.s16_ajust_filament():
+            return False
+        if not self.s17_borf_turnoff():
+            return False
+        if not self.s18_sirf_turnoff():
+            return False
+        if not self.s19_start_counter():
+            return False
+        if not self.s20_free_access():
+            return False
+
+        return True
 
     @staticmethod
     def wait_value(pvname, value_target, value_tol, timeout, sleep=0.1):
@@ -613,4 +635,7 @@ class MachineShutdown:
 if __name__ == '__main__':
     """."""
     ms = MachineShutdown(dry_run=True)
-    #  ms.execute_procedure()
+    if ms.execute_procedure():
+        print('machine shutdown success')
+    else:
+        print('machine shutdown failed')
