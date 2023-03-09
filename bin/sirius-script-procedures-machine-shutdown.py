@@ -52,58 +52,54 @@ class MachineShutdown:
         print('ids_parking...')
 
         stop, start = 1, 3
+        g1 = 36  # [mm]
         p1, p2 = 11, 29  # [mm]
 
-        # desabilita o EPU_50
-        epics.caput('SI-10SB:ID-EPU50:BeamLineCtrlEnbl-Sel', 'Dsbl')
-        # aguarda 1 seg.
-        time.sleep(1.0)
-
-        # desabilita os shutters das linhas.
+        # desabilita a movimentação dos IDs pelas linhas.
         epics.caput('SI-06SB:ID-APU22:BeamLineCtrlEnbl-Sel', 'Dsbl')
         epics.caput('SI-07SP:ID-APU22:BeamLineCtrlEnbl-Sel', 'Dsbl')
         epics.caput('SI-08SB:ID-APU22:BeamLineCtrlEnbl-Sel', 'Dsbl')
         epics.caput('SI-09SA:ID-APU22:BeamLineCtrlEnbl-Sel', 'Dsbl')
+        epics.caput('SI-10SB:ID-EPU50:BeamLineCtrlEnbl-Sel', 'Dsbl')
         epics.caput('SI-11SP:ID-APU58:BeamLineCtrlEnbl-Sel', 'Dsbl')
-        # aguarda 1 seg.
-        time.sleep(1.0)
+        time.sleep(1.0)  # aguarda 1 seg.
 
-        # para a movimentação dos shhutters
+        # para a movimentação dos IDs
         epics.caput('SI-06SB:ID-APU22:DevCtrl-Cmd', stop)
         epics.caput('SI-07SP:ID-APU22:DevCtrl-Cmd', stop)
         epics.caput('SI-08SB:ID-APU22:DevCtrl-Cmd', stop)
         epics.caput('SI-09SA:ID-APU22:DevCtrl-Cmd', stop)
         epics.caput('SI-11SP:ID-APU58:DevCtrl-Cmd', stop)
-        # aguarda 1 seg.
-        time.sleep(1.0)
+        time.sleep(1.0)  # aguarda 1 seg.
 
-        # seta a phase para 11.
+        # seta os IDs para config de estacionamento
         epics.caput('SI-06SB:ID-APU22:Phase-SP', p1)
         epics.caput('SI-07SP:ID-APU22:Phase-SP', p1)
         epics.caput('SI-08SB:ID-APU22:Phase-SP', p1)
         epics.caput('SI-09SA:ID-APU22:Phase-SP', p1)
-        # seta a phase para 29.
+        epics.caput('SI-10SB:ID-EPU50:Gap-SP', g1)
         epics.caput('SI-11SP:ID-APU58:Phase-SP', p2)
-        # aguarda 1 seg.
-        time.sleep(1.0)
+        time.sleep(1.0)  # aguarda 1 seg.
 
-        # movimenta os Onduladores para a posição escolhida
+        # movimenta os IDs para a posição escolhida
         epics.caput('SI-06SB:ID-APU22:DevCtrl-Cmd', start)
         epics.caput('SI-07SP:ID-APU22:DevCtrl-Cmd', start)
         epics.caput('SI-08SB:ID-APU22:DevCtrl-Cmd', start)
         epics.caput('SI-09SA:ID-APU22:DevCtrl-Cmd', start)
+        epics.caput('SI-10SB:ID-EPU50:ChangeGap-Cmd', start)
         epics.caput('SI-11SP:ID-APU58:DevCtrl-Cmd', start)
-        # aguarda 1 seg.
-        time.sleep(1.0)
+        time.sleep(1.0)  # aguarda 1 seg.
+
         pvnames = [
             'SI-06SB:ID-APU22:Phase-Mon',
             'SI-07SP:ID-APU22:Phase-Mon',
             'SI-08SB:ID-APU22:Phase-Mon',
             'SI-09SA:ID-APU22:Phase-Mon',
+            'SI-10SB:ID-EPU50:Gap-Mon',
             'SI-11SP:ID-APU58:Phase-Mon',
         ]
-        value_targets = [p1, p1, p1, p1, p2]
-        value_tols = [0.1, 0.1, 0.1, 0.1, 0.1]
+        value_targets = [p1, p1, p1, p1, g1, p2]
+        value_tols = [0.1, 0.1, 0.1, 0.1, 0.1, 0.1]
         return MachineShutdown.wait_value_set(
             pvnames, value_targets, value_tols, timeout=70)
 
