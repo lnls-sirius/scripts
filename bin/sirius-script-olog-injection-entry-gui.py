@@ -380,6 +380,7 @@ class Window(SiriusMainWindow):
         self.tb_interval = QLineEdit(self)
         self.tb_interval.move(10, 95)
         self.tb_interval.resize(40,20)
+        self.tb_interval.setText('15')
         # self.tb_yyf = QLineEdit(self)
         # self.tb_mf = QLineEdit(self)
         # self.tb_mf.move(60, 95) 
