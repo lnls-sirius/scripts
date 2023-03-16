@@ -84,11 +84,11 @@ def create_worksheet():
     ws['A8']='Número de Pulsos na injeção  '
     ws['A9']='Corrente injetada média por pulso '
     ws['A10']='Carga do E-Gun média por pulso '
-    ws['A11']='Eficiência média de Injeção SI '
-    ws['A12']='Eficiência média de Rampa BO '
-    ws['A13']='Sintonia Bétatron Qx '
-    ws['A14']='Sintonia Bétatron Qy '
-    ws['A17']='Tensão Bias do E-Gun '
+    ws['A11']='Tensão Bias do E-Gun '
+    ws['A12']='Eficiência média de Injeção SI '
+    ws['A13']='Eficiência média de Rampa BO '
+    ws['A14']='Sintonia Bétatron Qx '
+    ws['A15']='Sintonia Bétatron Qy '
     ws['A18']='ID 06SB APU22 (CNB) Fase'
     ws['A19']='ID 07SP APU22 (CAT) Fase'
     ws['A20']='ID 08SB APU22 (EMA) Fase'
@@ -108,13 +108,13 @@ def create_worksheet():
     ws['C8'] = '         '
     ws['C9'] = '     mA'
     ws['C10'] = '    nC'
-    ws['C11'] = '     %'
+    ws['C11'] = '     V'
     ws['C12'] = '     %'
-    ws['C13'] = '           '
+    ws['C13'] = '     %'
     ws['C14'] = '           '
-    ws['C15'] = '     µSv'
+    ws['C15'] = '           '
     ws['C16'] = '     µSv'
-    ws['C17'] = '     V'
+    ws['C17'] = '     µSv'
     ws['C18'] = '    mm'
     ws['C19'] = '    mm'
     ws['C20'] = '    mm'
@@ -172,6 +172,7 @@ def get_archiver_data(time_start, time_stop):
         'AS-Glob:AP-CurrInfo:InjCount-Mon',
         'BO-Glob:AP-CurrInfo:RampEff-Mon',
         'LI-01:EG-BiasPS:voltoutsoft',
+        'LI-01:DI-ICT-1:Charge-Mon',
         'SI-Glob:DI-Tune-V:TuneFrac-Mon',
         'SI-13C4:DI-DCCT:Current-Mon',
         'SI-Glob:DI-Tune-H:TuneFrac-Mon',
@@ -187,8 +188,7 @@ def get_archiver_data(time_start, time_stop):
         'SI-09SA:ID-APU22:Phase-Mon',
         'SI-11SP:ID-APU58:Phase-Mon',
         'SI-10SB:ID-EPU50:Gap-Mon',
-        'LI-01:DI-ICT-1:Charge-Mon',
-        'SI-10SB:ID-EPU50:Phase-Mon'
+        'SI-10SB:ID-EPU50:Phase-Mon',
         ] + RAD_PVS
          
     """cria o objeto de consulta ao archiver"""
@@ -204,19 +204,18 @@ def get_archiver_data(time_start, time_stop):
 def fill_worksheet(time_start, time_stop):
 
     wb, ws = create_worksheet()
-    set_border(ws, 'A2:C25')
-    set_alignment(ws, 'B3:C25')
-    set_alignment_a(ws, 'A3:B25')
-    set_font(ws, 'A3:C25')
+    set_border(ws, 'A2:C24')
+    set_alignment(ws, 'B3:C24')
+    set_alignment_a(ws, 'A3:B24')
+    set_font(ws, 'A3:C24')
 
-    """pega dados do archiver"""
+    # --- pega dados do archiver
     pvdata = get_archiver_data(time_start, time_stop)
     pvdinjc = pvdata['AS-Glob:AP-CurrInfo:InjCount-Mon']
-
     # deltai = pvdinjc.timestamp[-1]-pvdinjc.timestamp[0]
     
     
-    """hora do inicio e fim da injeção """
+    # --- hora do inicio e fim da injeção
     pvdmacs = pvdata['AS-Glob:AP-MachShift:Mode-Sts']
     timei = pvdmacs.value
     timef = pvdmacs.timestamp
@@ -232,16 +231,12 @@ def fill_worksheet(time_start, time_stop):
     dsec = int(round(dtime - 60 * dmin))
     ws['B4']=f'{dmin:02}:{dsec:02}'
     
-                
-
-    
-    
     # ws['B25']=datetime.timestamp(deltatimei).strftime("%H:%M:%S")
     # lt = pvd_lifetime.value[-1]
     # ws['B25']=('{:d}:{:02d}'.format(int((deltatimei % 3600) // 60)))
 
-        
-    """calcula maxima variação de dosagem, e em qual sensor."""
+    # --- calcula maxima variação de dosagem, e em qual sensor.
+
     dose_data = dict()
     dose_diff = dict()
     a = +1
@@ -257,18 +252,19 @@ def fill_worksheet(time_start, time_stop):
     maxdose_pvname = RAD_PVS[idx]
     dose_ini = dose_data[maxdose_pvname][0]
     dose_end = dose_data[maxdose_pvname][-1]
-    ws['B15']='{:.3f}'.format(dose_ini)  # Inicio RAD
-    ws['B16']='{:.3f}'.format(dose_end)  # Final RAD
+    ws['B16']='{:.3f}'.format(dose_ini)  # Inicio RAD
+    ws['B17']='{:.3f}'.format(dose_end)  # Final RAD
     maxdose_pvname = maxdose_pvname.replace(':TotalDoseRate:Dose', '').replace('RAD:', '')
-    ws['A15']='Dose inicial {} '.format(maxdose_pvname)
-    ws['A16']='Dose final {} '.format(maxdose_pvname)
+    ws['A16']='Dose inicial {} '.format(maxdose_pvname)
+    ws['A17']='Dose final {} '.format(maxdose_pvname)
     # cálculo para número de pulsos reias durante a injeção
     calci = pvdinjc.value[0]
     calcf = pvdinjc.value[-1]
     numpulsosreais = calcf - calci + 1
 
-    """Loop para verificação da corrente no Anel"""
-    """injeção ligada ou desligada"""
+    # --- Loop para verificação da corrente no Anel
+
+    # --- injeção ligada ou desligada"""
     pvd_injevt = pvdata['AS-RaMO:TI-EVG:InjectionEvt-Sts']
     pvd_current = pvdata['SI-Glob:AP-CurrInfo:Current-Mon']
     index = list(pvd_injevt.value).index(1)
@@ -285,46 +281,46 @@ def fill_worksheet(time_start, time_stop):
     ws['B9']='{:.2f}'.format(mediaIA)  #Média da corrente injetada IA"""
     
   
-    """Quantidade de pulsos calculada e eficiências de injeção BO e SI"""
+    # --- Quantidade de pulsos calculada e eficiências de injeção BO e SI
     ws['B8']='{}'.format(numpulsosreais)
     pvd_injeff = pvdata['SI-Glob:AP-CurrInfo:InjEff-Mon']
-    ws['B11']='{:.1f}'.format(pvd_injeff.value.mean()) #EfSI
+    ws['B12']='{:.1f}'.format(pvd_injeff.value.mean()) #EfSI
     pvd_rampeff = pvdata['BO-Glob:AP-CurrInfo:RampEff-Mon']
-    ws['B12']='{:.1f}'.format(pvd_rampeff.value.mean())
+    ws['B13']='{:.1f}'.format(pvd_rampeff.value.mean())
 
-    """valor da tensão de BIAS do Canhão"""
+    # --- valor da tensão de BIAS do Canhão
     pvd_bias = pvdata['LI-01:EG-BiasPS:voltoutsoft']
-    ws['B17']='{:.2f}'.format(pvd_bias.value[-1])
+    ws['B11']='{:.2f}'.format(pvd_bias.value[-1])
     
 
-    """sintonia X/Y"""
+    # --- sintonia X/Y
     pvd_tunev = pvdata['SI-Glob:DI-Tune-V:TuneFrac-Mon']
-    ws['B14']='{:.3f}'.format(pvd_tunev.value[-1])
+    ws['B15']='{:.3f}'.format(pvd_tunev.value[-1])
     pvd_tuneh = pvdata['SI-Glob:DI-Tune-H:TuneFrac-Mon']
-    ws['B13']='{:.3f}'.format(pvd_tuneh.value[-1])
+    ws['B14']='{:.3f}'.format(pvd_tuneh.value[-1])
 
-    """cálculo do tempo de vida do feixe"""
+    # --- cálculo do tempo de vida do feixe
     pvd_lifetime = pvdata['SI-Glob:AP-CurrInfo:Lifetime-Mon']
     lt = pvd_lifetime.value[-1]
     ws['B7']=('{:d}:{:02d}'.format(int(lt // 3600), int((lt % 3600) // 60)))
     
-    """valores de Phase e Gap dos IDs"""
+    # --- valores de Phase e Gap dos IDs
     pvidcar_phase = pvdata['SI-06SB:ID-APU22:Phase-Mon']
-    ws['B18']='{:.3f}'.format(pvidcar_phase.value[0])
+    ws['B18']='{:.3f}'.format(pvidcar_phase.value[-1])
     pvidcat_phase = pvdata['SI-07SP:ID-APU22:Phase-Mon']
-    ws['B19']='{:.3f}'.format(pvidcat_phase.value[0])
+    ws['B19']='{:.3f}'.format(pvidcat_phase.value[-1])
     pvidema_phase = pvdata['SI-08SB:ID-APU22:Phase-Mon']
-    ws['B20']='{:.3f}'.format(pvidema_phase.value[0])
+    ws['B20']='{:.3f}'.format(pvidema_phase.value[-1])
     pvidman_phase = pvdata['SI-09SA:ID-APU22:Phase-Mon']
-    ws['B21']='{:.3f}'.format(pvidman_phase.value[0])
+    ws['B21']='{:.3f}'.format(pvidman_phase.value[-1])
     pvidipe_phase = pvdata['SI-11SP:ID-APU58:Phase-Mon']
-    ws['B22']='{:.3f}'.format(pvidipe_phase.value[0])
+    ws['B22']='{:.3f}'.format(pvidipe_phase.value[-1])
     pvidisab_gap = pvdata['SI-10SB:ID-EPU50:Gap-Mon']
-    ws['B23']='{:.3f}'.format(pvidisab_gap.value[0])
+    ws['B23']='{:.3f}'.format(pvidisab_gap.value[-1])
     pvidisab_phase = pvdata['SI-10SB:ID-EPU50:Phase-Mon']
-    ws['B24']='{:.3f}'.format(pvidisab_phase.value[0])
+    ws['B24']='{:.3f}'.format(pvidisab_phase.value[-1])
 
-    """valor de média da carga do E-Gun na injeção"""
+    # --- valor de média da carga do E-Gun na injeção
     pvdlicharge = pvdata['LI-01:DI-ICT-1:Charge-Mon']
     ws['B10']='{:.3f}'.format(pvdlicharge.value.mean())
     
