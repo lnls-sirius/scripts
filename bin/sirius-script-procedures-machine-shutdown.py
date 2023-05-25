@@ -7,45 +7,61 @@ import numpy as np
 
 from siriuspy.search import PSSearch
 
-
 class MachineShutdown:
     """."""
-
     def __init__(self, dry_run=True):
         """."""
         self._dry_run = dry_run
 
-    def s01_close_gamma_shutter(self):
-        """Mensagem para fechar o Gama."""
+    def s01_injmode_update(self):
+        """."""
+        print('Alterando o modo de injeção para Decay.')
 
-        print('close_gamma_shutter...')
-        msg = (
-            'por favor, feche o gama e em seguida tecle ENTER'
-            )
+        if self._dry_run:
+            return
+
+        # Executa a PV em questão alterando o modo de injeção para Decay.
+        decay = 0
+        epics.caput('AS-Glob:AP-InjCtrl:Mode-Sel', decay)
+
+        res = MachineShutdown.wait_value(
+            'AS-Glob:AP-InjCtrl:Mode-Sts', decay, 0.5, 2.0)
+        return res
+
+    def s02_injcontrol_disable(self):
+        """Desabilta o Controle de Injeção."""
+        if self._dry_run:
+            return
+
+        print('Desligando Injection')
+        epics.caput('AS-RaMO:TI-EVG:InjectionEvt-Sel', 0)
+        if not MachineShutdown.wait_value(
+                'AS-RaMO:TI-EVG:STATEMACHINE', 0):
+            return False
+
+        print('Desligando Egun trigger')
+        epics.caput('LI-01:EG-TriggerPS:enable', 0)
+        if not MachineShutdown.wait_value(
+                'LI-01:EG-TriggerPS:enablereal', 0):
+            return False
+
+        print('Desligando Sistema de Injeção')
+        epics.caput('LI-01:EG-TriggerPS:enable', 0)
+        if not MachineShutdown.wait_value(
+                'LI-01:EG-TriggerPS:enablereal', 0):
+            return False
+
+    def s03_close_gamma_shutter(self):
+        """Mensagem para fechar o Gama."""
+        print('Close_gamma_shutter...')
+
+        msg = ('Por favor, feche o gama e em seguida tecle ENTER')
         input(msg)
 
         return True
 
-    def s02_macshift_update(self):
-        """Altera o modo do Turno de operação."""
-        if self._dry_run:
-            return
-
-        # mensagem a ser impressa na tela com a alteração do Turno
-        print('macshift_update...')
-
-        # Executa a PV em questão alterando para o modo maintenance
-        maintenance = 5
-        epics.caput('AS-Glob:AP-MachShift:Mode-Sel', maintenance)
-
-        res = MachineShutdown.wait_value(
-            'AS-Glob:AP-MachShift:Mode-Sts', maintenance, 0.5, 2.0)
-        return res
-
-        # Conferir inclusão do EPU-50
-
-    def s03_ids_parking(self):
-        """."""
+    def s04_ids_parking(self):
+        """Altera as condições dos IDs para desligamento da Máquina."""
         if self._dry_run:
             return
 
@@ -55,7 +71,7 @@ class MachineShutdown:
         g1 = 36  # [mm]
         p1, p2 = 11, 29  # [mm]
 
-        # desabilita a movimentação dos IDs pelas linhas.
+        # Desabilita a movimentação dos IDs pelas linhas.
         epics.caput('SI-06SB:ID-APU22:BeamLineCtrlEnbl-Sel', 'Dsbl')
         epics.caput('SI-07SP:ID-APU22:BeamLineCtrlEnbl-Sel', 'Dsbl')
         epics.caput('SI-08SB:ID-APU22:BeamLineCtrlEnbl-Sel', 'Dsbl')
@@ -64,7 +80,7 @@ class MachineShutdown:
         epics.caput('SI-11SP:ID-APU58:BeamLineCtrlEnbl-Sel', 'Dsbl')
         time.sleep(1.0)  # aguarda 1 seg.
 
-        # para a movimentação dos IDs
+        # Para a movimentação dos IDs
         epics.caput('SI-06SB:ID-APU22:DevCtrl-Cmd', stop)
         epics.caput('SI-07SP:ID-APU22:DevCtrl-Cmd', stop)
         epics.caput('SI-08SB:ID-APU22:DevCtrl-Cmd', stop)
@@ -72,7 +88,7 @@ class MachineShutdown:
         epics.caput('SI-11SP:ID-APU58:DevCtrl-Cmd', stop)
         time.sleep(1.0)  # aguarda 1 seg.
 
-        # seta os IDs para config de estacionamento
+        # Seta os IDs para config de estacionamento
         epics.caput('SI-06SB:ID-APU22:Phase-SP', p1)
         epics.caput('SI-07SP:ID-APU22:Phase-SP', p1)
         epics.caput('SI-08SB:ID-APU22:Phase-SP', p1)
@@ -81,7 +97,7 @@ class MachineShutdown:
         epics.caput('SI-11SP:ID-APU58:Phase-SP', p2)
         time.sleep(1.0)  # aguarda 1 seg.
 
-        # movimenta os IDs para a posição escolhida
+        # Movimenta os IDs para a posição escolhida
         epics.caput('SI-06SB:ID-APU22:DevCtrl-Cmd', start)
         epics.caput('SI-07SP:ID-APU22:DevCtrl-Cmd', start)
         epics.caput('SI-08SB:ID-APU22:DevCtrl-Cmd', start)
@@ -103,25 +119,40 @@ class MachineShutdown:
         return MachineShutdown.wait_value_set(
             pvnames, value_targets, value_tols, timeout=70)
 
-    def s04_sofb_fofb_turnoff(self):
-        """Desliga inicialmente o FOFB e depois o SOFB."""
+    def s05_macshift_update(self):
+        """Altera o modo do Turno de operação."""
         if self._dry_run:
-           return
+            return
+
+        print('Macshift_update...')
+
+        # Executa a PV em questão alterando para o modo maintenance
+        maintenance = 5
+        epics.caput('AS-Glob:AP-MachShift:Mode-Sel', maintenance)
+
+        res = MachineShutdown.wait_value(
+            'AS-Glob:AP-MachShift:Mode-Sts', maintenance, 0.5, 2.0)
+        return res
+
+    def s06_sofb_fofb_turnoff(self):
+        """Desliga o FOFB e posteriormente o SOFB."""
+
+        if self._dry_run:
+            return
 
         # Parâmetros do FOFB:
-        print('fofb_turnoff...')
-        # desliga Orbit Distortion Detect
+        print('FOFB Turn off...')
+        # Desabilita o Orbit Distortion Detect
         epics.caput('SI-Glob:AP-FOFB:LoopMaxOrbDistortionEnbl-Sel', 0)
-        # desliga o loop do fofb(ENABLE)
+        # Desabilita o Loop
         epics.caput('SI-Glob:AP-FOFB:LoopState-Sel', 0)
 
-        # --- Versão nova SOFB:
-        print('sofb_turnoff...')
-        # desliga Auto correction State
+        print('SOFB Turn off...')
+        # Desabilita Auto correction State
         epics.caput('SI-Glob:AP-SOFB:LoopState-Sel', 0)
-        # desliga Synchronization
+        # Desabilita Synchronization
         epics.caput('SI-Glob:AP-SOFB:CorrSync-Sel', 0)
-        # desliga PSSOFB Enable
+        # Desabilita PSSOFB Enable
         epics.caput('SI-Glob:AP-SOFB:CorrPSSOFBEnbl-Sel', 0)
 
         pvnames = [
@@ -129,53 +160,17 @@ class MachineShutdown:
            'SI-Glob:AP-SOFB:CorrSync-Sts',
            'SI-Glob:AP-SOFB:CorrPSSOFBEnbl-Sts',
             ]
-
         value_targets = [0, 0, 0]
         value_tols = [0.5, 0.5, 0.5]
         return MachineShutdown.wait_value_set(
            pvnames, value_targets, value_tols, 2.0)
 
-    def s04_sofb_fofb_turnoff_orig(self):
-        """Desliga inicialmente o FOFB e depois o SOFB."""
-        if self._dry_run:
-           return
-
-        # Parâmetros do FOFB:
-        print('fofb_turnoff...')
-        # desliga Orbit Distortion Detect
-        epics.caput('SI-Glob:AP-FOFB:LoopMaxOrbDistortionEnbl-Sel', 0)
-        # desliga o loop do fofb(ENABLE)
-        epics.caput('SI-Glob:AP-FOFB:LoopState-Sel', 0)
-
-        # --- Versão antiga SOFB:
-        print('sofb_turnoff...')
-        # desliga correção de órbita automática
-        epics.caput('SI-Glob:AP-SOFB:LoopState-Sel', 0)
-        # desliga o sinal Wait
-        epics.caput('SI-Glob:AP-SOFB:CorrPSSOFBWait-Sel', 0)
-        # desliga o sinal Enable
-        epics.caput('SI-Glob:AP-SOFB:CorrPSSOFBEnbl-Sel', 0)
-        # altera o estado do sinal de Sync para OFF
-        epics.caput('SI-Glob:AP-SOFB:CorrSync-Sel', 0)
-
-        pvnames = [
-           'SI-Glob:AP-SOFB:LoopState-Sts',
-           'SI-Glob:AP-SOFB:CorrSync-Sts',
-           'SI-Glob:AP-SOFB:CorrPSSOFBEnbl-Sts',
-           # NOTE: add PV
-            ]
-
-        value_targets = [0, 0, 0]
-        value_tols = [0.5, 0.5, 0.5]
-        return MachineShutdown.wait_value_set(
-           pvnames, value_targets, value_tols, 2.0)
-
-    def s05_bbb_turnoff(self):
+    def s07_bbb_turnoff(self):
         """Desabilita o bbb Hor, Vert e Long."""
         if self._dry_run:
             return
 
-        print('bbb_turnoff...')
+        print('BbB_turnoff...')
         # desliga os loops H, V e L do bbb.
         epics.caput('SI-Glob:DI-BbBProc-H:FBCTRL', 0)
         epics.caput('SI-Glob:DI-BbBProc-V:FBCTRL', 0)
@@ -193,205 +188,243 @@ class MachineShutdown:
 
         return True
 
-    def s06_beam_kill(self):
+    def s08_beam_kill(self):
         """Mata o feixe utilizando o metodo RFKillbeam."""
         if self._dry_run:
             return
 
-        print('beam_kill...')
+        print('Encerrando o feixe acumulado...')
+        epics.caput('AS-Glob:AP-InjCtrl:RFKillBeam-Cmd', 0)
+        if not MachineShutdown.wait_value(
+                'SI-13C4:DI-DCCT:Current-Mon', 0, 0.5, 2.0):
+            return False
 
-        epics.caput('AS-Glob:AP-InjCtrl:RFKillBeam-Cmd', 1)
+    def s09_disable_ps_triggers(self):
+        """Desliga os triggers das fontes."""
+        if self._dry_run:
+            return
 
-        # check beam current is close to zero.
-        MachineShutdown.wait_value(
-            'SI-Glob:AP-CurrInfo:Current-Mon', 0.0, 1.0, 2.0)
+        print('Desabilitando os triggers...')
+        # desliga os trigger's das fontes da TB, TS, BO e SI
+        epics.caput('BO-Glob:TI-Mags-Corrs:State-Sel', 0)
+        epics.caput('BO-Glob:TI-Mags-Fams:State-Sel', 0)
+        epics.caput('SI-01:TI-Mags-FFCorrs:State-Sel', 0)
+        epics.caput('SI-Glob:TI-Mags-Bends:State-Sel', 0)
+        epics.caput('SI-Glob:TI-Mags-Corrs:State-Sel', 0)
+        epics.caput('SI-Glob:TI-Mags-QTrims:State-Sel', 0)
+        epics.caput('SI-Glob:TI-Mags-Quads:State-Sel', 0)
+        epics.caput('SI-Glob:TI-Mags-Sexts:State-Sel', 0)
+        epics.caput('SI-Glob:TI-Mags-Skews:State-Sel', 0)
+        epics.caput('TB-Glob:TI-Mags:State-Sel', 0)
+        epics.caput('TS-Glob:TI-Mags:State-Sel', 0)
+        time.sleep(0.5)
 
+        pvnames = ['BO-Glob:TI-Mags-Corrs:State-Sel',
+            'BO-Glob:TI-Mags-Fams:State-Sel',
+            'SI-01:TI-Mags-FFCorrs:State-Sel',
+            'SI-Glob:TI-Mags-Bends:State-Sel',
+            'SI-Glob:TI-Mags-Corrs:State-Sel',
+            'SI-Glob:TI-Mags-QTrims:State-Sel',
+            'SI-Glob:TI-Mags-Quads:State-Sel',
+            'SI-Glob:TI-Mags-Sexts:State-Sel',
+            'SI-Glob:TI-Mags-Skews:State-Sel',
+            'TB-Glob:TI-Mags:State-Sel',
+            'TS-Glob:TI-Mags:State-Sel',]
+        value_targets =[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        value_tols = [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5 ]
+        return MachineShutdown.wait_value_set(
+           pvnames, value_targets, value_tols, 2.0)
+
+    @staticmethod
+    def _ps_sofbmode(sec, timeout):
+        psnames = PSSearch.get_psnames(dict(sec=sec, dis='PS'))
+        pvnames = []
+        for psname in psnames:
+            pvname = psname + ':' + 'SOFBMode-Sel'
+            pvnames.append(psname + ':' + 'SOFBMode-Sts')
+            epics.caput(pvname, 0)
+            values, tols = [0.0, ]* len(pvnames), [0.2]* len(pvnames)
+        if not MachineShutdown.wait_value_set(pvnames,
+                values, tols, timeout):
+            return False
         return True
 
-    def s07_disable_ps_triggers(self):
-       """Inicialmente desliga os triggers das fontes"""
-       if self._dry_run:
-           return
+    def s10_turn_off_sofbmode(self):
+        """Desabilita o nodo SOFBMode."""
+        if self._dry_run:
+            return
+        timeout = 50 #[s]
 
-       print('disable triggers...')
-       # NOTE: need implementation
-       return True
+        print('Desligando o modo SOFBMode...')
+        for sec in('LI', 'TB', 'BO', 'TS', 'SI'):
+            if not MachineShutdown._ps_sofbmode(sec=sec, timeout=timeout): return False
+            return True
 
-    def s08_turn_off_sofbmode(self):
-       """Desabilita o modo sofbmode das fontes"""
-       if self._dry_run:
-           return
-
-       print('turn_off_sofbmode')
-       # NOTE: need implementation
-       return True
-
-    def s09_set_ps_and_dclinks_to_slowref(self):
-    #   Fontes finalizadas, falta implementar os DCLinks.
+    def s11_set_ps_and_dclinks_to_slowref(self):
         """Altera o modo das fontes e dclinks de OpMode para SlowRef."""
         if self._dry_run:
             return
 
-        print('opmode_to_slowref...')
+        print('DCLinks_Opmode_to_Slowref...')
+        timeout = 50  # [s]
 
+        dclinks = set()
+        psnames = list()
+        psnames = psnames + PSSearch.get_psnames(dict(sec='LI', dis='PS'))
+        psnames = psnames + PSSearch.get_psnames(dict(sec='TB', dis='PS'))
+        psnames = psnames + PSSearch.get_psnames(dict(sec='TS', dis='PS'))
+        psnames = psnames + PSSearch.get_psnames(dict(sec='SI', dis='PS'))
+        for psname in psnames:
+            dclinks_ = PSSearch.conv_psname_2_dclink(psname)
+            if not dclinks_:
+                continue
+            for dclink in dclinks_:
+                psmodel = PSSearch.conv_psname_2_psmodel(dclink)
+                if 'REGATRON' not in psmodel:
+                    dclinks.add(dclink)
+
+        pvnames = []
+        for dclink in dclinks:
+            print(dclink)
+            pvname = dclink + ':' + 'OpMode-Sel'
+            pvnames.append(psname + ':' + 'CtrlMode-Mon')
+            epics.caput(pvname, 0)
+        values = [0.0, ] * len(pvnames)
+        tols = [0.2] * len(pvnames)
+        if not MachineShutdown.wait_value_set(pvnames, values, tols, timeout):
+            return False
+
+        # Altera o modo das fontes de OpMode para SlowRef da TB
+        for sec in ('TB', 'TS', 'BO', 'SI'):
+            MachineShutdown._ps_set_slowref(sec=sec)
+
+        return True
+
+    @staticmethod
+    def _ps_set_slowref(sec):
         # Altera o modo das fontes de OpMode para SlowRef
-        psnames = PSSearch.get_psnames(dict(sec='TB', dis='PS'))
-        for psname in psnames:
-            pvname = psname + ':' + 'OpMode-Sel'
-            epics.caput(pvname, 'SlowRef')
-
-        psnames = PSSearch.get_psnames(dict(sec='TS', dis='PS'))
-        for psname in psnames:
-            pvname = psname + ':' + 'OpMode-Sel'
-            epics.caput(pvname, 'SlowRef')
-
-        psnames = PSSearch.get_psnames(dict(sec='BO', dis='PS'))
-        for psname in psnames:
-            pvname = psname + ':' + 'OpMode-Sel'
-            epics.caput(pvname, 'SlowRef')
-
-        psnames = PSSearch.get_psnames(dict(sec='SI', dis='PS'))
+        # NOTE: implementar checagem do OpMode-Sts
+        psnames = PSSearch.get_psnames(dict(sec=sec, dis='PS'))
         for psname in psnames:
             if 'FCH' in psname or 'FCV' in psname:
                 continue
             pvname = psname + ':' + 'OpMode-Sel'
             epics.caput(pvname, 'SlowRef')
 
+    @staticmethod
+    def _ps_zero(sec, timeout):
+        psnames = PSSearch.get_psnames(dict(sec=sec, dis='PS'))
+        pvnames = []
+        for psname in psnames:
+            pvname = psname + ':' + 'Current-SP'
+            pvnames.append(psname + ':' + 'Current-RB')
+            epics.caput(pvname, 0.0)
+        values, tols = [0.0, ] * len(pvnames), [0.2] * len(pvnames)
+        if not MachineShutdown.wait_value_set(pvnames, values, tols, timeout):
+            return False
         return True
 
-    def s10_set_ps_current_to_zero(self):
+    def s12_set_ps_current_to_zero(self):
         """Seleciona e zera a corrente de todas as fontes dos aceleradores."""
         if self._dry_run:
             return
         print('s09_set_ps_current_to_zero...')
-
         timeout = 50  # [s]
 
-        # zero LI ps currents
-        psnames = PSSearch.get_psnames(dict(sec='LI', dis='PS'))
-        pvnames = []
-        for psname in psnames:
-            pvname = psname + ':' + 'Current-SP'
-            pvnames.append(psname + ':' + 'Current-RB')
-            epics.caput(pvname, 0.0)
-        values, tols = [0.0, ] * len(pvnames), [0.2] * len(pvnames)
-        if not MachineShutdown.wait_value_set(pvnames, values, tols, timeout):
-            return False
-
-        # zero TB ps currents
-        psnames = PSSearch.get_psnames(dict(sec='TB', dis='PS'))
-        pvnames = []
-        for psname in psnames:
-            pvname = psname + ':' + 'Current-SP'
-            pvnames.append(psname + ':' + 'Current-RB')
-            epics.caput(pvname, 0.0)
-        values, tols = [0.0, ] * len(pvnames), [0.2] * len(pvnames)
-        if not MachineShutdown.wait_value_set(pvnames, values, tols, timeout):
-            return False
-
-        # zero TS ps currents
-        psnames = PSSearch.get_psnames(dict(sec='TS', dis='PS'))
-        for psname in psnames:
-            pvname = psname + ':' + 'Current-SP'
-            pvnames.append(psname + ':' + 'Current-RB')
-            epics.caput(pvname, 0.0)
-        values, tols = [0.0, ] * len(pvnames), [0.2] * len(pvnames)
-        if not MachineShutdown.wait_value_set(pvnames, values, tols, timeout):
-            return False
-
-        # zero BO ps current
-        psnames = PSSearch.get_psnames(dict(sec='BO', dis='PS'))
-        for psname in psnames:
-            pvname = psname + ':' + 'Current-SP'
-            pvnames.append(psname + ':' + 'Current-RB')
-            epics.caput(pvname, 0.0)
-        values, tols = [0.0, ] * len(pvnames), [0.2] * len(pvnames)
-        if not MachineShutdown.wait_value_set(pvnames, values, tols, timeout):
-            return False
-
-        # zero SI ps current
-        psnames = PSSearch.get_psnames(dict(sec='SI', dis='PS'))
-        pvnames = []
-        for psname in psnames:
-            pvname = psname + ':' + 'Current-SP'
-            pvnames.append(psname + ':' + 'Current-RB')
-            epics.caput(pvname, 0.0)
-        values, tols = [0.0, ] * len(pvnames), [0.2] * len(pvnames)
-        if not MachineShutdown.wait_value_(pvnames, values, tols, timeout):
-            return False
+        for sec in ('LI', 'TB', 'TS', 'BO', 'SI'):
+            if not MachineShutdown._ps_zero(sec=sec, timeout=timeout):
+                return False
 
         return True
 
-    def s11_reset_ps_and_dclinks(self):
-        """Reseta todas as fontes e seus DCLinks."""
+    @staticmethod
+    def _ps_interlocks(sec, timeout):
+        psnames = PSSearch.get_psnames(dict(sec=sec, dis='PS'))
+        pvnames = []
+        for psname in psnames:
+            pvnames.append(psname + ':' + 'IntlkSoft-Mon')
+            pvnames.append(psname + ':' + 'IntlkHard-Mon')
+            pvname = psname + ':' + 'Reset-Cmd'
+            if sec != 'LI':
+                epics.caput(pvname, 1)
+        values, tols = [1, ] * len(pvnames), [0.2] * len(pvnames)
+        if not MachineShutdown.wait_value_set(pvnames, values, tols, timeout):
+            return False
+        return True
+
+    def s13_reset_ps_and_dclinks(self):
+        """Reseta as fontes e DCLinks e verifica sinais de interlock."""
+        if self._dry_run:
+            return
+
         print('s11_reset_ps_and_dclinks')
+        timeout = 50  # [s]
 
-        # NOTE: Need implementation
+        # Reset PS
+        for sec in ('LI', 'TB', 'TS', 'BO', 'SI'):
+            if not MachineShutdown._ps_interlocks(sec=sec, timeout=timeout):
+                return False
 
+        # Reset dos DCLinks
+        dclinks = set()
+        psnames = list()
+        psnames = psnames + PSSearch.get_psnames(dict(sec='LI', dis='PS'))
+        psnames = psnames + PSSearch.get_psnames(dict(sec='TB', dis='PS'))
+        psnames = psnames + PSSearch.get_psnames(dict(sec='TS', dis='PS'))
+        psnames = psnames + PSSearch.get_psnames(dict(sec='SI', dis='PS'))
+        for psname in psnames:
+            dclinks_ = PSSearch.conv_psname_2_dclink(psname)
+            if not dclinks_:
+                continue
+            for dclink in dclinks_:
+                psmodel = PSSearch.conv_psname_2_psmodel(dclink)
+                if 'REGATRON' not in psmodel:
+                    dclinks.add(dclink)
+
+        pvnames = []
+        for dclink in dclinks:
+            print(dclink)
+            pvnames.append(psname + ':' + 'IntlkSoft-Mon')
+            pvnames.append(psname + ':' + 'IntlKHard-Mon')
+            pvname = dclink + ':' + 'Reset-Cmd'
+            epics.caput(pvname, 1)
+            epics.caput(pvname, 0)
+
+        values = [0.0, ] * len(pvnames)
+        tols = [0.2] * len(pvnames)
+
+        if not MachineShutdown.wait_value_set(pvnames, values, tols, timeout):
+            return False
+
+    @staticmethod
+    def _ps_turn_off(sec, timeout):
+        psnames = PSSearch.get_psnames(dict(sec=sec, dis='PS'))
+        pvnames = []
+        for psname in psnames:
+            pvname = psname + ':' + 'PwrState-Sel'
+            pvnames.append(psname + ':' + 'PwrState-Sts')
+            epics.caput(pvname, 0)
+        values, tols = [0.0, ] * len(pvnames), [0.2] * len(pvnames)
+        if not MachineShutdown.wait_value_set(pvnames, values, tols, timeout):
+            return False
         return True
 
-    def s12_turn_ps_off(self):
+    def s14_turn_ps_off(self):
         """Desliga todas as fontes."""
+        if self._dry_run:
+            return
+
         timeout = 50  # [s]
 
-        # zero LI ps currents
-        psnames = PSSearch.get_psnames(dict(sec='LI', dis='PS'))
-        pvnames = []
-        for psname in psnames:
-            pvname = psname + ':' + 'PwrState-Sel'
-            pvnames.append(psname + ':' + 'PwrState-Sts')
-            epics.caput(pvname, 0)
-        values, tols = [0.0, ] * len(pvnames), [0.2] * len(pvnames)
-        if not MachineShutdown.wait_value_set(pvnames, values, tols, timeout):
-            return False
-
-        # zero TB ps currents
-        psnames = PSSearch.get_psnames(dict(sec='TB', dis='PS'))
-        pvnames = []
-        for psname in psnames:
-            pvname = psname + ':' + 'PwrState-Sel'
-            pvnames.append(psname + ':' + 'PwrState-Sts')
-            epics.caput(pvname, 0)
-        values, tols = [0.0, ] * len(pvnames), [0.2] * len(pvnames)
-        if not MachineShutdown.wait_value_set(pvnames, values, tols, timeout):
-            return False
-
-        # zero TS ps currents
-        psnames = PSSearch.get_psnames(dict(sec='TS', dis='PS'))
-        for psname in psnames:
-            pvname = psname + ':' + 'PwrState-Sel'
-            pvnames.append(psname + ':' + 'PwrState-Sts')
-            epics.caput(pvname, 0)
-        values, tols = [0.0, ] * len(pvnames), [0.2] * len(pvnames)
-        if not MachineShutdown.wait_value_set(pvnames, values, tols, timeout):
-            return False
-
-        # zero BO ps current
-        psnames = PSSearch.get_psnames(dict(sec='BO', dis='PS'))
-        for psname in psnames:
-            pvname = psname + ':' + 'PwrState-Sel'
-            pvnames.append(psname + ':' + 'PwrState-Sts')
-            epics.caput(pvname, 0)
-        values, tols = [0.0, ] * len(pvnames), [0.2] * len(pvnames)
-        if not MachineShutdown.wait_value_set(pvnames, values, tols, timeout):
-            return False
-
-        # zero SI ps current
-        psnames = PSSearch.get_psnames(dict(sec='SI', dis='PS'))
-        pvnames = []
-        for psname in psnames:
-            pvname = psname + ':' + 'PwrState-Sel'
-            pvnames.append(psname + ':' + 'PwrState-Sts')
-            epics.caput(pvname, 0)
-        values, tols = [0.0, ] * len(pvnames), [0.2] * len(pvnames)
-        if not MachineShutdown.wait_value_set(pvnames, values, tols, timeout):
-            return False
+        for sec in ('LI', 'TB', 'TS', 'BO', 'SI'):
+            if not MachineShutdown._ps_turn_off(sec=sec, timeout=timeout):
+                return False
 
         return True
 
-    def s13_turn_dclinks_off(self):
+    def s15_turn_dclinks_off(self):
         """Desliga os DC links das fontes."""
-        timeout = 50  # [s]
+        timeout = 50 # [s]
 
         dclinks = set()
         psnames = list()
@@ -414,34 +447,102 @@ class MachineShutdown:
             pvname = dclink + ':' + 'PwrState-Sel'
             pvnames.append(psname + ':' + 'PwrState-Sts')
             epics.caput(pvname, 0)
-        values, tols = [0.0, ] * len(pvnames), [0.2] * len(pvnames)
+
+        values = [0.0, ] * len(pvnames)
+        tols = [0.2] * len(pvnames)
+
         if not MachineShutdown.wait_value_set(pvnames, values, tols, timeout):
             return False
-
         return True
 
-    def s14_modulator_turnoff(self):
-        """Desliga os moduladores do Linac desabilitando os botões TrigOut e Charge."""
+    def s16_sirf_turnoff(self):
+        """Ajusta os parâmetros da RF do Anel para desligamento."""
+        if self._dry_run:
+            return True
+
+        # Alterando a taxa de incremento
+        incrate_rate = 6
+        epics.caput('SR-RF-DLLRF-01:AMPREF:INCRATE:S', incrate_rate)
+        time.sleep(1.0)
+
+        # Baixando a Amplitude para 60 mV
+        init_value = epics.caget('SR-RF-DLLRF-01:mV:AL:REF-SP')
+        nrpoints = int(abs(60 - init_value)/10.0)
+        values = np.linspace(init_value, 60, nrpoints)
+        for value in values:
+            print('Amplitude de referẽncia [mV]: ', value)
+            epics.caput('SR-RF-DLLRF-01:SL:REF:AMP', value)
+            time.sleep(0.2)
+
+        # Desabilitando o loop de controle'
+        epics.caput('SR-RF-DLLRF-01:SL:S', 0)
+        time.sleep(1.0)
+
+        # Desligando as Chaves PIN
+        epics.caput('RA-RaSIA01:RF-LLRFPreAmp-1:PINSw1Dsbl-Cmd', 1)
+        epics.caput('RA-RaSIA01:RF-LLRFPreAmp-1:PINSw1Dsbl-Cmd', 0)
+        time.sleep(1.0)
+        epics.caput('RA-RaSIA01:RF-LLRFPreAmp-1:PINSw2Dsbl-Cmd', 1)
+        epics.caput('RA-RaSIA01:RF-LLRFPreAmp-1:PINSw2Dsbl-Cmd', 0)
+        time.sleep(1.0)
+
+        # Desligando os amplificadores DC/TDK
+        epics.caput('RA-ToSIA01:RF-TDKSource:PwrDCDsbl-Sel', 1)
+        time.sleep(1.0)
+        epics.caput('RA-ToSIA02:RF-TDKSource:PwrDCDsbl-Sel', 1)
+        time.sleep(1.0)
+
+        # Desligando os amplificadores AC/TDK
+        epics.caput('RA-ToSIA01:RF-ACPanel:PwrACDsbl-Sel', 1)
+        time.sleep(1.0)
+        epics.caput('RA-ToSIA02:RF-ACPanel:PwrACDsbl-Sel', 1)
+        time.sleep(1.0)
+
+    def s17_borf_turnoff(self):
+        """Ajustes dos parâmetros do Booster para desligamento"""
         if self._dry_run:
             return
 
-        print('modulator_turnoff...')
+        # Desabilitando a rampa do Booster
+        ramp = 0
+        epics.caput('BR-RF-DLLRF-01:RmpEnbl-Sel', ramp)
+        res = MachineShutdown.wait_value(
+            'BR-RF-DLLRF-01:RmpEnbl-Sel', ramp, 0, 2.0)
 
-        # Desliga o botão Charge do modulador 1.
-        epics.caput('LI-01:PU-Modltr-1:CHARGE', 0)
+        print('Ajustando a potencia da Cavidade em 60 mV com taxa de incremento em 2')
+        # Alterando a taxa de incremento
+        incrate_rate = 6
+        epics.caput('SR-RF-DLLRF-01:AMPREF:INCRATE:S', incrate_rate)
         time.sleep(1.0)
-        # Desliga o botão TrigOut dp modulador 1.
-        epics.caput('LI-01:PU-Modltr-1:TRIGOUT', 0)
-        time.sleep(1.0)
-        # Desliga o botão Charge do modulador 2.
-        epics.caput('LI-01:PU-Modltr-2:CHARGE', 0)
-        time.sleep(1.0)
-        # Desliga o botão TrigOut dp modulador 2.
-        epics.caput('LI-01:PU-Modltr-2:TRIGOUT', 0)
 
-        return True
+        # Baixando a Amplitude do BO para 62 mV
+        init_value = epics.caget('BR-RF-DLLRF-01:mV:AL:REF-SP')
+        nrpoints = int(abs(60 - init_value)/10.0)
+        values = np.linspace(init_value, 60, nrpoints)
+        for value in values:
+            print('Amplitude de referência [mV]: ', value)
+            epics.caput('BR-RF-DLLRF-01:SL:REF:AMP', value)
+            time.sleep(0.2)
 
-    def s15_ajust_bias(self):
+        print('Desligando o loop de controle...')
+        epics.caput('BR-RF-DLLRF-01:SL:S', 0)
+        time.sleep(1.0)
+
+        print('Desligando a chave PIN...')
+        epics.caput('RA-RaBO01:RF-LLRFPreAmp:PinSwDsbl-Cmd', 1)
+        time.sleep(0.5)
+        epics.caput('RA-RaBO01:RF-LLRFPreAmp:PinSwDsbl-Cmd', 0)
+        time.sleep(0.5)
+
+        print('Desligando os Amplificador DC/DC...')
+        epics.caput('RA-ToBO:RF-SSAmpTower:PwrCnvDsbl-Sel', 1)
+        time.sleep(0.5)
+
+        print('Desligando os Amplificador 300VDC...')
+        epics.caput('RA-ToBO:RF-ACDCPanel:300VdcDsbl-Sel', 1)
+        time.sleep(0.5)
+
+    def s18_ajust_bias(self):
         """Ajusta a tensão de Bias do canhão em -100V."""
         if self._dry_run:
             return
@@ -453,7 +554,7 @@ class MachineShutdown:
 
         return True
 
-    def s16_ajust_filament(self):
+    def s19_ajust_filament(self):
         """Ajusta a corrente de filamento em 1A."""
         if self._dry_run:
             return
@@ -463,77 +564,16 @@ class MachineShutdown:
 
         return True
 
-    def s17_borf_turnoff(self):
-        """Altera no campo 'Command' para Safe Stop e aguarda executar, depois desliga chave Pin SW e amplificadores DC/DC e 300VDC."""
-        if self._dry_run:
-            return
-
-        # mensagem a ser impressa na tela para o desligamento da RF do Booster
-        print('borf_turnoff...')
-        Command = 'Safe Stop'
-        # Altera o campo Command para Safe Stop
-        epics.caput('BR-RF-DLLRF-01:COMMSTART:S', Command)
-        # Aguarda 1s
-        time.sleep(1.0)
-
-        print('Desligando a chave PIN...')
-        epics.caput('RA-RaBO01:RF-LLRFPreAmp:PinSwDsbl-Cmd', 1)
-        time.sleep(1.0)
-
-        print('Desligando os Amplificador DC/DC...')
-        epics.caput('RA-ToBO:RF-SSAmpTower:PwrCnvDsbl-Sel', 1)
-        time.sleep(1.0)
-
-        print('Desligando os Amplificador 300VDC...')
-        epics.caput('RA-ToBO:RF-ACDCPanel:300VdcDsbl-Sel', 1)
-        time.sleep(1.0)
-
-    def s18_sirf_turnoff(self):
-        """Ajusta a potência da cavidade do anel para 60 mV( inc. rate) e confirma em Reference Amplitude, desabilita o loop de controle, Chave Pin SW e amplificadores DC/TDK e AC TDK."""
-        if self._dry_run:
-            return True
-
-        print('sirf_turnoff...')
-        print('Ajustando a potência da cavidade em 60 mV...')
-        #    'SI-Glob:AP-SOFB:CorrPSSOFBWait-Sts',
-
-        init_value = epics.caget('SR-RF-DLLRF-01:mV:AL:REF-SP')
-        nrpoints = int(abs(60 - init_value)/10.0)
-        values = np.linspace(init_value, 60, nrpoints)
-        for value in values:
-            print('Amplitude de referẽncia [mV]: ', value)
-            epics.caput('SR-RF-DLLRF-01:mV:AL:REF-SP', value)
-            time.sleep(0.2)
-
-        print('Desabilitando o loop de controle...')
-        epics.caput('SR-RF-DLLRF-01:SL:S', 1)
-        time.sleep(1.0)
-
-        print('Desligando a Chave PIN...')
-        epics.caput('RA-RaSIA01:RF-LLRFPreAmp-1:PINSw1Dsbl-Cmd', 1)
-        time.sleep(1.0)
-        epics.caput('RA-RaSIA01:RF-LLRFPreAmp-1:PINSw2Dsbl-Cmd', 1)
-        time.sleep(1.0)
-        print('Desligando os amplificadores DC/TDK...')
-        epics.caput('RA-ToSIA01:RF-TDKSource:PwrDCDsbl-Sel', 1)
-        time.sleep(1.0)
-        epics.caput('RA-ToSIA02:RF-TDKSource:PwrDCDsbl-Sel', 1)
-        time.sleep(1.0)
-        epics.caput('RA-ToSIA01:RF-ACPanel:PwrACDsbl-Sel', 1)
-        time.sleep(1.0)
-        epics.caput('RA-ToSIA02:RF-ACPanel:PwrACDsbl-Sel', 1)
-        time.sleep(1.0)
-
-    def s19_start_counter(self):
-        """verificar visualmente no supervisório se a contagem regressiva para liberar acesso ao túnel iniciou."""
+    def s20_start_counter(self):
+        """Verificar se a contagem regressiva para liberar acesso ao túnel iniciou"""
         print('start_counter')
-        msg = ('Clique no botão Sirius PPS do supervisório e confirme se a contagem regressiva para liberar acesso ao túnel iniciou')
+        msg = ('Confirme se a contagem regressiva para liberar acesso ao túnel iniciou')
         input(msg)
 
         return True
         #    'SI-Glob:AP-SOFB:CorrPSSOFBWait-Sts',
 
-    def s20_free_access(self):
+    def s21_free_access(self):
         """Aguardar o contador chegar em 0, após 6 horas, para liberar acesso ao túnel."""
         print('free_access')
         msg = ('Aguarde o contador chegar em 0, após 6 horas, para liberar acessoa ao túnel')
@@ -543,47 +583,47 @@ class MachineShutdown:
 
     def execute_procedure(self):
         """Executa na sequencia os passos a seguir."""
-        if not self.s01_close_gamma_shutter():
+        if not self.s01_injmode_update():
             return False
-        if not self.s02_macshift_update():
+        if not self.s02_injcontrol_disable():
             return False
-        if self.s03_ids_parking():
+        if self.s03_close_gamma_shutter():
             return False
-        if self.s04_sofb_fofb_turnoff():
+        if self.s04_ids_parking():
             return False
-        if self.s05_bbb_turnoff():
+        if self.s05_macshift_update():
             return False
-        if self.s06_beam_kill():
+        if self.s06_sofb_fofb_turnoff():
             return False
-        if not self.s06_beam_kill():
+        if not self.s07_bbb_turnoff():
             return False
-        if not self.s07_disable_ps_triggers():
+        if not self.s08_beam_kill():
             return False
-        if not self.s08_turn_off_sofbmode():
+        if not self.s09_disable_ps_triggers():
             return False
-        if not self.s09_set_ps_and_dclinks_to_slowref():
+        if not self.s10_turn_off_sofbmode():
             return False
-        if not self.s10_set_ps_current_to_zero():
+        if not self.s11_set_ps_and_dclinks_to_slowref():
             return False
-        if not self.s11_reset_ps_and_dclinks():
+        if not self.s12_set_ps_current_to_zero():
             return False
-        if not self.s12_turn_ps_off():
+        if not self.s13_reset_ps_and_dclinks():
             return False
-        if not self.s13_turn_dclinks_off():
+        if not self.s14_turn_ps_off():
             return False
-        if not self.s14_modulator_turnoff():
+        if not self.s15_turn_dclinks_off():
             return False
-        if not self.s15_ajust_bias():
-            return False
-        if not self.s16_ajust_filament():
+        if not self.s16_sirf_turnoff():
             return False
         if not self.s17_borf_turnoff():
             return False
-        if not self.s18_sirf_turnoff():
+        if not self.s18_ajust_bias():
             return False
-        if not self.s19_start_counter():
+        if not self.s19_ajust_filament():
             return False
-        if not self.s20_free_access():
+        if not self.s20_start_counter():
+            return False
+        if not self.s21_free_access():
             return False
 
         return True
@@ -626,7 +666,6 @@ class MachineShutdown:
             if pvnames_not_ready:
                 time.sleep(0.2)
         return True
-
 
 if __name__ == '__main__':
     """."""
