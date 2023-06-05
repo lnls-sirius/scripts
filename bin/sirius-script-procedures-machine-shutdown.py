@@ -17,6 +17,7 @@ class MachineShutdown:
 
     def s01_close_gamma_shutter(self):
         """Mensagem para fechar o Gama."""
+        # TODO: include interlock PV for gamma signal
         if self._dry_run:
             return True
         print('--- close_gamma_shutter...')
@@ -26,7 +27,20 @@ class MachineShutdown:
 
         return True
 
-    def s02_injmode_update(self):
+    def s02_macshift_update(self):
+        """Altera o modo do Turno de operação."""
+        if self._dry_run:
+            return True
+        print('--- macshift_update...')
+
+        # Executa a PV em questão alterando para o modo maintenance
+        maintenance = 5
+        epics.caput('AS-Glob:AP-MachShift:Mode-Sel', maintenance)
+
+        return MachineShutdown._wait_value(
+            'AS-Glob:AP-MachShift:Mode-Sts', maintenance, 0.5, 2.0)
+
+    def s03_injmode_update(self):
         """."""
         if self._dry_run:
             return True
@@ -40,7 +54,7 @@ class MachineShutdown:
         return MachineShutdown._wait_value(
             'AS-Glob:AP-InjCtrl:Mode-Sts', decay, 0.5, 2.0)
 
-    def s03_injcontrol_disable(self):
+    def s04_injcontrol_disable(self):
         """Desabilta o Controle de Injeção."""
         if self._dry_run:
             return True
@@ -49,29 +63,31 @@ class MachineShutdown:
         print('Desligando Injection')
         epics.caput('AS-RaMO:TI-EVG:InjectionEvt-Sel', 0)
         if not MachineShutdown._wait_value(
-                'AS-RaMO:TI-EVG:STATEMACHINE', 0):
+                # 'AS-RaMO:TI-EVG:STATEMACHINE', 0, 0.5, 2.0):
+                'AS-RaMO:TI-EVG:InjectionEvt-Sts', 0, 0.5, 2.0):
             return False
 
         print('Desligando Egun trigger')
         epics.caput('LI-01:EG-TriggerPS:enable', 0)
         if not MachineShutdown._wait_value(
-                'LI-01:EG-TriggerPS:enablereal', 0):
+                'LI-01:EG-TriggerPS:enablereal', 0, 0.5, 2.0):
             return False
 
         print('Desligando Sistema de Injeção')
         epics.caput('LI-01:EG-TriggerPS:enable', 0)
         if not MachineShutdown._wait_value(
-                'LI-01:EG-TriggerPS:enablereal', 0):
+                'LI-01:EG-TriggerPS:enablereal', 0, 0.5, 2.0):
             return False
 
         return True
 
-    def s04_ids_parking(self):
+    def s05_ids_parking(self):
         """Altera as condições dos IDs para desligamento da Máquina."""
         if self._dry_run:
             return True
         print('--- ids_parking...')
 
+        # TODO: set also the velocities
         stop, start = 1, 3
         g1 = 36  # [mm]
         p1, p2 = 11, 29  # [mm]
@@ -123,19 +139,6 @@ class MachineShutdown:
         value_tols = [0.1, 0.1, 0.1, 0.1, 0.1, 0.1]
         return MachineShutdown._wait_value_set(
             pvnames, value_targets, value_tols, timeout=70)
-
-    def s05_macshift_update(self):
-        """Altera o modo do Turno de operação."""
-        if self._dry_run:
-            return True
-        print('--- macshift_update...')
-
-        # Executa a PV em questão alterando para o modo maintenance
-        maintenance = 5
-        epics.caput('AS-Glob:AP-MachShift:Mode-Sel', maintenance)
-
-        return MachineShutdown._wait_value(
-            'AS-Glob:AP-MachShift:Mode-Sts', maintenance, 0.5, 2.0)
 
     def s06_sofb_fofb_turnoff(self):
         """Desliga o FOFB e posteriormente o SOFB."""
@@ -200,7 +203,7 @@ class MachineShutdown:
         print('Encerrando o feixe acumulado...')
         epics.caput('AS-Glob:AP-InjCtrl:RFKillBeam-Cmd', 0)
         if not MachineShutdown._wait_value(
-                'SI-13C4:DI-DCCT:Current-Mon', 0, 0.5, 2.0):
+                'SI-13C4:DI-DCCT:Current-Mon', 0, 0.5, 4.0):
             return False
 
         return True
@@ -253,6 +256,7 @@ class MachineShutdown:
         timeout = 50  # [s]
         print('Desligando o modo SOFBMode...')
         for sec in ('LI', 'TB', 'BO', 'TS', 'SI'):
+            print(sec)
             if not \
                     MachineShutdown._ps_sofbmode(sec=sec, timeout=timeout):
                 return False
@@ -308,7 +312,8 @@ class MachineShutdown:
         print('--- set_ps_current_to_zero...')
 
         timeout = 50  # [s]
-        for sec in ('LI', 'TB', 'TS', 'BO', 'SI'):
+        # for sec in ('LI', 'TB', 'TS', 'BO', 'SI'):
+        for sec in ('SI', ):
             if not MachineShutdown._ps_zero(sec=sec, timeout=timeout):
                 return False
 
@@ -320,9 +325,11 @@ class MachineShutdown:
             return True
         print('--- reset_ps_and_dclinks...')
 
+        # TODO: not working!!!
+
         timeout = 50  # [s]
         # Reset PS
-        for sec in ('LI', 'TB', 'TS', 'BO', 'SI'):
+        for sec in ('TB', 'TS', 'BO', 'SI'):
             if not MachineShutdown._ps_interlocks(sec=sec, timeout=timeout):
                 return False
 
@@ -409,6 +416,8 @@ class MachineShutdown:
             return True
         print('--- sirf_turnoff...')
 
+        # NOTE: revise this part
+
         # Alterando a taxa de incremento
         incrate_rate = 6
         epics.caput('SR-RF-DLLRF-01:AMPREF:INCRATE:S', incrate_rate)
@@ -420,8 +429,8 @@ class MachineShutdown:
         values = np.linspace(init_value, 60, nrpoints)
         for value in values:
             print('Amplitude de referẽncia [mV]: ', value)
-            epics.caput('SR-RF-DLLRF-01:SL:REF:AMP', value)
-            time.sleep(0.2)
+            epics.caput('SR-RF-DLLRF-01:mV:AL:REF-SP', value)
+            time.sleep(2.0)
 
         # Desabilitando o loop de controle'
         epics.caput('SR-RF-DLLRF-01:SL:S', 0)
@@ -450,10 +459,12 @@ class MachineShutdown:
         return True
 
     def s17_borf_turnoff(self):
-        """Ajustes dos parâmetros do Booster para desligamento"""
+        """Ajustes dos parâmetros do Booster para desligamento."""
         if self._dry_run:
             return True
         print('--- borf_turnoff...')
+
+        # NOTE: revise!
 
         # Desabilitando a rampa do Booster
         ramp = 0
@@ -473,11 +484,13 @@ class MachineShutdown:
 
         # Baixando a Amplitude do BO para 62 mV
         init_value = epics.caget('BR-RF-DLLRF-01:mV:AL:REF-SP')
-        nrpoints = int(abs(60 - init_value)/10.0)
+        nrpoints = int(abs(60 - init_value)/10.0) # does not work for init_value = 62, for exmaple
         values = np.linspace(init_value, 60, nrpoints)
+        print(init_value, values)
         for value in values:
+            print(value)
             print('Amplitude de referência [mV]: ', value)
-            epics.caput('BR-RF-DLLRF-01:SL:REF:AMP', value)
+            epics.caput('BR-RF-DLLRF-01:mV:AL:REF-SP', value)
             time.sleep(0.2)
 
         print('Desligando o loop de controle...')
@@ -516,6 +529,8 @@ class MachineShutdown:
         if self._dry_run:
             return True
         print('--- ajust_filament...')
+
+        # NOTE: reduce gradually!!!
 
         # Ajusta corrente de filamento em 1A.
         epics.caput('LI-01:EG-FilaPS:currentoutsoft', 1.0)
@@ -558,13 +573,13 @@ class MachineShutdown:
         """Executa na sequencia os passos a seguir."""
         if not self.s01_close_gamma_shutter():
             return False
-        if not self.s02_injmode_update():
+        if not self.s02_macshift_update():
             return False
-        if not self.s03_injcontrol_disable():
+        if not self.s03_injmode_update():
             return False
-        if not self.s04_ids_parking():
+        if not self.s04_injcontrol_disable():
             return False
-        if not self.s05_macshift_update():
+        if not self.s05_ids_parking():
             return False
         if not self.s06_sofb_fofb_turnoff():
             return False
@@ -606,10 +621,13 @@ class MachineShutdown:
         psnames = _PSSearch.get_psnames(dict(sec=sec, dis='PS'))
         pvnames = []
         for psname in psnames:
+            psmodel = _PSSearch.conv_psname_2_psmodel(psname)
+            if psmodel != 'FBP':
+                continue
             pvname = psname + ':' + 'SOFBMode-Sel'
             pvnames.append(psname + ':' + 'SOFBMode-Sts')
             epics.caput(pvname, 0)
-            values, tols = [0.0, ]* len(pvnames), [0.2]* len(pvnames)
+        values, tols = [0.0, ] * len(pvnames), [0.2] * len(pvnames)
         if not MachineShutdown._wait_value_set(
                 pvnames, values, tols, timeout):
             return False
@@ -629,9 +647,11 @@ class MachineShutdown:
 
     @staticmethod
     def _ps_zero(sec, timeout):
+        # NOTE: timeout waiting for FCH !!!
         psnames = _PSSearch.get_psnames(dict(sec=sec, dis='PS'))
         pvnames = []
         for psname in psnames:
+            # print(psname)
             pvname = psname + ':' + 'Current-SP'
             pvnames.append(psname + ':' + 'Current-RB')
             epics.caput(pvname, 0.0)
@@ -695,6 +715,7 @@ class MachineShutdown:
         time0 = time.time()
         while pvnames_not_ready:
             print(len(pvnames_not_ready))
+            # print(pvnames_not_ready)
             for pvname, idx in pvnames_not_ready:
                 if MachineShutdown._wait_value(
                         pvname, value_targets[idx], value_tols[idx],
