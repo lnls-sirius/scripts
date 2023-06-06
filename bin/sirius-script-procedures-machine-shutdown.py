@@ -311,6 +311,8 @@ class MachineShutdown:
             return True
         print('--- set_ps_current_to_zero...')
 
+        # NOTE: timeout waiting for FCH !!!
+
         timeout = 50  # [s]
         # for sec in ('LI', 'TB', 'TS', 'BO', 'SI'):
         for sec in ('SI', ):
@@ -647,7 +649,6 @@ class MachineShutdown:
 
     @staticmethod
     def _ps_zero(sec, timeout):
-        # NOTE: timeout waiting for FCH !!!
         psnames = _PSSearch.get_psnames(dict(sec=sec, dis='PS'))
         pvnames = []
         for psname in psnames:
