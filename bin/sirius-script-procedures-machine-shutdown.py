@@ -76,7 +76,7 @@ class MachineShutdown:
         print('Desligando Sistema de Injeção')
         epics.caput('LI-01:EG-TriggerPS:enable', 0)
         if not MachineShutdown._wait_value(
-                'LI-01:EG-TriggerPS:enablereal', 0, 0.5, 2.0):
+                'LI-01:EG-TriggerPS:enablereal', 0, 0.5, 10.0):
             return False
 
         return True
@@ -118,6 +118,15 @@ class MachineShutdown:
         epics.caput('SI-11SP:ID-APU58:Phase-SP', p2)
         time.sleep(1.0)  # aguarda 1 seg.
 
+        # Seta a Phase Speed
+        epics.caput('SI-06SB:ID-APU22:PhaseSpeed-SP', start)
+        epics.caput('SI-07SP:ID-APU22:PhaseSpeed-SP', start)
+        epics.caput('SI-08SB:ID-APU22:PhaseSpeed-SP', start)
+        epics.caput('SI-09SA:ID-APU22:PhaseSpeed-SP', start)
+        epics.caput('SI-10SB:ID-EPU50:GapSpeed-SP', start)
+        epics.caput('SI-11SP:ID-APU58:PhaseSpeed-SP', start)
+        time.sleep(1.0)  # aguarda 1 seg.
+
         # Movimenta os IDs para a posição escolhida
         epics.caput('SI-06SB:ID-APU22:DevCtrl-Cmd', start)
         epics.caput('SI-07SP:ID-APU22:DevCtrl-Cmd', start)
@@ -152,6 +161,7 @@ class MachineShutdown:
         epics.caput('SI-Glob:AP-FOFB:LoopMaxOrbDistortionEnbl-Sel', 0)
         # Desabilita o Loop
         epics.caput('SI-Glob:AP-FOFB:LoopState-Sel', 0)
+        time.sleep(10.0)
 
         print('SOFB Turn off...')
         # Desabilita Auto correction State
@@ -182,6 +192,7 @@ class MachineShutdown:
         epics.caput('SI-Glob:DI-BbBProc-V:FBCTRL', 0)
         epics.caput('SI-Glob:DI-BbBProc-L:FBCTRL', 0)
 
+
         if not MachineShutdown._wait_value(
                 'SI-Glob:DI-BbBProc-H:FBCTRL', 0, 0.5, 2.0):
             return False
@@ -195,7 +206,7 @@ class MachineShutdown:
         return True
 
     def s08_beam_kill(self):
-        """Mata o feixe utilizando o metodo RFKillbeam."""
+        """Encerra o feixe utilizando o metodo RFKillbeam."""
         if self._dry_run:
             return True
         print('--- beam_kill...')
@@ -424,6 +435,12 @@ class MachineShutdown:
         incrate_rate = 6
         epics.caput('SR-RF-DLLRF-01:AMPREF:INCRATE:S', incrate_rate)
         time.sleep(1.0)
+        # Implemetar um comparador do valor de REF:AMP com REF:SP; depois desligar o ENABLE
+
+        # epics.caput('SR-RF-DLLRF-01:mV:AL:REF-SP', 60)
+        # if not MachineShutdown._wait_value(
+        #        'SR-RF-DLLRF-01:SL:REF:AMP', 60, 60.5, 10.0):
+        #    return False
 
         # Baixando a Amplitude para 60 mV
         init_value = epics.caget('SR-RF-DLLRF-01:mV:AL:REF-SP')
@@ -440,10 +457,8 @@ class MachineShutdown:
 
         # Desligando as Chaves PIN
         epics.caput('RA-RaSIA01:RF-LLRFPreAmp-1:PINSw1Dsbl-Cmd', 1)
-        epics.caput('RA-RaSIA01:RF-LLRFPreAmp-1:PINSw1Dsbl-Cmd', 0)
         time.sleep(1.0)
         epics.caput('RA-RaSIA01:RF-LLRFPreAmp-1:PINSw2Dsbl-Cmd', 1)
-        epics.caput('RA-RaSIA01:RF-LLRFPreAmp-1:PINSw2Dsbl-Cmd', 0)
         time.sleep(1.0)
 
         # Desligando os amplificadores DC/TDK
@@ -475,23 +490,21 @@ class MachineShutdown:
                 'BR-RF-DLLRF-01:RmpEnbl-Sel', ramp, 0, 2.0):
             return False
 
-        print((
-            'Ajustando a potencia da Cavidade em '
-            '60 mV com taxa de incremento em 2'))
+        # Setando a Amplitude em 60 mV e checando a referência.
+        epics.caget('BR-RF-DLLRF-01:mV:AL:REF-SP', 60)
+        if not MachineShutdown._wait_value(
+                'SR-RF-DLLRF-01:SL:REF:AMP', 60, 60.5, 2.0):
+            return False
 
-        # Alterando a taxa de incremento
-        incrate_rate = 6
-        epics.caput('SR-RF-DLLRF-01:AMPREF:INCRATE:S', incrate_rate)
-        time.sleep(1.0)
-
-        # Baixando a Amplitude do BO para 62 mV
+        # Baixando a Amplitude do BO para 60 mV
         init_value = epics.caget('BR-RF-DLLRF-01:mV:AL:REF-SP')
-        nrpoints = int(abs(60 - init_value)/10.0) # does not work for init_value = 62, for exmaple
+        nrpoints = int(abs(60 - init_value)/10.0)# does not work
+        # for init_value = 62, for exmaple.
         values = np.linspace(init_value, 60, nrpoints)
         print(init_value, values)
         for value in values:
             print(value)
-            print('Amplitude de referência [mV]: ', value)
+            print('Amplitude de referência [mV]:', value)
             epics.caput('BR-RF-DLLRF-01:mV:AL:REF-SP', value)
             time.sleep(0.2)
 
@@ -501,8 +514,6 @@ class MachineShutdown:
 
         print('Desligando a chave PIN...')
         epics.caput('RA-RaBO01:RF-LLRFPreAmp:PinSwDsbl-Cmd', 1)
-        time.sleep(0.5)
-        epics.caput('RA-RaBO01:RF-LLRFPreAmp:PinSwDsbl-Cmd', 0)
         time.sleep(0.5)
 
         print('Desligando os Amplificador DC/DC...')
@@ -515,7 +526,49 @@ class MachineShutdown:
 
         return True
 
-    def s18_ajust_bias(self):
+    def s18_modulators_turnoff(self):
+        """."""
+        if self._dry_run:
+            return True
+        print('---modulators_turnoff...')
+
+        # Desliga os botões CHARGE e TRIGOUT dos moduladores
+        epics.caput('LI-01:PU-Modltr-1:CHARGE', 0)
+        time.sleep(1.0)
+        epics.caput('LI-01:PU-Modltr-1:TRIGOUT', 0)
+        time.sleep(1.0)
+        epics.caput('LI-01:PU-Modltr-2:CHARGE', 0)
+        time.sleep(1.0)
+        epics.caput('LI-01:PU-Modltr-2:TRIGOUT', 0)
+        time.sleep(1.0)
+
+        return True
+
+    def s19_ajust_egun_highvoltage(self):
+        """."""
+        if self._dry_run:
+            return True
+        print('---ajust_egun_highvoltage...')
+
+        # Ajusta a alta tensão do canhão e checa.
+        epics.caput('AS-Glob:AP-InjCtrl:HVOpVolt-SP', 70.000)
+        time.sleep(5.0)
+        epics.caput('AS-Glob:AP-InjCtrl:HVOpVolt-SP', 50.000)
+        time.sleep(5.0)
+        epics.caput('AS-Glob:AP-InjCtrl:HVOpVolt-SP', 30.000)
+        time.sleep(5.0)
+        epics.caput('AS-Glob:AP-InjCtrl:HVOpVolt-SP', 0.000)
+        time.sleep(1.0)
+
+        # checar se alta tensão foi desligada.
+        epics.caput('LI-01:EG-HVPS:switch', 0)
+        if not MachineShutdown._wait_value(
+                'LI-01:EG-HVPS:voltinsoft', 0, 0.5, 2.0):
+            return False
+
+        return True
+
+    def s20_ajust_egunbias(self):
         """Ajusta a tensão de Bias do canhão em -100V."""
         if self._dry_run:
             return True
@@ -526,20 +579,31 @@ class MachineShutdown:
 
         return True
 
-    def s19_ajust_filament(self):
+    def s21_ajust_egunfilament(self):
         """Ajusta a corrente de filamento em 1A."""
         if self._dry_run:
             return True
-        print('--- ajust_filament...')
+        print('--- ajust_egunfilament...')
 
         # NOTE: reduce gradually!!!
 
         # Ajusta corrente de filamento em 1A.
+        epics.caput('LI-01:EG-FilaPS:currentoutsoft', 1.3)
+        time.sleep(10.0)
+        epics.caput('LI-01:EG-FilaPS:currentoutsoft', 1.2)
+        time.sleep(10.0)
+        epics.caput('LI-01:EG-FilaPS:currentoutsoft', 1.1)
+        time.sleep(10.0)
         epics.caput('LI-01:EG-FilaPS:currentoutsoft', 1.0)
+        time.sleep(1.0)
+
+        if not MachineShutdown._wait_value(
+                'LI-01:EG-FilaPS:currentinsoft', 1.0, 1.1, 2.0):
+            return False
 
         return True
 
-    def s20_start_counter(self):
+    def s22_start_counter(self):
         """Checa inicio de contagem para liberar túnel."""
         if self._dry_run:
             return True
@@ -555,7 +619,7 @@ class MachineShutdown:
 
         return True
 
-    def s21_free_access(self):
+    def s23_free_access(self):
         """Aguardar zerar contagem."""
         if self._dry_run:
             return True
@@ -572,7 +636,7 @@ class MachineShutdown:
         return True
 
     def execute_procedure(self):
-        """Executa na sequencia os passos a seguir."""
+        """Executa na sequência os passos a seguir."""
         if not self.s01_close_gamma_shutter():
             return False
         if not self.s02_macshift_update():
@@ -607,13 +671,17 @@ class MachineShutdown:
             return False
         if not self.s17_borf_turnoff():
             return False
-        if not self.s18_ajust_bias():
+        if not self.s18_modulators_turnoff():
             return False
-        if not self.s19_ajust_filament():
+        if not self.s19_ajust_egun_highvoltage():
             return False
-        if not self.s20_start_counter():
+        if not self.s20_ajust_egunbias():
             return False
-        if not self.s21_free_access():
+        if not self.s21_ajust_egunfilament():
+            return False
+        if not self.s22_start_counter():
+            return False
+        if not self.s23_free_access():
             return False
 
         return True
