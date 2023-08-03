@@ -37,8 +37,7 @@ class MachineShutdown:
         maintenance = 5
         epics.caput('AS-Glob:AP-MachShift:Mode-Sel', maintenance)
 
-        return MachineShutdown._wait_value(
-            'AS-Glob:AP-MachShift:Mode-Sts', maintenance, 0.5, 2.0)
+        return MachineShutdown._wait_value('AS-Glob:AP-MachShift:Mode-Sts', maintenance, 0.5, 2.0)
 
     def s03_injmode_update(self):
         """."""
@@ -558,7 +557,7 @@ class MachineShutdown:
         epics.caput('AS-Glob:AP-InjCtrl:HVOpVolt-SP', 30.000)
         time.sleep(5.0)
         epics.caput('AS-Glob:AP-InjCtrl:HVOpVolt-SP', 0.000)
-        time.sleep(1.0)
+        time.sleep(2.0)
 
         # checar se alta tensão foi desligada.
         epics.caput('LI-01:EG-HVPS:switch', 0)
