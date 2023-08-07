@@ -332,8 +332,6 @@ class MachineShutdown:
             return True
         print('--- reset_ps_and_dclinks...')
 
-        # TODO: not working!!!
-
         timeout = 50  # [s]
         # Reset PS
         for sec in ('TB', 'TS', 'BO', 'SI'):
@@ -358,12 +356,10 @@ class MachineShutdown:
 
         pvnames = []
         for dclink in dclinks:
-            print(dclink)
-            pvnames.append(psname + ':' + 'IntlkSoft-Mon')
-            pvnames.append(psname + ':' + 'IntlKHard-Mon')
+            pvnames.append(dclink + ':' + 'IntlkSoft-Mon')
+            pvnames.append(dclink + ':' + 'IntlKHard-Mon')
             pvname = dclink + ':' + 'Reset-Cmd'
             epics.caput(pvname, 1)
-            epics.caput(pvname, 0)
 
         values = [0.0, ] * len(pvnames)
         tols = [0.2] * len(pvnames)
