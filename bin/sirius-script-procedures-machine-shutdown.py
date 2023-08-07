@@ -62,7 +62,6 @@ class MachineShutdown:
         print('Desligando Injection')
         epics.caput('AS-RaMO:TI-EVG:InjectionEvt-Sel', 0)
         if not MachineShutdown._wait_value(
-                # 'AS-RaMO:TI-EVG:STATEMACHINE', 0, 0.5, 2.0):
                 'AS-RaMO:TI-EVG:InjectionEvt-Sts', 0, 0.5, 2.0):
             return False
 
@@ -73,9 +72,9 @@ class MachineShutdown:
             return False
 
         print('Desligando Sistema de Injeção')
-        epics.caput('LI-01:EG-TriggerPS:enable', 0)
+        epics.caput('AS-Glob:AP-InjCtrl:InjSysTurnOff-Cmd', 0)
         if not MachineShutdown._wait_value(
-                'LI-01:EG-TriggerPS:enablereal', 0, 0.5, 10.0):
+                'AS-Glob:AP-InjCtrl:InjSysCmdSts-Mon', 0, 0.5, 30.0):
             return False
 
         return True
