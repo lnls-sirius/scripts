@@ -107,29 +107,30 @@ class MachineShutdown:
         devs = [
             self._devices['apu22_06SB'], self._devices['apu22_07SP'],
             self._devices['apu22_08SB'], self._devices['apu22_09SA'],
-            self._devices['apu58_11SP'], self._devices['epu50_10SB'],
+            self._devices['apu58_11SP'], self._devices['papu50_17SA'],
             epu50,
             ]
 
         # check connections
+        # print('check connections...')
         for dev in devs:
             if not dev.wait_for_connection(timeout=5):
                 return False
 
         # Desabilita a movimentação dos IDs pelas linhas.
+        # print('disable beamline controls...')
         for dev in devs:
             if not dev.cmd_beamline_ctrl_disable():
                 return False
 
         # Para a movimentação dos IDs
+        # print('cmd move stop...')
         for dev in devs:
-            print(dev.devname)
             if not dev.cmd_move_stop():
                 return False
 
-        return True
-
         # Seta as velocidades de Phase e Gap
+        # print('cmd set speeds...')
         for dev in devs:
             if not dev.cmd_set_phase_speed(dev.phase_speed_max):
                 return False
@@ -137,6 +138,7 @@ class MachineShutdown:
             return False
 
         # Seta os IDs para config de estacionamento
+        # print('cmd set phase and gap for parking...')
         for dev in devs:
             if not dev.cmd_set_phase(dev.phase_parked):
                 return False
@@ -144,12 +146,14 @@ class MachineShutdown:
             return False
 
         # Movimenta os IDs para a posição escolhida
+        # print('cmd move to parking...')
         for dev in devs:
             if not dev.cmd_move_start():
                 return False
         time.sleep(2.0)  # aguarda 2 seg.
 
-        # wait dor end of movement of timeout
+        # wait for end of movement of timeout
+        # print('wait end of movement...')
         timeout, sleep = 70, 0.2  # [s]
         t0 = time.time()
         while True:
