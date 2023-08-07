@@ -518,7 +518,7 @@ class MachineShutdown:
         # Ajusta a alta tensão do canhão e checa.
         epics.caput('AS-Glob:AP-InjCtrl:HVOpVolt-SP', 0.000)
         if not MachineShutdown._wait_value(
-                'AS-Glob:AP-InjCtrl:HVOpVoltCmdSts-Mon', 0, 0.5, 60.0):
+                'AS-Glob:AP-InjCtrl:HVOpVoltCmdSts-Mon', 0, 0.5, 100.0):
             return False
 
         # desabilita enable
