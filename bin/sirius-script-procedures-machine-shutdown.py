@@ -3,8 +3,10 @@
 
 import time
 import epics
-import numpy as np
 
+from siriuspy.devices import APU
+from siriuspy.devices import EPU
+from siriuspy.devices import PAPU
 from siriuspy.search import PSSearch as _PSSearch
 
 
@@ -14,6 +16,20 @@ class MachineShutdown:
     def __init__(self, dry_run=True):
         """."""
         self._dry_run = dry_run
+        self._devices = self._create_devices()
+
+    @property
+    def connected(self):
+        """."""
+        for dev in self._devices.values():
+            if not dev.connected:
+                return False
+        return True
+
+    def wait_for_connection(self):
+        """."""
+        for dev in self._devices.values():
+            dev.wait_for_connection()
 
     def s01_close_gamma_shutter(self):
         """Mensagem para fechar o Gama."""
@@ -37,7 +53,8 @@ class MachineShutdown:
         maintenance = 5
         epics.caput('AS-Glob:AP-MachShift:Mode-Sel', maintenance)
 
-        return MachineShutdown._wait_value('AS-Glob:AP-MachShift:Mode-Sts', maintenance, 0.5, 2.0)
+        return MachineShutdown._wait_value(
+            'AS-Glob:AP-MachShift:Mode-Sts', maintenance, 0.5, 2.0)
 
     def s03_injmode_update(self):
         """."""
@@ -83,69 +100,67 @@ class MachineShutdown:
         """Altera as condições dos IDs para desligamento da Máquina."""
         if self._dry_run:
             return True
+
         print('--- ids_parking...')
 
-        # TODO: set also the velocities
-        stop, start = 1, 3
-        g1 = 36  # [mm]
-        p1, p2 = 11, 29  # [mm]
+        epu50 = self._devices['epu50_10SB']
+        devs = [
+            self._devices['apu22_06SB'], self._devices['apu22_07SP'],
+            self._devices['apu22_08SB'], self._devices['apu22_09SA'],
+            self._devices['apu58_11SP'], self._devices['epu50_10SB'],
+            epu50,
+            ]
+
+        # check connections
+        for dev in devs:
+            if not dev.wait_for_connection(timeout=5):
+                return False
 
         # Desabilita a movimentação dos IDs pelas linhas.
-        epics.caput('SI-06SB:ID-APU22:BeamLineCtrlEnbl-Sel', 'Dsbl')
-        epics.caput('SI-07SP:ID-APU22:BeamLineCtrlEnbl-Sel', 'Dsbl')
-        epics.caput('SI-08SB:ID-APU22:BeamLineCtrlEnbl-Sel', 'Dsbl')
-        epics.caput('SI-09SA:ID-APU22:BeamLineCtrlEnbl-Sel', 'Dsbl')
-        epics.caput('SI-10SB:ID-EPU50:BeamLineCtrlEnbl-Sel', 'Dsbl')
-        epics.caput('SI-11SP:ID-APU58:BeamLineCtrlEnbl-Sel', 'Dsbl')
-        time.sleep(1.0)  # aguarda 1 seg.
+        for dev in devs:
+            if not dev.cmd_beamline_ctrl_disable():
+                return False
 
         # Para a movimentação dos IDs
-        epics.caput('SI-06SB:ID-APU22:DevCtrl-Cmd', stop)
-        epics.caput('SI-07SP:ID-APU22:DevCtrl-Cmd', stop)
-        epics.caput('SI-08SB:ID-APU22:DevCtrl-Cmd', stop)
-        epics.caput('SI-09SA:ID-APU22:DevCtrl-Cmd', stop)
-        epics.caput('SI-11SP:ID-APU58:DevCtrl-Cmd', stop)
-        time.sleep(1.0)  # aguarda 1 seg.
+        for dev in devs:
+            print(dev.devname)
+            if not dev.cmd_move_stop():
+                return False
+
+        return True
+
+        # Seta as velocidades de Phase e Gap
+        for dev in devs:
+            if not dev.cmd_set_phase_speed(dev.phase_speed_max):
+                return False
+        if not epu50.cmd_set_gap_speed(epu50.gap_speed_max):
+            return False
 
         # Seta os IDs para config de estacionamento
-        epics.caput('SI-06SB:ID-APU22:Phase-SP', p1)
-        epics.caput('SI-07SP:ID-APU22:Phase-SP', p1)
-        epics.caput('SI-08SB:ID-APU22:Phase-SP', p1)
-        epics.caput('SI-09SA:ID-APU22:Phase-SP', p1)
-        epics.caput('SI-10SB:ID-EPU50:Gap-SP', g1)
-        epics.caput('SI-11SP:ID-APU58:Phase-SP', p2)
-        time.sleep(1.0)  # aguarda 1 seg.
-
-        # Seta a Phase Speed
-        epics.caput('SI-06SB:ID-APU22:PhaseSpeed-SP', start)
-        epics.caput('SI-07SP:ID-APU22:PhaseSpeed-SP', start)
-        epics.caput('SI-08SB:ID-APU22:PhaseSpeed-SP', start)
-        epics.caput('SI-09SA:ID-APU22:PhaseSpeed-SP', start)
-        epics.caput('SI-10SB:ID-EPU50:GapSpeed-SP', start)
-        epics.caput('SI-11SP:ID-APU58:PhaseSpeed-SP', start)
-        time.sleep(1.0)  # aguarda 1 seg.
+        for dev in devs:
+            if not dev.cmd_set_phase(dev.phase_parked):
+                return False
+        if not epu50.cmd_set_gap(epu50.gap_parked):
+            return False
 
         # Movimenta os IDs para a posição escolhida
-        epics.caput('SI-06SB:ID-APU22:DevCtrl-Cmd', start)
-        epics.caput('SI-07SP:ID-APU22:DevCtrl-Cmd', start)
-        epics.caput('SI-08SB:ID-APU22:DevCtrl-Cmd', start)
-        epics.caput('SI-09SA:ID-APU22:DevCtrl-Cmd', start)
-        epics.caput('SI-10SB:ID-EPU50:ChangeGap-Cmd', start)
-        epics.caput('SI-11SP:ID-APU58:DevCtrl-Cmd', start)
-        time.sleep(1.0)  # aguarda 1 seg.
+        for dev in devs:
+            if not dev.cmd_move_start():
+                return False
+        time.sleep(2.0)  # aguarda 2 seg.
 
-        pvnames = [
-            'SI-06SB:ID-APU22:Phase-Mon',
-            'SI-07SP:ID-APU22:Phase-Mon',
-            'SI-08SB:ID-APU22:Phase-Mon',
-            'SI-09SA:ID-APU22:Phase-Mon',
-            'SI-10SB:ID-EPU50:Gap-Mon',
-            'SI-11SP:ID-APU58:Phase-Mon',
-        ]
-        value_targets = [p1, p1, p1, p1, g1, p2]
-        value_tols = [0.1, 0.1, 0.1, 0.1, 0.1, 0.1]
-        return MachineShutdown._wait_value_set(
-            pvnames, value_targets, value_tols, timeout=70)
+        # wait dor end of movement of timeout
+        timeout, sleep = 70, 0.2  # [s]
+        t0 = time.time()
+        while True:
+            is_moving = [dev.is_moving for dev in devs]
+            if True not in is_moving:
+                break
+            if time.time() - t0 > timeout:
+                return False
+            time.sleep(sleep)
+
+        return True
 
     def s06_sofb_fofb_turnoff(self):
         """Desliga o FOFB e posteriormente o SOFB."""
@@ -569,6 +584,10 @@ class MachineShutdown:
 
         # Verificar se a contagem regressiva para liberar acesso
         # ao túnel iniciou."""
+        # counter = epics.caget('AS-Glob:PP-Summary:TunAccessWaitTimeLeft-Mon')
+        # if counter == 360:
+        #     return False
+
         print('start_counter')
         msg = (
             'Confirme se a contagem regressiva para '
@@ -641,6 +660,23 @@ class MachineShutdown:
         if not self.s22_free_access():
             return False
         return True
+
+    def _create_devices(self):
+        """."""
+        devices = dict()
+        # self._devices['machshift'] = MachShift()
+        # self._devices['injctrl'] = InjCtrl()
+        # self._devices['evg'] = EVG()
+        # self._devices['egtriggerps'] = EGTriggerPS()
+        devices['apu22_06SB'] = APU(APU.DEVICES.APU22_06SB)
+        devices['apu22_07SP'] = APU(APU.DEVICES.APU22_07SP)
+        devices['apu22_08SB'] = APU(APU.DEVICES.APU22_08SB)
+        devices['apu22_09SA'] = APU(APU.DEVICES.APU22_09SA)
+        devices['apu58_11SP'] = APU(APU.DEVICES.APU58_11SP)
+        devices['epu50_10SB'] = EPU(EPU.DEVICES.EPU50_10SB)
+        devices['papu50_17SA'] = PAPU(PAPU.DEVICES.PAPU50_17SA)
+
+        return devices
 
     @staticmethod
     def _ps_sofbmode(sec, timeout):
