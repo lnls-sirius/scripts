@@ -155,29 +155,26 @@ class MachineShutdown:
 
         # Parâmetros do FOFB:
         print('FOFB Turn off...')
-        # Desabilita o Orbit Distortion Detect
-        epics.caput('SI-Glob:AP-FOFB:LoopMaxOrbDistortionEnbl-Sel', 0)
         # Desabilita o Loop
         epics.caput('SI-Glob:AP-FOFB:LoopState-Sel', 0)
-        time.sleep(10.0)
+        if not MachineShutdown._wait_value(
+                'SI-Glob:AP-FOFB:LoopState-Sts', 0, 0.5, 12.0):
+            return False
 
         print('SOFB Turn off...')
         # Desabilita Auto correction State
         epics.caput('SI-Glob:AP-SOFB:LoopState-Sel', 0)
+        if not MachineShutdown._wait_value(
+                'SI-Glob:AP-SOFB:LoopState-Sts', 0, 0.5, 5.0):
+            return False
+
         # Desabilita Synchronization
         epics.caput('SI-Glob:AP-SOFB:CorrSync-Sel', 0)
-        # Desabilita PSSOFB Enable
-        epics.caput('SI-Glob:AP-SOFB:CorrPSSOFBEnbl-Sel', 0)
+        if not MachineShutdown._wait_value(
+                'SI-Glob:AP-SOFB:CorrSync-Sts', 0, 0.5, 5.0):
+            return False
 
-        pvnames = [
-           'SI-Glob:AP-SOFB:LoopState-Sts',
-           'SI-Glob:AP-SOFB:CorrSync-Sts',
-           'SI-Glob:AP-SOFB:CorrPSSOFBEnbl-Sts',
-            ]
-        value_targets = [0, 0, 0]
-        value_tols = [0.5, 0.5, 0.5]
-        return MachineShutdown._wait_value_set(
-           pvnames, value_targets, value_tols, 2.0)
+        return True
 
     def s07_bbb_turnoff(self):
         """Desabilita o bbb Hor, Vert e Long."""
@@ -190,17 +187,16 @@ class MachineShutdown:
         epics.caput('SI-Glob:DI-BbBProc-V:FBCTRL', 0)
         epics.caput('SI-Glob:DI-BbBProc-L:FBCTRL', 0)
 
-
-        if not MachineShutdown._wait_value(
-                'SI-Glob:DI-BbBProc-H:FBCTRL', 0, 0.5, 2.0):
+        pvnames = [
+            'SI-Glob:DI-BbBProc-H:FBCTRL',
+            'SI-Glob:DI-BbBProc-V:FBCTRL',
+            'SI-Glob:DI-BbBProc-L:FBCTRL',
+        ]
+        values = [0, 0, 0]
+        tols = [0.5, 0.5, 0.5]
+        if not MachineShutdown._wait_value_set(
+                pvnames, values, tols, 2.0):
             return False
-        if not MachineShutdown._wait_value(
-                'SI-Glob:DI-BbBProc-V:FBCTRL', 0, 0.5, 2.0):
-            return False
-        if not MachineShutdown._wait_value(
-                'SI-Glob:DI-BbBProc-L:FBCTRL', 0, 0.5, 2.0):
-            return False
-
         return True
 
     def s08_beam_kill(self):
