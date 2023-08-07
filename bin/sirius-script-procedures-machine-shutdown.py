@@ -553,10 +553,11 @@ class MachineShutdown:
         """Ajusta a tensão de Bias do canhão em -100V."""
         if self._dry_run:
             return True
-        print('--- ajust_bias...')
+        print('--- adjust_bias...')
 
         # Ajusta tensão de Bias em -100V.
-        epics.caput('LI-01:EG-BiasPS:voltoutsoft', -100.0)
+        epics.caput('AS-Glob:AP-InjCtrl:MultBunBiasVolt-SP', -100.0)
+        # epics.caput('AS-Glob:AP-InjCtrl:SglBunBiasVolt-SP', -100.0)
 
         return True
 
