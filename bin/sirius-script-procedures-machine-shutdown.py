@@ -524,25 +524,27 @@ class MachineShutdown:
         return True
 
     def s19_ajust_egun_highvoltage(self):
-        """."""
+        """Disable egun high voltage."""
         if self._dry_run:
             return True
-        print('---ajust_egun_highvoltage...')
+        print('---disable_egun_highvoltage...')
 
         # Ajusta a alta tensão do canhão e checa.
-        epics.caput('AS-Glob:AP-InjCtrl:HVOpVolt-SP', 70.000)
-        time.sleep(5.0)
-        epics.caput('AS-Glob:AP-InjCtrl:HVOpVolt-SP', 50.000)
-        time.sleep(5.0)
-        epics.caput('AS-Glob:AP-InjCtrl:HVOpVolt-SP', 30.000)
-        time.sleep(5.0)
         epics.caput('AS-Glob:AP-InjCtrl:HVOpVolt-SP', 0.000)
-        time.sleep(2.0)
+        if not MachineShutdown._wait_value(
+                'AS-Glob:AP-InjCtrl:HVOpVoltCmdSts-Mon', 0, 0.5, 60.0):
+            return False
+
+        # desabilita enable
+        epics.caput('LI-01:EG-HVPS:enable', 0)
+        if not MachineShutdown._wait_value(
+                'LI-01:EG-HVPS:enstatus', 0, 0.5, 2.0):
+            return False
 
         # checar se alta tensão foi desligada.
         epics.caput('LI-01:EG-HVPS:switch', 0)
         if not MachineShutdown._wait_value(
-                'LI-01:EG-HVPS:voltinsoft', 0, 0.5, 2.0):
+                'LI-01:EG-HVPS:swstatus', 0, 0.5, 2.0):
             return False
 
         return True
