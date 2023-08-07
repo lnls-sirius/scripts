@@ -413,90 +413,76 @@ class MachineShutdown:
 
         return MachineShutdown._wait_value_set(pvnames, values, tols, timeout)
 
-    def s16_sirf_turnoff(self):
+    def s08_sirf_turnoff(self):
         """Ajusta os parâmetros da RF do Anel para desligamento."""
         if self._dry_run:
             return True
         print('--- sirf_turnoff...')
 
-        # NOTE: revise this part
-
         # Alterando a taxa de incremento
+        print('Alterando a taxa de incremento para 2mV/s')
         incrate_rate = 6
         epics.caput('SR-RF-DLLRF-01:AMPREF:INCRATE:S', incrate_rate)
         time.sleep(1.0)
-        # Implemetar um comparador do valor de REF:AMP com REF:SP; depois desligar o ENABLE
 
-        # epics.caput('SR-RF-DLLRF-01:mV:AL:REF-SP', 60)
-        # if not MachineShutdown._wait_value(
-        #        'SR-RF-DLLRF-01:SL:REF:AMP', 60, 60.5, 10.0):
-        #    return False
+        print('Muda referência do loop para 60mV')
+        epics.caput('SR-RF-DLLRF-01:mV:AL:REF-SP', 60)
+        if not MachineShutdown._wait_value(
+               'SR-RF-DLLRF-01:SL:REF:AMP', 60, 0.5, 180.0):
+            return False
 
-        # Baixando a Amplitude para 60 mV
-        init_value = epics.caget('SR-RF-DLLRF-01:mV:AL:REF-SP')
-        nrpoints = int(abs(60 - init_value)/10.0)
-        values = np.linspace(init_value, 60, nrpoints)
-        for value in values:
-            print('Amplitude de referẽncia [mV]: ', value)
-            epics.caput('SR-RF-DLLRF-01:mV:AL:REF-SP', value)
-            time.sleep(2.0)
+        print('Checando se o feixe acumulado foi derrubado')
+        if not MachineShutdown._wait_value(
+                'SI-14C4:DI-DCCT:Current-Mon', 0, 0.5, 5.0):
+            return False
 
-        # Desabilitando o loop de controle'
+        # Desabilitando o loop de controle
+        print('Desabilitando o loop de controle')
         epics.caput('SR-RF-DLLRF-01:SL:S', 0)
         time.sleep(1.0)
 
         # Desligando as Chaves PIN
+        print('Desligando as Chaves PIN')
         epics.caput('RA-RaSIA01:RF-LLRFPreAmp-1:PINSw1Dsbl-Cmd', 1)
-        time.sleep(1.0)
         epics.caput('RA-RaSIA01:RF-LLRFPreAmp-1:PINSw2Dsbl-Cmd', 1)
+        time.sleep(1.0)
+        epics.caput('RA-RaSIA01:RF-LLRFPreAmp-1:PINSw1Dsbl-Cmd', 0)
+        epics.caput('RA-RaSIA01:RF-LLRFPreAmp-1:PINSw2Dsbl-Cmd', 0)
         time.sleep(1.0)
 
         # Desligando os amplificadores DC/TDK
+        print('Desligando os amplificadores DC/TDK')
         epics.caput('RA-ToSIA01:RF-TDKSource:PwrDCDsbl-Sel', 1)
-        time.sleep(1.0)
         epics.caput('RA-ToSIA02:RF-TDKSource:PwrDCDsbl-Sel', 1)
+        time.sleep(1.0)
+        epics.caput('RA-ToSIA01:RF-TDKSource:PwrDCDsbl-Sel', 0)
+        epics.caput('RA-ToSIA02:RF-TDKSource:PwrDCDsbl-Sel', 0)
         time.sleep(1.0)
 
         # Desligando os amplificadores AC/TDK
+        print('Desligando os amplificadores AC/TDK')
         epics.caput('RA-ToSIA01:RF-ACPanel:PwrACDsbl-Sel', 1)
-        time.sleep(1.0)
         epics.caput('RA-ToSIA02:RF-ACPanel:PwrACDsbl-Sel', 1)
+        time.sleep(1.0)
+        epics.caput('RA-ToSIA01:RF-ACPanel:PwrACDsbl-Sel', 0)
+        epics.caput('RA-ToSIA02:RF-ACPanel:PwrACDsbl-Sel', 0)
         time.sleep(1.0)
 
         return True
 
-    def s17_borf_turnoff(self):
+    def s09_borf_turnoff(self):
         """Ajustes dos parâmetros do Booster para desligamento."""
         if self._dry_run:
             return True
         print('--- borf_turnoff...')
 
-        # NOTE: revise!
-
         # Desabilitando a rampa do Booster
         ramp = 0
         epics.caput('BR-RF-DLLRF-01:RmpEnbl-Sel', ramp)
         if not MachineShutdown._wait_value(
-                'BR-RF-DLLRF-01:RmpEnbl-Sel', ramp, 0, 2.0):
+                'BR-RF-DLLRF-01:RmpEnbl-Sts', ramp, 0, 2.0):
             return False
-
-        # Setando a Amplitude em 60 mV e checando a referência.
-        epics.caget('BR-RF-DLLRF-01:mV:AL:REF-SP', 60)
-        if not MachineShutdown._wait_value(
-                'SR-RF-DLLRF-01:SL:REF:AMP', 60, 60.5, 2.0):
-            return False
-
-        # Baixando a Amplitude do BO para 60 mV
-        init_value = epics.caget('BR-RF-DLLRF-01:mV:AL:REF-SP')
-        nrpoints = int(abs(60 - init_value)/10.0)# does not work
-        # for init_value = 62, for exmaple.
-        values = np.linspace(init_value, 60, nrpoints)
-        print(init_value, values)
-        for value in values:
-            print(value)
-            print('Amplitude de referência [mV]:', value)
-            epics.caput('BR-RF-DLLRF-01:mV:AL:REF-SP', value)
-            time.sleep(0.2)
+        time.sleep(2.0)
 
         print('Desligando o loop de controle...')
         epics.caput('BR-RF-DLLRF-01:SL:S', 0)
@@ -505,13 +491,19 @@ class MachineShutdown:
         print('Desligando a chave PIN...')
         epics.caput('RA-RaBO01:RF-LLRFPreAmp:PinSwDsbl-Cmd', 1)
         time.sleep(0.5)
+        epics.caput('RA-RaBO01:RF-LLRFPreAmp:PinSwDsbl-Cmd', 0)
+        time.sleep(0.5)
 
         print('Desligando os Amplificador DC/DC...')
         epics.caput('RA-ToBO:RF-SSAmpTower:PwrCnvDsbl-Sel', 1)
         time.sleep(0.5)
+        epics.caput('RA-ToBO:RF-SSAmpTower:PwrCnvDsbl-Sel', 0)
+        time.sleep(0.5)
 
         print('Desligando os Amplificador 300VDC...')
         epics.caput('RA-ToBO:RF-ACDCPanel:300VdcDsbl-Sel', 1)
+        time.sleep(0.5)
+        epics.caput('RA-ToBO:RF-ACDCPanel:300VdcDsbl-Sel', 0)
         time.sleep(0.5)
 
         return True
