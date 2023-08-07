@@ -508,7 +508,7 @@ class MachineShutdown:
 
         return True
 
-    def s18_modulators_turnoff(self):
+    def s10_modulators_turnoff(self):
         """."""
         if self._dry_run:
             return True
@@ -516,13 +516,10 @@ class MachineShutdown:
 
         # Desliga os botões CHARGE e TRIGOUT dos moduladores
         epics.caput('LI-01:PU-Modltr-1:CHARGE', 0)
-        time.sleep(1.0)
-        epics.caput('LI-01:PU-Modltr-1:TRIGOUT', 0)
-        time.sleep(1.0)
         epics.caput('LI-01:PU-Modltr-2:CHARGE', 0)
         time.sleep(1.0)
+        epics.caput('LI-01:PU-Modltr-1:TRIGOUT', 0)
         epics.caput('LI-01:PU-Modltr-2:TRIGOUT', 0)
-        time.sleep(1.0)
 
         return True
 
