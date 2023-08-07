@@ -199,21 +199,7 @@ class MachineShutdown:
             return False
         return True
 
-    def s08_beam_kill(self):
-        """Encerra o feixe utilizando o metodo RFKillbeam."""
-        if self._dry_run:
-            return True
-        print('--- beam_kill...')
-
-        print('Encerrando o feixe acumulado...')
-        epics.caput('AS-Glob:AP-InjCtrl:RFKillBeam-Cmd', 0)
-        if not MachineShutdown._wait_value(
-                'SI-13C4:DI-DCCT:Current-Mon', 0, 0.5, 4.0):
-            return False
-
-        return True
-
-    def s09_disable_ps_triggers(self):
+    def s15_disable_ps_triggers(self):
         """Desliga os triggers das fontes."""
         if self._dry_run:
             return True
@@ -252,7 +238,7 @@ class MachineShutdown:
         return MachineShutdown._wait_value_set(
            pvnames, value_targets, value_tols, 2.0)
 
-    def s10_turn_off_sofbmode(self):
+    def s16_turn_off_sofbmode(self):
         """Desabilita o nodo SOFBMode."""
         if self._dry_run:
             return True
@@ -268,7 +254,7 @@ class MachineShutdown:
 
         return True
 
-    def s11_set_ps_and_dclinks_to_slowref(self):
+    def s17_set_ps_and_dclinks_to_slowref(self):
         """Altera o modo das fontes e dclinks de OpMode para SlowRef."""
         if self._dry_run:
             return True
@@ -310,7 +296,7 @@ class MachineShutdown:
 
         return True
 
-    def s12_set_ps_current_to_zero(self):
+    def s18_set_ps_current_to_zero(self):
         """Seleciona e zera a corrente de todas as fontes dos aceleradores."""
         if self._dry_run:
             return True
@@ -326,7 +312,7 @@ class MachineShutdown:
 
         return True
 
-    def s13_reset_ps_and_dclinks(self):
+    def s19_reset_ps_and_dclinks(self):
         """Reseta as fontes e DCLinks e verifica sinais de interlock."""
         if self._dry_run:
             return True
@@ -366,7 +352,7 @@ class MachineShutdown:
 
         return MachineShutdown._wait_value_set(pvnames, values, tols, timeout)
 
-    def s14_turn_ps_off(self):
+    def s20_turn_ps_off(self):
         """Desliga todas as fontes."""
         if self._dry_run:
             return True
@@ -379,7 +365,7 @@ class MachineShutdown:
 
         return True
 
-    def s15_turn_dclinks_off(self):
+    def s21_turn_dclinks_off(self):
         """Desliga os DC links das fontes."""
         if self._dry_run:
             return True
@@ -523,7 +509,7 @@ class MachineShutdown:
 
         return True
 
-    def s19_ajust_egun_highvoltage(self):
+    def s13_disable_egun_highvoltage(self):
         """Disable egun high voltage."""
         if self._dry_run:
             return True
@@ -549,7 +535,7 @@ class MachineShutdown:
 
         return True
 
-    def s20_ajust_egunbias(self):
+    def s11_adjust_egunbias(self):
         """Ajusta a tensão de Bias do canhão em -100V."""
         if self._dry_run:
             return True
@@ -561,7 +547,7 @@ class MachineShutdown:
 
         return True
 
-    def s21_ajust_egunfilament(self):
+    def s12_adjust_egunfilament(self):
         """Ajusta a corrente de filamento em 1A."""
         if self._dry_run:
             return True
@@ -575,7 +561,7 @@ class MachineShutdown:
 
         return True
 
-    def s22_start_counter(self):
+    def s14_start_counter(self):
         """Checa inicio de contagem para liberar túnel."""
         if self._dry_run:
             return True
@@ -591,7 +577,7 @@ class MachineShutdown:
 
         return True
 
-    def s23_free_access(self):
+    def s22_free_access(self):
         """Aguardar zerar contagem."""
         if self._dry_run:
             return True
@@ -623,39 +609,37 @@ class MachineShutdown:
             return False
         if not self.s07_bbb_turnoff():
             return False
-        if not self.s08_beam_kill():
+        if not self.s08_sirf_turnoff():
             return False
-        if not self.s09_disable_ps_triggers():
+        if not self.s09_borf_turnoff():
             return False
-        if not self.s10_turn_off_sofbmode():
+        if not self.s10_modulators_turnoff():
             return False
-        if not self.s11_set_ps_and_dclinks_to_slowref():
+        if not self.s11_adjust_egunbias():
             return False
-        if not self.s12_set_ps_current_to_zero():
+        if not self.s12_adjust_egunfilament():
             return False
-        if not self.s13_reset_ps_and_dclinks():
+        if not self.s13_disable_egun_highvoltage():
             return False
-        if not self.s14_turn_ps_off():
+        if not self.s14_start_counter():
             return False
-        if not self.s15_turn_dclinks_off():
+        if not self.s15_disable_ps_triggers():
             return False
-        if not self.s16_sirf_turnoff():
+        if not self.s16_turn_off_sofbmode():
             return False
-        if not self.s17_borf_turnoff():
+        if not self.s17_set_ps_and_dclinks_to_slowref():
             return False
-        if not self.s18_modulators_turnoff():
+        if not self.s18_set_ps_current_to_zero():
             return False
-        if not self.s19_ajust_egun_highvoltage():
+        if not self.s19_reset_ps_and_dclinks():
             return False
-        if not self.s20_ajust_egunbias():
+        if not self.s20_turn_ps_off():
             return False
-        if not self.s21_ajust_egunfilament():
+        if not self.s21_turn_dclinks_off():
             return False
-        if not self.s22_start_counter():
+        # TODO desligar pulsados
+        if not self.s22_free_access():
             return False
-        if not self.s23_free_access():
-            return False
-
         return True
 
     @staticmethod
