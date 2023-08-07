@@ -565,22 +565,12 @@ class MachineShutdown:
         """Ajusta a corrente de filamento em 1A."""
         if self._dry_run:
             return True
-        print('--- ajust_egunfilament...')
+        print('--- adjust_egunfilament...')
 
-        # NOTE: reduce gradually!!!
-
-        # Ajusta corrente de filamento em 1A.
-        epics.caput('LI-01:EG-FilaPS:currentoutsoft', 1.3)
-        time.sleep(10.0)
-        epics.caput('LI-01:EG-FilaPS:currentoutsoft', 1.2)
-        time.sleep(10.0)
-        epics.caput('LI-01:EG-FilaPS:currentoutsoft', 1.1)
-        time.sleep(10.0)
-        epics.caput('LI-01:EG-FilaPS:currentoutsoft', 1.0)
-        time.sleep(1.0)
-
+        # Ajusta corrente de filamento em 1.1A.
+        epics.caput('AS-Glob:AP-InjCtrl:FilaOpCurr-SP', 1.1)
         if not MachineShutdown._wait_value(
-                'LI-01:EG-FilaPS:currentinsoft', 1.0, 1.1, 2.0):
+                'LI-01:EG-FilaPS:currentinsoft', 1.1, 0.2, 10.0):
             return False
 
         return True
