@@ -32,15 +32,18 @@ class MachineShutdown:
             dev.wait_for_connection()
 
     def s01_close_gamma_shutter(self):
-        """Mensagem para fechar o Gama."""
-        # TODO: include interlock PV for gamma signal
+        """Try to close gamma shutter."""
         if self._dry_run:
             return True
         print('--- close_gamma_shutter...')
 
-        msg = ('Por favor, feche o gama e em seguida tecle ENTER')
-        input(msg)
-
+        epics.caput('AS-Glob:MP-Summary:DsblGamma-Cmd', 1)
+        is_ok = MachineShutdown._wait_value(
+            'AS-Glob:MP-Summary:AlarmGammaShutter-Mon', 0, 0.5, 2.0)
+        if not is_ok:
+            print('WARN:Could not close gamma shutter.')
+        else:
+            print('Gamma Shutter closed.')
         return True
 
     def s02_macshift_update(self):
