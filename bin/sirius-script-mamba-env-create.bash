@@ -454,8 +454,8 @@ function defvar ()
 # =====
 defvar "EPICS_BASE" "${CONDA_PREFIX}/epics"
 defvar "EPICS_HOST_ARCH" 'linux-x86_64'
-defvar "EPICS_CA_ADDR_LIST" '10.0.38.46:60000 10.0.38.59:60000'
-defvar "EPICS_PVA_ADDR_LIST" '10.0.38.46:60000 10.0.38.59:60000'
+defvar "EPICS_CA_ADDR_LIST" "10.0.38.59:62000"
+defvar "EPICS_PVA_ADDR_LIST" "10.0.38.59:62000"
 defvar "SIRIUS_URL_RBAC_AUTH" "https://sirius-rbac-auth.lnls.br"
 defvar "SIRIUS_URL_RBAC" "https://rbac:8445"
 defvar "SIRIUS_URL_NS" "http://naming-service-wildfly:8089"
