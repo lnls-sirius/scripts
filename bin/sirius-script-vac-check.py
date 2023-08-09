@@ -24,42 +24,7 @@ PORT_NUMBER_MKS_SENSOR = 5002
 PORT_NUMBER_ION_PUMP = 5004
 
 
-MD_STR = [ 
-    '01BCFE', '01C2FE', '01SAFE', '02BCFE', '02SBFE',
-    '03BCFE', '03C2FE', '03SPFE', '04BCFE', '04SBFE',
-    '05BCFE', '05C2FE', '05SAFE', '06BCFE', '06SBFE',
-    '07BCFE', '07C2FE', '07SPFE', '08BCFE', '08SBFE',
-    '09BCFE', '09C2FE', '09SAFE', '10BCFE', '10SBFE',
-    '11BCFE', '11C2FE', '11SPFE', '12BCFE', '12SBFE',
-    '13BCFE', '13C2FE', '13SAFE', '14BCFE', '14SBFE',
-    '15BCFE', '15C2FE', '15SPFE', '16BCFE', '16SBFE',
-    '17BCFE', '17C2FE', '17SAFE', '18BCFE', '18SBFE',
-    '19BCFE', '19C2FE', '19SPFE', '20BCFE', '20SBFE',
-    ]
-
-BG_STR = [
-    '01C1', '01C3', '01SA', '02C1', '02C3',
-    '02SB', '03C1', '03C3', '03SP', '04C1',
-    '04C3', '04SB', '05C1', '05C3', '05SA',
-    '06C1', '06C3', '06SB', '07C1', '07C3',
-    '07SP', '08C1', '08C3', '08SB', '09C1',
-    '09C3', '09SA', '10C1', '10C3', '10SB',
-    '11C1', '11C3', '11SP', '12C1', '12C3',
-    '12SB', '13C1', '13C3', '13SA', '14C1',
-    '14C3', '14SB', '15C1', '15C3', '15SP',
-    '16C1', '16C3', '16SB', '17C1', '17C3',
-    '17SA', '18C1', '18C3', '18SB', '19C1',
-    '19C3', '19SP', '20C1', '20C3', '20SB',
-     ]
-
-
-
-    # Listas das PVs de pressão do vácuo
-
-PVNAMES_VAC = \
-    ['SI-' + item + ':VA-CCG-MD:Pressure-Mon' for item in MD_STR] + \
-    ['SI-' + item + ':VA-CCG-BG:Pressure-Mon' for item in BG_STR]
-
+## Lista dos IPs das BBBs referente as eletrônicas de sensores (SENSOR) e fontes de bomba iônica (PUMP)
 
 IP_LIST_MKS_SENSOR = [
          '10.128.101.101', '10.128.102.101', '10.128.103.101', '10.128.104.101', '10.128.105.101',
@@ -67,6 +32,7 @@ IP_LIST_MKS_SENSOR = [
          '10.128.111.101', '10.128.112.101', '10.128.113.101', '10.128.114.101', '10.128.115.101', 
          '10.128.116.101', '10.128.117.101', '10.128.118.101', '10.128.119.101', '10.128.120.101', 
          ]
+
 
 IP_LIST_ION_PUMP = [
         '10.128.101.102', '10.128.101.103', '10.128.102.102', '10.128.102.103', '10.128.103.102', 
@@ -78,120 +44,222 @@ IP_LIST_ION_PUMP = [
         '10.128.119.103', '10.128.120.102', '10.128.120.103', 
         ]
 
-VLT_FE_STR = [
-     '01BCFE', '01C2FE', '01SAFE', '02BCFE', '02SBFE',
-     '03BCFE', '03C2FE', '03SPFE', '04BCFE', '04SBFE',
-     '05BCFE', '05C2FE', '05SAFE', '06BCFE', '06SBFE',
-     '07BCFE', '07C2FE', '07SPFE', '08BCFE', '08SBFE',
-     '09BCFE', '09C2FE', '09SAFE', '10BCFE', '10SBFE',
-     '11BCFE', '11C2FE', '11SPFE', '12BCFE', '12SBFE',
-     '13BCFE', '13C2FE', '13SAFE', '14BCFE', '14SBFE',
-     '15BCFE', '15C2FE', '15SPFE', '16BCFE', '16SBFE',
-     '17BCFE', '17C2FE', '17SAFE', '18BCFE', '18SBFE',
-     '19BCFE', '19C2FE', '19SPFE', '20BCFE', '20SBFE',
-     ]
 
-VLT_STR = [
-     '01C1', '01C2', '01C3', '01C4', '01M1',
-     '01SA', '02C1', '02C2', '02C3', '02C4',
-     '02M1', '02SB', '03C1', '03C2', '03C3',
-     '03C4', '03M1', '03SP', '04C1', '04C2',
-     '04C3', '04C4', '04M1', '04SB', '05C1',
-     '05C2', '05C3', '05C4', '05M1', '05SA',
-     '06C1', '06C2', '06C3', '06C4', '06M1',
-     '06SB', '07C1', '07C2', '07C3', '07C4',
-     '07M1', '07SP', '08C1', '08C2', '08C3',
-     '08C4', '08M1', '08SB', '09C1', '09C2',
-     '09C3', '09C4', '09M1', '09SA', '10C1',
-     '10C2', '10C3', '10C4', '10M1', '10SB',
-     '11C1', '11C2', '11C3', '11C4', '11M1',
-     '11SP', '12C1', '12C2', '12C3', '12C4',
-     '12M1', '12SB', '13C1', '13C2', '13C3',
-     '13C4', '13M1', '13SA', '14C1', '14C2',
-     '14C3', '14C4', '14M1', '14SB', '15C1',
-     '15C2', '15C3', '15C4', '15M1', '15SP',
-     '16C1', '16C2', '16C3', '16C4', '16M1',
-     '16SB', '17C1', '17C2', '17C3', '17C4',
-     '17M1', '17SA', '18C1', '18C2', '18C3',
-     '18C4', '18M1', '18SB', '19C1', '19C2',
-     '19C3', '19C4', '19M1', '19SP', '20C1',
-     '20C2', '20C3', '20C4', '20M1', '20SB',
-]
+## Lista das PVs dos medidores de pressões do vácuo
 
-VLT_CHNLL = [
-    'SI-RA01:VA-SIPC-04:Step-SP', 'SI-RA01:VA-SIPC-05:Step-SP', 'SI-RA01:VA-SIPC-06:Step-SP', 'SI-RA01:VA-SIPC-07:Step-SP', 'SI-RA02:VA-SIPC-04:Step-SP', 
-    'SI-RA02:VA-SIPC-05:Step-SP', 'SI-RA02:VA-SIPC-06:Step-SP', 'SI-RA03:VA-SIPC-03:Step-SP', 'SI-RA03:VA-SIPC-04:Step-SP', 'SI-RA03:VA-SIPC-05:Step-SP', 
-    'SI-RA04:VA-SIPC-03:Step-SP', 'SI-RA04:VA-SIPC-04:Step-SP', 'SI-RA05:VA-SIPC-03:Step-SP', 'SI-RA05:VA-SIPC-04:Step-SP', 'SI-RA05:VA-SIPC-05:Step-SP',
-    'SI-RA06:VA-SIPC-03:Step-SP', 'SI-RA06:VA-SIPC-04:Step-SP', 'SI-RA06:VA-SIPC-05:Step-SP', 'SI-RA07:VA-SIPC-03:Step-SP', 'SI-RA07:VA-SIPC-04:Step-SP',
-    'SI-RA07:VA-SIPC-05:Step-SP', 'SI-RA08:VA-SIPC-03:Step-SP', 'SI-RA08:VA-SIPC-04:Step-SP', 'SI-RA08:VA-SIPC-05:Step-SP', 'SI-RA09:VA-SIPC-03:Step-SP',
-    'SI-RA09:VA-SIPC-04:Step-SP', 'SI-RA09:VA-SIPC-05:Step-SP', 'SI-RA10:VA-SIPC-03:Step-SP', 'SI-RA10:VA-SIPC-04:Step-SP', 'SI-RA10:VA-SIPC-05:Step-SP',
-    'SI-RA11:VA-SIPC-03:Step-SP', 'SI-RA11:VA-SIPC-04:Step-SP', 'SI-RA11:VA-SIPC-05:Step-SP', 'SI-RA12:VA-SIPC-03:Step-SP', 'SI-RA12:VA-SIPC-04:Step-SP',
-    'SI-RA13:VA-SIPC-03:Step-SP', 'SI-RA13:VA-SIPC-04:Step-SP', 'SI-RA13:VA-SIPC-05:Step-SP', 'SI-RA14:VA-SIPC-03:Step-SP', 'SI-RA14:VA-SIPC-04:Step-SP',
-    'SI-RA15:VA-SIPC-03:Step-SP', 'SI-RA15:VA-SIPC-04:Step-SP', 'SI-RA15:VA-SIPC-05:Step-SP', 'SI-RA16:VA-SIPC-03:Step-SP', 'SI-RA16:VA-SIPC-04:Step-SP', 
-    'SI-RA17:VA-SIPC-03:Step-SP', 'SI-RA17:VA-SIPC-04:Step-SP', 'SI-RA17:VA-SIPC-05:Step-SP', 'SI-RA18:VA-SIPC-03:Step-SP', 'SI-RA18:VA-SIPC-04:Step-SP',
-    'SI-RA19:VA-SIPC-03:Step-SP', 'SI-RA19:VA-SIPC-04:Step-SP', 'SI-RA19:VA-SIPC-05:Step-SP', 'SI-RA20:VA-SIPC-05:Step-SP', 'SI-RA20:VA-SIPC-06:Step-SP',
+PVNAMES_VAC = [
+    'SI-01C1:VA-CCG-BG:Pressure-Mon', 'SI-01C3:VA-CCG-BG:Pressure-Mon', 'SI-01SAFE:VA-CCG-MD:Pressure-Mon', 'SI-01C2FE:VA-CCG-MD:Pressure-Mon', 'SI-01BCFE:VA-CCG-MD:Pressure-Mon', 
+    'SI-01SA:VA-CCG-BG:Pressure-Mon', 'SI-02SB:VA-CCG-BG:Pressure-Mon', 'SI-02C1:VA-CCG-BG:Pressure-Mon', 'SI-02C3:VA-CCG-BG:Pressure-Mon', 'SI-02SBFE:VA-CCG-MD:Pressure-Mon', 
+    'SI-02BCFE:VA-CCG-MD:Pressure-Mon', 'SI-03SP:VA-CCG-BG:Pressure-Mon',  'SI-03C1:VA-CCG-BG:Pressure-Mon','SI-03C3:VA-CCG-BG:Pressure-Mon', 'SI-03SPFE:VA-CCG-MD:Pressure-Mon', 
+    'SI-03C2FE:VA-CCG-MD:Pressure-Mon', 'SI-03BCFE:VA-CCG-MD:Pressure-Mon', 'SI-04SB:VA-CCG-BG:Pressure-Mon', 'SI-04C1:VA-CCG-BG:Pressure-Mon', 'SI-04C3:VA-CCG-BG:Pressure-Mon', 
+    'SI-04SBFE:VA-CCG-MD:Pressure-Mon', 'SI-04BCFE:VA-CCG-MD:Pressure-Mon', 'SI-05SA:VA-CCG-BG:Pressure-Mon',  'SI-05C1:VA-CCG-BG:Pressure-Mon', 'SI-05C3:VA-CCG-BG:Pressure-Mon', 
+    'SI-05SAFE:VA-CCG-MD:Pressure-Mon', 'SI-05BCFE:VA-CCG-MD:Pressure-Mon', 'SI-06SB:VA-CCG-BG:Pressure-Mon', 'SI-06C1:VA-CCG-BG:Pressure-Mon', 'SI-06C3:VA-CCG-BG:Pressure-Mon', 
+    'SI-06SBFE:VA-CCG-MD:Pressure-Mon', 'SI-06BCFE:VA-CCG-MD:Pressure-Mon', 'SI-07SP:VA-CCG-BG:Pressure-Mon', 'SI-07C1:VA-CCG-BG:Pressure-Mon', 'SI-07C3:VA-CCG-BG:Pressure-Mon', 
+    'SI-07SP:VA-CCG-BG:Pressure-Mon', 'SI-07SPFE:VA-CCG-MD:Pressure-Mon', 'SI-07BCFE:VA-CCG-MD:Pressure-Mon', 'SI-08SB:VA-CCG-BG:Pressure-Mon', 'SI-08C1:VA-CCG-BG:Pressure-Mon', 
+    'SI-08C3:VA-CCG-BG:Pressure-Mon', 'SI-08SBFE:VA-CCG-MD:Pressure-Mon', 'SI-08BCFE:VA-CCG-MD:Pressure-Mon', 'SI-09SA:VA-CCG-BG:Pressure-Mon', 'SI-09C1:VA-CCG-BG:Pressure-Mon', 
+    'SI-09SAFE:VA-CCG-MD:Pressure-Mon', 'SI-09BCFE:VA-CCG-MD:Pressure-Mon', 'SI-10SB:VA-CCG-BG:Pressure-Mon', 'SI-10C1:VA-CCG-BG:Pressure-Mon', 'SI-10C3:VA-CCG-BG:Pressure-Mon', 
+    'SI-10SBFE:VA-CCG-MD:Pressure-Mon', 'SI-10BCFE:VA-CCG-MD:Pressure-Mon', 'SI-11SP:VA-CCG-BG:Pressure-Mon', 'SI-11C1:VA-CCG-BG:Pressure-Mon', 'SI-11C3:VA-CCG-BG:Pressure-Mon', 
+    'SI-11SPFE:VA-CCG-MD:Pressure-Mon', 'SI-11C2FE:VA-CCG-MD:Pressure-Mon', 'SI-11BCFE:VA-CCG-MD:Pressure-Mon', 'SI-12SB:VA-CCG-BG:Pressure-Mon', 'SI-12C1:VA-CCG-BG:Pressure-Mon',
+    'SI-12C3:VA-CCG-BG:Pressure-Mon', 'SI-12SBFE:VA-CCG-MD:Pressure-Mon', 'SI-12BCFE:VA-CCG-MD:Pressure-Mon', 'SI-13SA:VA-CCG-BG:Pressure-Mon',  'SI-13C1:VA-CCG-BG:Pressure-Mon',
+    'SI-13C3:VA-CCG-BG:Pressure-Mon', 'SI-13SAFE:VA-CCG-MD:Pressure-Mon', 'SI-13C2FE:VA-CCG-MD:Pressure-Mon', 'SI-13BCFE:VA-CCG-MD:Pressure-Mon', 'SI-14SB:VA-CCG-BG:Pressure-Mon',
+    'SI-14C1:VA-CCG-BG:Pressure-Mon', 'SI-14C3:VA-CCG-BG:Pressure-Mon', 'SI-14SBFE:VA-CCG-MD:Pressure-Mon', 'SI-14BCFE:VA-CCG-MD:Pressure-Mon', 'SI-15SP:VA-CCG-BG:Pressure-Mon',
+    'SI-15C1:VA-CCG-BG:Pressure-Mon', 'SI-15C3:VA-CCG-BG:Pressure-Mon', 'SI-15SPFE:VA-CCG-MD:Pressure-Mon', 'SI-15C2FE:VA-CCG-MD:Pressure-Mon', 'SI-15BCFE:VA-CCG-MD:Pressure-Mon',
+    'SI-16SB:VA-CCG-BG:Pressure-Mon', 'SI-16C1:VA-CCG-BG:Pressure-Mon', 'SI-16C3:VA-CCG-BG:Pressure-Mon', 'SI-16SBFE:VA-CCG-MD:Pressure-Mon', 'SI-16BCFE:VA-CCG-MD:Pressure-Mon',
+    'SI-17SA:VA-CCG-BG:Pressure-Mon', 'SI-17C1:VA-CCG-BG:Pressure-Mon', 'SI-17C3:VA-CCG-BG:Pressure-Mon', 'SI-17SAFE:VA-CCG-MD:Pressure-Mon', 'SI-17BCFE:VA-CCG-MD:Pressure-Mon',
+    'SI-18SB:VA-CCG-BG:Pressure-Mon', 'SI-18C1:VA-CCG-BG:Pressure-Mon', 'SI-18C3:VA-CCG-BG:Pressure-Mon', 'SI-18SBFE:VA-CCG-MD:Pressure-Mon', 'SI-18BCFE:VA-CCG-MD:Pressure-Mon',
+    'SI-19SP:VA-CCG-BG:Pressure-Mon', 'SI-19C1:VA-CCG-BG:Pressure-Mon', 'SI-19C3:VA-CCG-BG:Pressure-Mon', 'SI-19SPFE:VA-CCG-MD:Pressure-Mon', 'SI-19C2FE:VA-CCG-MD:Pressure-Mon',
+    'SI-19BCFE:VA-CCG-MD:Pressure-Mon', 'SI-20SB:VA-CCG-BG:Pressure-Mon', 'SI-20C1:VA-CCG-BG:Pressure-Mon', 'SI-20C3:VA-CCG-BG:Pressure-Mon', 'SI-20SBFE:VA-CCG-MD:Pressure-Mon',
+    'SI-20BCFE:VA-CCG-MD:Pressure-Mon',
     ]
 
-# Listas das PVs das fontes de bombas iônicas
-PVNAMES_VAC_VLT_RB = \
-    ['SI-' + item + ':VA-SIP20-BG:VoltageTarget-RB' for item in VLT_STR] + \
-    ['SI-' + item + ':VA-SIP150-MD:VoltageTarget-RB' for item in VLT_FE_STR]
 
-PVNAMES_VAC_VLT_SP = \
-    ['SI-' + item + ':VA-SIP20-BG:VoltageTarget-SP' for item in VLT_STR] + \
-    ['SI-' + item + ':VA-SIP150-MD:VoltageTarget-SP' for item in VLT_FE_STR]
+## Lista das PVs dos ajustes de tensão das fontes de bomba iônicas
+
+VLT_CHNLL = [
+    'SI-01C1:VA-SIP20-BG:VoltageTarget-SP', 'SI-01C3:VA-SIP20-BG:VoltageTarget-SP', 'SI-01SAFE:VA-SIP150-MD:VoltageTarget-SP', 'SI-01C2FE:VA-SIP150-MD:VoltageTarget-SP', 'SI-01BCFE:VA-SIP150-MD:VoltageTarget-SP', 
+    'SI-01SA:VA-SIP20-BG:VoltageTarget-SP', 'SI-02SB:VA-SIP20-BG:VoltageTarget-SP', 'SI-02C1:VA-SIP20-BG:VoltageTarget-SP', 'SI-02C3:VA-SIP20-BG:VoltageTarget-SP', 'SI-02SBFE:VA-SIP150-MD:VoltageTarget-SP', 
+    'SI-02BCFE:VA-SIP150-MD:VoltageTarget-SP', 'SI-03SP:VA-SIP20-BG:VoltageTarget-SP', 'SI-03C1:VA-SIP20-BG:VoltageTarget-SP', 'SI-03C3:VA-SIP20-BG:VoltageTarget-SP', 'SI-03SPFE:VA-SIP150-MD:VoltageTarget-SP',
+    'SI-03C2FE:VA-SIP150-MD:VoltageTarget-SP', 'SI-03BCFE:VA-SIP150-MD:VoltageTarget-SP', 'SI-04SB:VA-SIP20-BG:VoltageTarget-SP', 'SI-04C1:VA-SIP20-BG:VoltageTarget-SP', 'SI-04C3:VA-SIP20-BG:VoltageTarget-SP', 
+    'SI-04SBFE:VA-SIP150-MD:VoltageTarget-SP', 'SI-04BCFE:VA-SIP150-MD:VoltageTarget-SP', 'SI-05SA:VA-SIP20-BG:VoltageTarget-SP', 'SI-04C1:VA-SIP20-BG:VoltageTarget-SP', 'SI-04C3:VA-SIP20-BG:VoltageTarget-SP',
+    'SI-05SAFE:VA-SIP150-MD:VoltageTarget-SP', 'SI-05BCFE:VA-SIP150-MD:VoltageTarget-SP', 'SI-06SB:VA-SIP20-BG:VoltageTarget-SP', 'SI-06C1:VA-SIP20-BG:VoltageTarget-SP', 'SI-06C3:VA-SIP20-BG:VoltageTarget-SP', 
+    'SI-06SBFE:VA-SIP150-MD:VoltageTarget-SP', 'SI-06BCFE:VA-SIP150-MD:VoltageTarget-SP', 'SI-07SP:VA-SIP20-BG:VoltageTarget-SP', 'SI-07C1:VA-SIP20-BG:VoltageTarget-SP', 'SI-07C3:VA-SIP20-BG:VoltageTarget-SP',
+    'SI-07SP:VA-SIP20-ED:VoltageTarget-SP', 'SI-07SPFE:VA-SIP150-MD:VoltageTarget-SP', 'SI-07BCFE:VA-SIP150-MD:VoltageTarget-SP', 'SI-08SB:VA-SIP20-BG:VoltageTarget-SP', 'SI-08C1:VA-SIP20-BG:VoltageTarget-SP',
+    'SI-08C3:VA-SIP20-BG:VoltageTarget-SP', 'SI-08SBFE:VA-SIP150-MD:VoltageTarget-SP', 'SI-08BCFE:VA-SIP150-MD:VoltageTarget-SP',  'SI-09SA:VA-SIP20-BG:VoltageTarget-SP', 'SI-09C1:VA-SIP20-BG:VoltageTarget-SP',
+    'SI-09SAFE:VA-SIP150-MD:VoltageTarget-SP', 'SI-09BCFE:VA-SIP150-MD:VoltageTarget-SP', 'SI-10SB:VA-SIP20-BG:VoltageTarget-SP', 'SI-10C1:VA-SIP20-BG:VoltageTarget-SP', 'SI-10C3:VA-SIP20-BG:VoltageTarget-SP',
+    'SI-10SBFE:VA-SIP150-MD:VoltageTarget-SP', 'SI-10BCFE:VA-SIP150-MD:VoltageTarget-SP', 'SI-11SP:VA-SIP20-BG:VoltageTarget-SP', 'SI-11C1:VA-SIP20-BG:VoltageTarget-SP', 'SI-11C3:VA-SIP20-BG:VoltageTarget-SP',
+    'SI-11SPFE:VA-SIP150-MD:VoltageTarget-SP', 'SI-11C2FE:VA-SIP150-MD:VoltageTarget-SP', 'SI-11BCFE:VA-SIP150-MD:VoltageTarget-SP', 'SI-12SB:VA-SIP20-BG:VoltageTarget-SP', 'SI-12C1:VA-SIP20-BG:VoltageTarget-SP',
+    'SI-12C3:VA-SIP20-BG:VoltageTarget-SP', 'SI-12SBFE:VA-SIP150-MD:VoltageTarget-SP', 'SI-12BCFE:VA-SIP150-MD:VoltageTarget-SP', 'SI-13SA:VA-SIP20-BG:VoltageTarget-SP', 'SI-13C1:VA-SIP20-BG:VoltageTarget-SP',
+    'SI-13C3:VA-SIP20-BG:VoltageTarget-SP', 'SI-13SAFE:VA-SIP150-MD:VoltageTarget-SP', 'SI-13C2FE:VA-SIP150-MD:VoltageTarget-SP', 'SI-13BCFE:VA-SIP150-MD:VoltageTarget-SP', 'SI-14SB:VA-SIP20-BG:VoltageTarget-SP',
+    'SI-14C1:VA-SIP20-BG:VoltageTarget-SP', 'SI-14C3:VA-SIP20-BG:VoltageTarget-SP', 'SI-14SBFE:VA-SIP150-MD:VoltageTarget-SP', 'SI-14BCFE:VA-SIP150-MD:VoltageTarget-SP', 'SI-15SP:VA-SIP20-BG:VoltageTarget-SP',
+    'SI-15C1:VA-SIP20-BG:VoltageTarget-SP', 'SI-15C3:VA-SIP20-BG:VoltageTarget-SP', 'SI-15SPFE:VA-SIP150-MD:VoltageTarget-SP', 'SI-15C2FE:VA-SIP150-MD:VoltageTarget-SP', 'SI-15BCFE:VA-SIP150-MD:VoltageTarget-SP',
+    'SI-16SB:VA-SIP20-BG:VoltageTarget-SP', 'SI-16C1:VA-SIP20-BG:VoltageTarget-SP', 'SI-16C3:VA-SIP20-BG:VoltageTarget-SP', 'SI-16SBFE:VA-SIP150-MD:VoltageTarget-SP', 'SI-16BCFE:VA-SIP150-MD:VoltageTarget-SP',
+    'SI-17SA:VA-SIP20-BG:VoltageTarget-SP', 'SI-17C1:VA-SIP20-BG:VoltageTarget-SP', 'SI-17C3:VA-SIP20-BG:VoltageTarget-SP', 'SI-17SAFE:VA-SIP150-MD:VoltageTarget-SP', 'SI-17BCFE:VA-SIP150-MD:VoltageTarget-SP',
+    'SI-18SB:VA-SIP20-BG:VoltageTarget-SP', 'SI-18C1:VA-SIP20-BG:VoltageTarget-SP', 'SI-18C3:VA-SIP20-BG:VoltageTarget-SP', 'SI-18SBFE:VA-SIP150-MD:VoltageTarget-SP', 'SI-18BCFE:VA-SIP150-MD:VoltageTarget-SP',
+    'SI-19SP:VA-SIP20-BG:VoltageTarget-SP', 'SI-19C1:VA-SIP20-BG:VoltageTarget-SP', 'SI-19C3:VA-SIP20-BG:VoltageTarget-SP', 'SI-19SPFE:VA-SIP150-MD:VoltageTarget-SP', 'SI-19C2FE:VA-SIP150-MD:VoltageTarget-SP',
+    'SI-19BCFE:VA-SIP150-MD:VoltageTarget-SP', 'SI-20SB:VA-SIP20-BG:VoltageTarget-SP', 'SI-20C1:VA-SIP20-BG:VoltageTarget-SP', 'SI-20C3:VA-SIP20-BG:VoltageTarget-SP', 'SI-20SBFE:VA-SIP150-MD:VoltageTarget-SP',
+    'SI-20BCFE:VA-SIP150-MD:VoltageTarget-SP',
+    ]
 
 
-# Função que verifica as medidas de pressões e ajusta as fontes de BI
+## Lista das PVs dos ajustes de modo (mode), Step ou Fixed das fontes de bomba iônicas
+
+RFRC_CHNLL =[
+    'SI-RA01:VA-SIPC-04:Step-SP', 'SI-RA01:VA-SIPC-04:Step-SP', 'SI-RA01:VA-SIPC-06:Step-SP', 'SI-RA01:VA-SIPC-06:Step-SP', 'SI-RA01:VA-SIPC-06:Step-SP', 
+    'SI-RA01:VA-SIPC-07:Step-SP', 'SI-RA02:VA-SIPC-04:Step-SP', 'SI-RA02:VA-SIPC-04:Step-SP', 'SI-RA02:VA-SIPC-04:Step-SP', 'SI-RA02:VA-SIPC-05:Step-SP', 
+    'SI-RA02:VA-SIPC-05:Step-SP', 'SI-RA03:VA-SIPC-03:Step-SP', 'SI-RA03:VA-SIPC-03:Step-SP', 'SI-RA03:VA-SIPC-03:Step-SP', 'SI-RA03:VA-SIPC-05:Step-SP', 
+    'SI-RA03:VA-SIPC-05:Step-SP', 'SI-RA03:VA-SIPC-05:Step-SP', 'SI-RA04:VA-SIPC-03:Step-SP', 'SI-RA04:VA-SIPC-03:Step-SP', 'SI-RA04:VA-SIPC-03:Step-SP', 
+    'SI-RA04:VA-SIPC-04:Step-SP', 'SI-RA04:VA-SIPC-04:Step-SP', 'SI-RA05:VA-SIPC-03:Step-SP', 'SI-RA05:VA-SIPC-03:Step-SP', 'SI-RA05:VA-SIPC-03:Step-SP', 
+    'SI-RA05:VA-SIPC-05:Step-SP', 'SI-RA05:VA-SIPC-05:Step-SP', 'SI-RA06:VA-SIPC-03:Step-SP', 'SI-RA06:VA-SIPC-03:Step-SP', 'SI-RA06:VA-SIPC-03:Step-SP', 
+    'SI-RA06:VA-SIPC-04:Step-SP', 'SI-RA06:VA-SIPC-04:Step-SP', 'SI-RA07:VA-SIPC-03:Step-SP', 'SI-RA07:VA-SIPC-03:Step-SP', 'SI-RA07:VA-SIPC-03:Step-SP', 
+    'SI-RA07:VA-SIPC-04:Step-SP', 'SI-RA07:VA-SIPC-05:Step-SP', 'SI-RA07:VA-SIPC-05:Step-SP', 'SI-RA08:VA-SIPC-03:Step-SP', 'SI-RA08:VA-SIPC-03:Step-SP', 
+    'SI-RA08:VA-SIPC-03:Step-SP', 'SI-RA08:VA-SIPC-04:Step-SP', 'SI-RA08:VA-SIPC-04:Step-SP', 'SI-RA09:VA-SIPC-03:Step-SP', 'SI-RA09:VA-SIPC-03:Step-SP', 
+    'SI-RA09:VA-SIPC-05:Step-SP', 'SI-RA09:VA-SIPC-05:Step-SP', 'SI-RA10:VA-SIPC-03:Step-SP', 'SI-RA10:VA-SIPC-03:Step-SP', 'SI-RA10:VA-SIPC-03:Step-SP', 
+    'SI-RA10:VA-SIPC-04:Step-SP', 'SI-RA10:VA-SIPC-04:Step-SP', 'SI-RA11:VA-SIPC-03:Step-SP', 'SI-RA11:VA-SIPC-03:Step-SP', 'SI-RA11:VA-SIPC-03:Step-SP',  
+    'SI-RA11:VA-SIPC-05:Step-SP', 'SI-RA11:VA-SIPC-05:Step-SP', 'SI-RA11:VA-SIPC-05:Step-SP', 'SI-RA12:VA-SIPC-03:Step-SP', 'SI-RA12:VA-SIPC-03:Step-SP', 
+    'SI-RA12:VA-SIPC-03:Step-SP', 'SI-RA12:VA-SIPC-04:Step-SP', 'SI-RA12:VA-SIPC-04:Step-SP', 'SI-RA13:VA-SIPC-03:Step-SP', 'SI-RA13:VA-SIPC-03:Step-SP', 
+    'SI-RA13:VA-SIPC-03:Step-SP', 'SI-RA13:VA-SIPC-05:Step-SP', 'SI-RA13:VA-SIPC-05:Step-SP', 'SI-RA13:VA-SIPC-05:Step-SP', 'SI-RA14:VA-SIPC-03:Step-SP', 
+    'SI-RA14:VA-SIPC-03:Step-SP', 'SI-RA14:VA-SIPC-03:Step-SP', 'SI-RA14:VA-SIPC-04:Step-SP', 'SI-RA14:VA-SIPC-04:Step-SP', 'SI-RA15:VA-SIPC-03:Step-SP', 
+    'SI-RA15:VA-SIPC-03:Step-SP', 'SI-RA15:VA-SIPC-03:Step-SP', 'SI-RA15:VA-SIPC-05:Step-SP', 'SI-RA15:VA-SIPC-05:Step-SP', 'SI-RA15:VA-SIPC-05:Step-SP', 
+    'SI-RA16:VA-SIPC-03:Step-SP', 'SI-RA16:VA-SIPC-03:Step-SP', 'SI-RA16:VA-SIPC-03:Step-SP', 'SI-RA16:VA-SIPC-04:Step-SP', 'SI-RA16:VA-SIPC-04:Step-SP', 
+    'SI-RA17:VA-SIPC-03:Step-SP', 'SI-RA17:VA-SIPC-03:Step-SP', 'SI-RA17:VA-SIPC-03:Step-SP', 'SI-RA17:VA-SIPC-05:Step-SP', 'SI-RA17:VA-SIPC-05:Step-SP', 
+    'SI-RA18:VA-SIPC-03:Step-SP', 'SI-RA18:VA-SIPC-03:Step-SP', 'SI-RA18:VA-SIPC-03:Step-SP', 'SI-RA18:VA-SIPC-04:Step-SP', 'SI-RA18:VA-SIPC-04:Step-SP', 
+    'SI-RA19:VA-SIPC-03:Step-SP', 'SI-RA19:VA-SIPC-03:Step-SP', 'SI-RA19:VA-SIPC-03:Step-SP', 'SI-RA19:VA-SIPC-05:Step-SP', 'SI-RA19:VA-SIPC-05:Step-SP', 
+    'SI-RA19:VA-SIPC-05:Step-SP', 'SI-RA20:VA-SIPC-05:Step-SP', 'SI-RA20:VA-SIPC-05:Step-SP', 'SI-RA20:VA-SIPC-05:Step-SP', 'SI-RA20:VA-SIPC-06:Step-SP', 
+    'SI-RA20:VA-SIPC-06:Step-SP', 
+    ]
+
+
+## Lista das referências dos ajustes de dos canais das fontes de bomba iônicas
+
+FNT_CHNLL_INDC = [
+    'SI-RA01:VA-SIPC-04-2', 'SI-RA01:VA-SIPC-04-4', 'SI-RA01:VA-SIPC-06-1', 'SI-RA01:VA-SIPC-06-2', 'SI-RA01:VA-SIPC-06-3', 
+    'SI-RA01:VA-SIPC-07-1', 'SI-RA02:VA-SIPC-04-1', 'SI-RA02:VA-SIPC-04-2', 'SI-RA02:VA-SIPC-04-4', 'SI-RA02:VA-SIPC-05-3', 
+    'SI-RA02:VA-SIPC-05-4', 'SI-RA03:VA-SIPC-03-1', 'SI-RA03:VA-SIPC-03-2', 'SI-RA03:VA-SIPC-03-4', 'SI-RA03:VA-SIPC-05-1', 
+    'SI-RA03:VA-SIPC-05-2', 'SI-RA03:VA-SIPC-05-3', 'SI-RA04:VA-SIPC-03-1', 'SI-RA04:VA-SIPC-03-2', 'SI-RA04:VA-SIPC-03-4', 
+    'SI-RA04:VA-SIPC-04-3', 'SI-RA04:VA-SIPC-04-4', 'SI-RA05:VA-SIPC-03-1', 'SI-RA05:VA-SIPC-03-2', 'SI-RA05:VA-SIPC-03-4', 
+    'SI-RA05:VA-SIPC-05-1', 'SI-RA05:VA-SIPC-05-3', 'SI-RA06:VA-SIPC-03-1', 'SI-RA06:VA-SIPC-03-2', 'SI-RA06:VA-SIPC-03-4', 
+    'SI-RA06:VA-SIPC-04-3', 'SI-RA06:VA-SIPC-04-4', 'SI-RA07:VA-SIPC-03-1', 'SI-RA07:VA-SIPC-03-2', 'SI-RA07:VA-SIPC-03-4', 
+    'SI-RA07:VA-SIPC-04-3', 'SI-RA07:VA-SIPC-05-1', 'SI-RA07:VA-SIPC-05-3', 'SI-RA08:VA-SIPC-03-1', 'SI-RA08:VA-SIPC-03-2', 
+    'SI-RA08:VA-SIPC-03-4', 'SI-RA08:VA-SIPC-04-3', 'SI-RA08:VA-SIPC-04-4', 'SI-RA09:VA-SIPC-03-1', 'SI-RA09:VA-SIPC-03-2', 
+    'SI-RA09:VA-SIPC-05-1', 'SI-RA09:VA-SIPC-05-3', 'SI-RA10:VA-SIPC-03-1', 'SI-RA10:VA-SIPC-03-2', 'SI-RA10:VA-SIPC-03-4', 
+    'SI-RA10:VA-SIPC-04-3', 'SI-RA10:VA-SIPC-04-4', 'SI-RA11:VA-SIPC-03-1', 'SI-RA11:VA-SIPC-03-2', 'SI-RA11:VA-SIPC-03-4',  
+    'SI-RA11:VA-SIPC-05-1', 'SI-RA11:VA-SIPC-05-2', 'SI-RA11:VA-SIPC-05-3', 'SI-RA12:VA-SIPC-03-1', 'SI-RA12:VA-SIPC-03-2', 
+    'SI-RA12:VA-SIPC-03-4', 'SI-RA12:VA-SIPC-04-3', 'SI-RA12:VA-SIPC-04-4', 'SI-RA13:VA-SIPC-03-1', 'SI-RA13:VA-SIPC-03-2', 
+    'SI-RA13:VA-SIPC-03-4', 'SI-RA13:VA-SIPC-05-1', 'SI-RA13:VA-SIPC-05-2', 'SI-RA13:VA-SIPC-05-3', 'SI-RA14:VA-SIPC-03-1', 
+    'SI-RA14:VA-SIPC-03-2', 'SI-RA14:VA-SIPC-03-4', 'SI-RA14:VA-SIPC-04-3', 'SI-RA14:VA-SIPC-04-4', 'SI-RA15:VA-SIPC-03-1', 
+    'SI-RA15:VA-SIPC-03-2', 'SI-RA15:VA-SIPC-03-4', 'SI-RA15:VA-SIPC-05-1', 'SI-RA15:VA-SIPC-05-2', 'SI-RA15:VA-SIPC-05-3', 
+    'SI-RA16:VA-SIPC-03-1', 'SI-RA16:VA-SIPC-03-2', 'SI-RA16:VA-SIPC-03-4', 'SI-RA16:VA-SIPC-04-3', 'SI-RA16:VA-SIPC-04-4', 
+    'SI-RA17:VA-SIPC-03-1', 'SI-RA17:VA-SIPC-03-2', 'SI-RA17:VA-SIPC-03-4', 'SI-RA17:VA-SIPC-05-1', 'SI-RA17:VA-SIPC-05-3', 
+    'SI-RA18:VA-SIPC-03-1', 'SI-RA18:VA-SIPC-03-2', 'SI-RA18:VA-SIPC-03-4', 'SI-RA18:VA-SIPC-04-3', 'SI-RA18:VA-SIPC-04-4', 
+    'SI-RA19:VA-SIPC-03-1', 'SI-RA19:VA-SIPC-03-2', 'SI-RA19:VA-SIPC-03-4', 'SI-RA19:VA-SIPC-05-1', 'SI-RA19:VA-SIPC-05-2', 
+    'SI-RA19:VA-SIPC-05-3', 'SI-RA20:VA-SIPC-05-1', 'SI-RA20:VA-SIPC-05-2', 'SI-RA20:VA-SIPC-05-4', 'SI-RA20:VA-SIPC-06-3', 
+    'SI-RA20:VA-SIPC-06-4', 
+    ]
+
+
+## Classe de execução e ajustes
+
 class MainWindow(QMainWindow):
-
+    """."""
+    stopThread = pyqtSignal()
     def __init__(self):
         super().__init__()
 
-        # Criando o QTextEdit
-        self.log_window = QTextEdit()
-        self.setCentralWidget(self.log_window)
 
-        # Criando o QStatusBar
-        self.statusBar().showMessage('Pronto')
+        # Criando a janela
+        self.setWindowTitle(" - Monitoramento do vácuo (sys) - ")
+        self.setGeometry(200, 200, 600, 400)
+
+
+        # Criando o QTextEdit
+        self.log_window = QTextEdit(self)
+        self.log_window.setGeometry(10, 10, 500, 300)
+        
+
+        #  Criação dos botões
+        self.start_button = QPushButton ('Start', self)
+        self.start_button.setGeometry(100, 330, 80, 60)
+        self.start_button.clicked.connect(self._launch_monitor_thread)
+        
+        self.execute_button = QPushButton('Execute!', self)
+        self.execute_button.setEnabled(False)
+        self.execute_button.setGeometry(200, 330, 80, 60)
+        self.execute_button.clicked.connect(self._fix_bi)
+        
+        self.stop_button = QPushButton('Stop', self)
+        self.stop_button.setGeometry(300, 330, 80, 60)
+        self.stop_button.clicked.connect(self._stop_monitoring_)
+    
+        self._sensors_nok = list()
+
+    #  Função auxiliar para thread de leituras
+    def _launch_monitor_thread(self):
+        self.start_button.setEnabled(False)
+        self._thread = MonitorThread(self)
+        self._thread.log_signal.connect(self.log)
+        self._thread.nok_signal.connect(self._set_nok_sensors)
+        self.stopThread.connect(self._thread.stop_task)
+        self._thread.start()
+
+   
+    #  Função auxiliar para status dos botões
+    def _set_nok_sensors(self, sensors_list):
+        self._sensors_nok = sensors_list 
+        self.start_button.setEnabled(True)
+        self.execute_button.setEnabled(True)
+        self.log("Foram encontrados sensores com problemas.")
+
+    
+    #  Função para execução do botão de STOP
+    def _stop_monitoring_(self):
+        self.stopThread.emit()
+        self.start_button.setEnabled(True)
+        self.log("Monitoramento parado")
+
+
+    #  Função de ajustes de canais e tensões dos canais das fontes de BI
+    def _fix_bi(self):
+        if not self._sensors_nok:
+            self.log('Não há ajustes a serem feitos.')
+            return
+        self.execute_button.setEnabled(False)
+        self.log('Ajustes iniciados...')
+        for sensor in self._sensors_nok:
+            value, pvname_vac, fnt_chnll_indc, rfrc_chnll, vlt_chnll = sensor
+            self.log('Ajustando canal da fonte referente ao sensor ' + pvname_vac + '...')
+            value_fnt = epics.caget(rfrc_chnll)
+            print(value_fnt)
+            time.sleep(1)
+            epics.caput(rfrc_chnll, 0)
+            time.sleep(5)
+            MainWindow._on_pv_set_(vlt_chnll, 5000)
+            time.sleep(15)
+            if value <= 9e-8:
+                time.sleep(5)
+                MainWindow._on_pv_set_(vlt_chnll, 3000)
+                time.sleep(5)
+                epics.caput(rfrc_chnll, value_fnt)
+            self.log(f"PV '{pvname_vac}' atual é '{value}' ")
+        self._sensors_nok = list()
+        self.log('Ajustes finalizados.')
+        self.log('')    
+         
+
+    ### Função para preencher o formulário            
+    def initialize_log(self):
         self.log('--- check ION_PUMP ---')
         check1 = MainWindow._check_ping_connection_all_sensors(IP_LIST_ION_PUMP)
         self.log(check1)
-        self.log('--- check MKS_SENSOR ---')
+        self.log('\n--- check MKS_SENSOR ---')
         check2 = MainWindow._check_ping_connection_all_sensors(IP_LIST_MKS_SENSOR)
         self.log(check2)
-        self.log('--- check on_pv_change ---')
-        check3 = MainWindow._on_pv_change(PVNAMES_VAC)
-        self.log(check3)
-        
+            
+    ### Adiciona uma mensagem ao log e atualiza a barra de status
     def log(self, message):
-        """ Adiciona uma mensagem ao log e atualiza a barra de status """
         self.log_window.append(message)
-        self.statusBar().showMessage(message)
-    
-    # --- private methods ---
+        self.log_window.repaint()
 
-    @staticmethod
-    def _on_pv_set_fx(vlt_chnll):
-        for pv_name_vac_ in vlt_chnll:
-            epics.caput(pv_name_vac_, 0)
-
-    @staticmethod
-    def _on_pv_set(pvnames_vac_vlt_sp):
-        for pvname_vac_ in pvnames_vac_vlt_sp:
-            epics.caput(pvname_vac_, 3000)
-
-    @staticmethod
-    def _on_pv_change(pvnames_vac):
-        status_messages = []
-        for pvname_vac in pvnames_vac:
-            value = epics.caget(pvname_vac) 
-            if value < 1e-08:
-                # on_pv_set_fx(vlt_chnll)
-                print(f"PV '{pvname_vac}' mudou para '{value}'")
-                status_messages.append(f"PV '{pvname_vac}' mudou para '{value}'")
-        return '\n'.join(status_messages)
-
+    #  Função para teste de conexão das BBBs por PING
     @staticmethod
     def _check_ping_connection(hostname):
         try:
@@ -200,6 +268,8 @@ class MainWindow(QMainWindow):
         except subprocess.CalledProcessError:
             return False
 
+
+    # #  Função para teste de conexão dos sensores por PING
     @staticmethod
     def _check_ping_connection_all_sensors(ip_list):
         status_messages = []
@@ -209,12 +279,117 @@ class MainWindow(QMainWindow):
             else:
                 status_messages.append('{} ok'.format(address))
         return '\n'.join(status_messages)
+    
+    
+    ## Função para selecionar o canal da fonte
+    @staticmethod
+    def _cndc_fnt_sp_(fnt_chnll_indc, rfrc_chnll):
+        chn = MainWindow._cndc_fnt_(fnt_chnll_indc)
+        if chn == '1':
+            epics.caput(rfrc_chnll, 1)
+        elif chn == '2':
+            epics.caput(rfrc_chnll, 2)
+        elif chn == '3':
+            epics.caput(rfrc_chnll, 4)
+        elif chn == '4':
+            epics.caput(rfrc_chnll, 8)
+        elif chn == '1' and '2':
+            epics.caput(rfrc_chnll, 3)
+        elif chn == '1' and '3':
+            epics.caput(rfrc_chnll, 5)
+        elif chn == '2' and '3':
+            epics.caput(rfrc_chnll, 6)
+        elif chn == '1' and '2' and '3':
+            epics.caput(rfrc_chnll, 7)
+        elif chn == '1' and '4':
+            epics.caput(rfrc_chnll, 9)
+        elif chn == '2' and '4':
+            epics.caput(rfrc_chnll, 10)
+        elif chn == '1' and '2' and '4':
+            epics.caput(rfrc_chnll, 11)
+        elif chn == '3' and '4':
+            epics.caput(rfrc_chnll, 12)
+        elif chn == '1' and '3' and '4':
+            epics.caput(rfrc_chnll, 13)
+        elif chn == '2' and '3' and '4':
+            epics.caput(rfrc_chnll, 14)
+        elif chn == '1' and '2' and '3' and '4':
+            epics.caput(rfrc_chnll, 15)
+        else:
+            raise Exception('Wrong pv_name_vac')
+        
 
-            
+    ## Função para ajustar as tensões das fontes
+    @staticmethod
+    def _on_pv_set_(vlt_chnll, value):
+        epics.caput(vlt_chnll, value)
+
+
+    ## Função que retorna o modo (Mode) das fontes para Fixed
+    @staticmethod
+    def _on_pv_set_fx_rtrn_(rfrc_chnll, value):
+            epics.caput(rfrc_chnll, value)
+
+#  Classe de leituras e preenchimento do GUI
+class MonitorThread(QThread):
+    SENSOR_THRESHOLD = 1e-08  # [mbar]
+    log_signal = pyqtSignal(str)
+    nok_signal = pyqtSignal(list)
+
+
+    #  Função auxiliar do status stop, condição falsa
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self._stop = False
+    
+
+    #  Função auxiliar do status stop, condição verdadeira
+    def stop_task(self):
+        self._stop = True
+
+
+    #  Função auxiliar do status do loop de monitoramento (ON)
+    def run(self):
+        self.monitoring_loop()
+
+
+    #  Função para execução do loop WHILE
+    def monitoring_loop(self):
+        cont=0
+        self.log_signal.emit("\n--- check ON PV CHANGE ---")
+        self.log_signal.emit("Monitoramento iniciado")
+        while not self._stop:
+            is_ok = self._on_pv_change_()
+            if not is_ok:
+                self.nok_signal.emit(self._sensors_nok)
+                break
+            cont +=1
+            print('contador', cont)
+            time.sleep(2)
+
+    
+    ## Função para verificar as pressões e atuar nas fontes de bomba iônica
+    def _on_pv_change_(self):
+        self._sensors_nok = list()
+        for pvname_vac, fnt_chnll_indc, rfrc_chnll, vlt_chnll in zip(PVNAMES_VAC, FNT_CHNLL_INDC, RFRC_CHNLL, VLT_CHNLL):
+            value = epics.caget(pvname_vac)
+            if value >= MonitorThread.SENSOR_THRESHOLD: ## or pvname_vac in ('SI-20SBFE:VA-CCG-MD:Pressure-Mon'): ##'SI-12C1:VA-CCG-BG:Pressure-Mon', 'SI-13C3:VA-CCG-BG:Pressure-Mon'):
+                self.log_signal.emit(f"PV '{pvname_vac}' mudou para '{value}'")
+                self._sensors_nok.append((value, pvname_vac, fnt_chnll_indc, rfrc_chnll, vlt_chnll))
+        if not self._sensors_nok:
+            self.log_signal.emit('As pressões estão OK!')
+            return True
+        self.log_signal.emit('Deseja executar os ajustes? [botão execute]')
+        return False
+
+   
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     main_window = MainWindow()
     main_window.show()
+    QTimer.singleShot(0, main_window.initialize_log)
     sys.exit(app.exec_())
+
+
 
 
