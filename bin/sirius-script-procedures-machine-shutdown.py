@@ -4,14 +4,99 @@
 import time
 import epics
 
-from siriuspy.devices import APU
-from siriuspy.devices import EPU
-from siriuspy.devices import PAPU
+from siriuspy.devices import PPSCtrl as _PPSCtrl
+from siriuspy.devices import APU as _APU
+from siriuspy.devices import EPU as _EPU
+from siriuspy.devices import PAPU as _PAPU
 from siriuspy.search import PSSearch as _PSSearch
 
 
+class IDParking:
+    """ID."""
+
+    TIMEOUT_WAIT_FOR_CONNECTION = 5.0  # [s]
+
+    def __init__(self, devname):
+        """Init."""
+        # NOTE: eventually define only properties that are necessary
+        if 'EPU' in devname:
+            self._device = _EPU(devname)
+        elif 'PAPU' in devname:
+            self._device = _PAPU(devname)
+        elif 'APU' in devname:
+            self._device = _APU(devname)
+        else:
+            raise ValueError('Invalid ID device type')
+
+    @property
+    def connected(self):
+        """."""
+        return self._device.connected
+
+    @property
+    def wait_for_connection(self):
+        """."""
+        self._device.wait_for_connection()
+
+    @property
+    def park_device(self):
+        """Park ID."""
+        # check connections
+        # print('check connections...')
+        if not self._device.wait_for_connection(
+                timeout=IDParking.TIMEOUT_WAIT_FOR_CONNECTION):
+            return False
+
+        # Desabilita a movimentação dos IDs pelas linhas.
+        # print('disable beamline controls...')
+        if not self._device.cmd_beamline_ctrl_disable():
+            return False
+
+        # Para a movimentação dos IDs
+        # print('cmd move stop...')
+        if not self._device.cmd_move_stop():
+            return False
+
+        # Seta as velocidades de Phase e Gap
+        # print('cmd set speeds...')
+        value = self._device.phase_speed_max
+        if not self._device.set_phase_speed(value):
+            return False
+        if isinstance(self._device, _EPU):
+            value = self._device.gap_speed_max
+            if not self._device.set_gap_speed(value):
+                return False
+
+        # Seta os IDs para config de estacionamento
+        # print('cmd set phase and gap for parking...')
+        value = self._device.phase_parked
+        if not self._device.set_phase(value):
+            return False
+        if isinstance(self._device, _EPU):
+            value = self._device.gap_parked
+        if not self._device.set_gap(value):
+            return False
+
+        # Movimenta os IDs para a posição escolhida
+        # print('cmd move to parking...')
+        if not self._device.cmd_move_start():
+            return False
+        time.sleep(2.0)  # aguarda 2 seg.
+
+        # wait for end of movement of timeout
+        # print('wait end of movement...')
+        timeout, sleep = 70, 0.2  # [s]
+        t0 = time.time()
+        while self._device.is_moving:
+            if time.time() - t0 > timeout:
+                return False
+            time.sleep(sleep)
+
+        return True
+
+
 class MachineShutdown:
-    """."""
+    """Machine Shutdown class."""
 
     def __init__(self, dry_run=True):
         """."""
@@ -37,14 +122,13 @@ class MachineShutdown:
             return True
         print('--- close_gamma_shutter...')
 
-        epics.caput('AS-Glob:MP-Summary:DsblGamma-Cmd', 1)
-        is_ok = MachineShutdown._wait_value(
-            'AS-Glob:MP-Summary:AlarmGammaShutter-Mon', 0, 0.5, 2.0)
+        dev = self._devices['ppsctrl']
+        is_ok = dev.cmd_gamma_disable()
         if not is_ok:
             print('WARN:Could not close gamma shutter.')
         else:
             print('Gamma Shutter closed.')
-        return True
+        return is_ok
 
     def s02_macshift_update(self):
         """Altera o modo do Turno de operação."""
@@ -106,66 +190,21 @@ class MachineShutdown:
 
         print('--- ids_parking...')
 
-        epu50 = self._devices['epu50_10SB']
-        devs = [
-            self._devices['apu22_06SB'], self._devices['apu22_07SP'],
-            self._devices['apu22_08SB'], self._devices['apu22_09SA'],
-            self._devices['apu58_11SP'], self._devices['papu50_17SA'],
-            epu50,
-            ]
-
-        # check connections
-        # print('check connections...')
-        for dev in devs:
-            if not dev.wait_for_connection(timeout=5):
-                return False
-
-        # Desabilita a movimentação dos IDs pelas linhas.
-        # print('disable beamline controls...')
-        for dev in devs:
-            if not dev.cmd_beamline_ctrl_disable():
-                return False
-
-        # Para a movimentação dos IDs
-        # print('cmd move stop...')
-        for dev in devs:
-            if not dev.cmd_move_stop():
-                return False
-
-        # Seta as velocidades de Phase e Gap
-        # print('cmd set speeds...')
-        for dev in devs:
-            if not dev.cmd_set_phase_speed(dev.phase_speed_max):
-                return False
-        if not epu50.cmd_set_gap_speed(epu50.gap_speed_max):
+        # NOTE: parallelize this!
+        if not self._devices['epu50_10SB'].park_device():
             return False
-
-        # Seta os IDs para config de estacionamento
-        # print('cmd set phase and gap for parking...')
-        for dev in devs:
-            if not dev.cmd_set_phase(dev.phase_parked):
-                return False
-        if not epu50.cmd_set_gap(epu50.gap_parked):
+        if not self._devices['apu22_06SB'].park_device():
             return False
-
-        # Movimenta os IDs para a posição escolhida
-        # print('cmd move to parking...')
-        for dev in devs:
-            if not dev.cmd_move_start():
-                return False
-        time.sleep(2.0)  # aguarda 2 seg.
-
-        # wait for end of movement of timeout
-        # print('wait end of movement...')
-        timeout, sleep = 70, 0.2  # [s]
-        t0 = time.time()
-        while True:
-            is_moving = [dev.is_moving for dev in devs]
-            if True not in is_moving:
-                break
-            if time.time() - t0 > timeout:
-                return False
-            time.sleep(sleep)
+        if not self._devices['apu22_07SP'].park_device():
+            return False
+        if not self._devices['apu22_08SB'].park_device():
+            return False
+        if not self._devices['apu22_09SA'].park_device():
+            return False
+        if not self._devices['apu58_11SP'].park_device():
+            return False
+        if not self._devices['papu50_17SA'].park_device():
+            return False
 
         return True
 
@@ -675,13 +714,14 @@ class MachineShutdown:
         # self._devices['injctrl'] = InjCtrl()
         # self._devices['evg'] = EVG()
         # self._devices['egtriggerps'] = EGTriggerPS()
-        devices['apu22_06SB'] = APU(APU.DEVICES.APU22_06SB)
-        devices['apu22_07SP'] = APU(APU.DEVICES.APU22_07SP)
-        devices['apu22_08SB'] = APU(APU.DEVICES.APU22_08SB)
-        devices['apu22_09SA'] = APU(APU.DEVICES.APU22_09SA)
-        devices['apu58_11SP'] = APU(APU.DEVICES.APU58_11SP)
-        devices['epu50_10SB'] = EPU(EPU.DEVICES.EPU50_10SB)
-        devices['papu50_17SA'] = PAPU(PAPU.DEVICES.PAPU50_17SA)
+        devices['ppsctrl'] = _PPSCtrl()
+        devices['apu22_06SB'] = IDParking(_APU.DEVICES.APU22_06SB)
+        devices['apu22_07SP'] = IDParking(_APU.DEVICES.APU22_07SP)
+        devices['apu22_08SB'] = IDParking(_APU.DEVICES.APU22_08SB)
+        devices['apu22_09SA'] = IDParking(_APU.DEVICES.APU22_09SA)
+        devices['apu58_11SP'] = IDParking(_APU.DEVICES.APU58_11SP)
+        devices['epu50_10SB'] = IDParking(_EPU.DEVICES.EPU50_10SB)
+        devices['papu50_17SA'] = IDParking(_PAPU.DEVICES.PAPU50_17SA)
 
         return devices
 
