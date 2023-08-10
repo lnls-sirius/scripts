@@ -1,10 +1,11 @@
 #!/usr/bin/env python-sirius
 """."""
 
-import time
+import time as _time
 import epics
 
-from siriuspy.devices import PPSCtrl as _PPSCtrl
+from siriuspy.devices import ASPPSCtrl as _ASPPSCtrl
+from siriuspy.devices import ASMPSCtrl as _ASMPSCtrl
 from siriuspy.devices import APU as _APU
 from siriuspy.devices import EPU as _EPU
 from siriuspy.devices import PAPU as _PAPU
@@ -98,31 +99,15 @@ class IDParking:
 class MachineShutdown:
     """Machine Shutdown class."""
 
-    def __init__(self, dry_run=True):
+    def __init__(self):
         """."""
-        self._dry_run = dry_run
         self._devices = self._create_devices()
-
-    @property
-    def connected(self):
-        """."""
-        for dev in self._devices.values():
-            if not dev.connected:
-                return False
-        return True
-
-    def wait_for_connection(self):
-        """."""
-        for dev in self._devices.values():
-            dev.wait_for_connection()
 
     def s01_close_gamma_shutter(self):
         """Try to close gamma shutter."""
-        if self._dry_run:
-            return True
         print('--- close_gamma_shutter...')
 
-        dev = self._devices['ppsctrl']
+        dev = self._devices['asmpsctrl']
         is_ok = dev.cmd_gamma_disable()
         if not is_ok:
             print('WARN:Could not close gamma shutter.')
@@ -132,8 +117,6 @@ class MachineShutdown:
 
     def s02_macshift_update(self):
         """Altera o modo do Turno de operação."""
-        if self._dry_run:
-            return True
         print('--- macshift_update...')
 
         # Executa a PV em questão alterando para o modo maintenance
@@ -145,8 +128,6 @@ class MachineShutdown:
 
     def s03_injmode_update(self):
         """."""
-        if self._dry_run:
-            return True
         print('--- injmode_update...')
 
         print('Alterando o modo de injeção para Decay.')
@@ -159,8 +140,6 @@ class MachineShutdown:
 
     def s04_injcontrol_disable(self):
         """Desabilta o Controle de Injeção."""
-        if self._dry_run:
-            return True
         print('--- injcontrol_disable...')
 
         print('Desligando Injection')
@@ -185,9 +164,6 @@ class MachineShutdown:
 
     def s05_ids_parking(self):
         """Altera as condições dos IDs para desligamento da Máquina."""
-        if self._dry_run:
-            return True
-
         print('--- ids_parking...')
 
         # NOTE: parallelize this!
@@ -210,8 +186,6 @@ class MachineShutdown:
 
     def s06_sofb_fofb_turnoff(self):
         """Desliga o FOFB e posteriormente o SOFB."""
-        if self._dry_run:
-            return True
         print('--- sofb_fofb_turnoff...')
 
         # Parâmetros do FOFB:
@@ -239,8 +213,6 @@ class MachineShutdown:
 
     def s07_bbb_turnoff(self):
         """Desabilita o bbb Hor, Vert e Long."""
-        if self._dry_run:
-            return True
         print('--- bbb_turnoff...')
 
         # desliga os loops H, V e L do bbb.
@@ -260,210 +232,8 @@ class MachineShutdown:
             return False
         return True
 
-    def s15_disable_ps_triggers(self):
-        """Desliga os triggers das fontes."""
-        if self._dry_run:
-            return True
-        print('--- disable_ps_triggers...')
-
-        print('Desabilitando os triggers...')
-        # desliga os trigger's das fontes da TB, TS, BO e SI
-        epics.caput('BO-Glob:TI-Mags-Corrs:State-Sel', 0)
-        epics.caput('BO-Glob:TI-Mags-Fams:State-Sel', 0)
-        epics.caput('SI-01:TI-Mags-FFCorrs:State-Sel', 0)
-        epics.caput('SI-Glob:TI-Mags-Bends:State-Sel', 0)
-        epics.caput('SI-Glob:TI-Mags-Corrs:State-Sel', 0)
-        epics.caput('SI-Glob:TI-Mags-QTrims:State-Sel', 0)
-        epics.caput('SI-Glob:TI-Mags-Quads:State-Sel', 0)
-        epics.caput('SI-Glob:TI-Mags-Sexts:State-Sel', 0)
-        epics.caput('SI-Glob:TI-Mags-Skews:State-Sel', 0)
-        epics.caput('TB-Glob:TI-Mags:State-Sel', 0)
-        epics.caput('TS-Glob:TI-Mags:State-Sel', 0)
-        time.sleep(0.5)
-
-        pvnames = [
-            'BO-Glob:TI-Mags-Corrs:State-Sel',
-            'BO-Glob:TI-Mags-Fams:State-Sel',
-            'SI-01:TI-Mags-FFCorrs:State-Sel',
-            'SI-Glob:TI-Mags-Bends:State-Sel',
-            'SI-Glob:TI-Mags-Corrs:State-Sel',
-            'SI-Glob:TI-Mags-QTrims:State-Sel',
-            'SI-Glob:TI-Mags-Quads:State-Sel',
-            'SI-Glob:TI-Mags-Sexts:State-Sel',
-            'SI-Glob:TI-Mags-Skews:State-Sel',
-            'TB-Glob:TI-Mags:State-Sel',
-            'TS-Glob:TI-Mags:State-Sel',
-            ]
-        value_targets = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-        value_tols = [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5]
-        return MachineShutdown._wait_value_set(
-           pvnames, value_targets, value_tols, 2.0)
-
-    def s16_turn_off_sofbmode(self):
-        """Desabilita o nodo SOFBMode."""
-        if self._dry_run:
-            return True
-        print('--- turn_off_sofbmode...')
-
-        timeout = 50  # [s]
-        print('Desligando o modo SOFBMode...')
-        for sec in ('LI', 'TB', 'BO', 'TS', 'SI'):
-            print(sec)
-            if not \
-                    MachineShutdown._ps_sofbmode(sec=sec, timeout=timeout):
-                return False
-
-        return True
-
-    def s17_set_ps_and_dclinks_to_slowref(self):
-        """Altera o modo das fontes e dclinks de OpMode para SlowRef."""
-        if self._dry_run:
-            return True
-        print('--- set_ps_and_dclinks_to_slowref...')
-
-        print('DCLinks_Opmode_to_Slowref...')
-        timeout = 50  # [s]
-
-        dclinks = set()
-        psnames = list()
-        psnames = psnames + _PSSearch.get_psnames(dict(sec='LI', dis='PS'))
-        psnames = psnames + _PSSearch.get_psnames(dict(sec='TB', dis='PS'))
-        psnames = psnames + _PSSearch.get_psnames(dict(sec='TS', dis='PS'))
-        psnames = psnames + _PSSearch.get_psnames(dict(sec='SI', dis='PS'))
-        for psname in psnames:
-            dclinks_ = _PSSearch.conv_psname_2_dclink(psname)
-            if not dclinks_:
-                continue
-            for dclink in dclinks_:
-                psmodel = _PSSearch.conv_psname_2_psmodel(dclink)
-                if 'REGATRON' not in psmodel:
-                    dclinks.add(dclink)
-
-        pvnames = []
-        for dclink in dclinks:
-            print(dclink)
-            pvname = dclink + ':' + 'OpMode-Sel'
-            pvnames.append(psname + ':' + 'CtrlMode-Mon')
-            epics.caput(pvname, 0)
-        values = [0.0, ] * len(pvnames)
-        tols = [0.2] * len(pvnames)
-        if not MachineShutdown._wait_value_set(pvnames, values, tols, timeout):
-            return False
-
-        # Altera o modo das fontes de OpMode para SlowRef da TB
-        for sec in ('TB', 'TS', 'BO', 'SI'):
-            if not MachineShutdown._ps_set_slowref(sec=sec):
-                return False
-
-        return True
-
-    def s18_set_ps_current_to_zero(self):
-        """Seleciona e zera a corrente de todas as fontes dos aceleradores."""
-        if self._dry_run:
-            return True
-        print('--- set_ps_current_to_zero...')
-
-        # NOTE: timeout waiting for FCH !!!
-
-        timeout = 50  # [s]
-        # for sec in ('LI', 'TB', 'TS', 'BO', 'SI'):
-        for sec in ('SI', ):
-            if not MachineShutdown._ps_zero(sec=sec, timeout=timeout):
-                return False
-
-        return True
-
-    def s19_reset_ps_and_dclinks(self):
-        """Reseta as fontes e DCLinks e verifica sinais de interlock."""
-        if self._dry_run:
-            return True
-        print('--- reset_ps_and_dclinks...')
-
-        timeout = 50  # [s]
-        # Reset PS
-        for sec in ('TB', 'TS', 'BO', 'SI'):
-            if not MachineShutdown._ps_interlocks(sec=sec, timeout=timeout):
-                return False
-
-        # Reset dos DCLinks
-        dclinks = set()
-        psnames = list()
-        psnames = psnames + _PSSearch.get_psnames(dict(sec='LI', dis='PS'))
-        psnames = psnames + _PSSearch.get_psnames(dict(sec='TB', dis='PS'))
-        psnames = psnames + _PSSearch.get_psnames(dict(sec='TS', dis='PS'))
-        psnames = psnames + _PSSearch.get_psnames(dict(sec='SI', dis='PS'))
-        for psname in psnames:
-            dclinks_ = _PSSearch.conv_psname_2_dclink(psname)
-            if not dclinks_:
-                continue
-            for dclink in dclinks_:
-                psmodel = _PSSearch.conv_psname_2_psmodel(dclink)
-                if 'REGATRON' not in psmodel:
-                    dclinks.add(dclink)
-
-        pvnames = []
-        for dclink in dclinks:
-            pvnames.append(dclink + ':' + 'IntlkSoft-Mon')
-            pvnames.append(dclink + ':' + 'IntlKHard-Mon')
-            pvname = dclink + ':' + 'Reset-Cmd'
-            epics.caput(pvname, 1)
-
-        values = [0.0, ] * len(pvnames)
-        tols = [0.2] * len(pvnames)
-
-        return MachineShutdown._wait_value_set(pvnames, values, tols, timeout)
-
-    def s20_turn_ps_off(self):
-        """Desliga todas as fontes."""
-        if self._dry_run:
-            return True
-        print('--- turn_ps_off...')
-
-        timeout = 50  # [s]
-        for sec in ('LI', 'TB', 'TS', 'BO', 'SI'):
-            if not MachineShutdown._ps_turn_off(sec=sec, timeout=timeout):
-                return False
-
-        return True
-
-    def s21_turn_dclinks_off(self):
-        """Desliga os DC links das fontes."""
-        if self._dry_run:
-            return True
-        print('--- turn_dclinks_off...')
-
-        timeout = 50  # [s]
-        dclinks = set()
-        psnames = list()
-        psnames = psnames + _PSSearch.get_psnames(dict(sec='LI', dis='PS'))
-        psnames = psnames + _PSSearch.get_psnames(dict(sec='TB', dis='PS'))
-        psnames = psnames + _PSSearch.get_psnames(dict(sec='TS', dis='PS'))
-        psnames = psnames + _PSSearch.get_psnames(dict(sec='SI', dis='PS'))
-        for psname in psnames:
-            dclinks_ = _PSSearch.conv_psname_2_dclink(psname)
-            if not dclinks_:
-                continue
-            for dclink in dclinks_:
-                psmodel = _PSSearch.conv_psname_2_psmodel(dclink)
-                if 'REGATRON' not in psmodel:
-                    dclinks.add(dclink)
-
-        pvnames = []
-        for dclink in dclinks:
-            print(dclink)
-            pvname = dclink + ':' + 'PwrState-Sel'
-            pvnames.append(psname + ':' + 'PwrState-Sts')
-            epics.caput(pvname, 0)
-
-        values = [0.0, ] * len(pvnames)
-        tols = [0.2] * len(pvnames)
-
-        return MachineShutdown._wait_value_set(pvnames, values, tols, timeout)
-
     def s08_sirf_turnoff(self):
         """Ajusta os parâmetros da RF do Anel para desligamento."""
-        if self._dry_run:
-            return True
         print('--- sirf_turnoff...')
 
         # Alterando a taxa de incremento
@@ -519,8 +289,6 @@ class MachineShutdown:
 
     def s09_borf_turnoff(self):
         """Ajustes dos parâmetros do Booster para desligamento."""
-        if self._dry_run:
-            return True
         print('--- borf_turnoff...')
 
         # Desabilitando a rampa do Booster
@@ -557,8 +325,6 @@ class MachineShutdown:
 
     def s10_modulators_turnoff(self):
         """."""
-        if self._dry_run:
-            return True
         print('---modulators_turnoff...')
 
         # Desliga os botões CHARGE e TRIGOUT dos moduladores
@@ -570,10 +336,30 @@ class MachineShutdown:
 
         return True
 
+    def s11_adjust_egunbias(self):
+        """Ajusta a tensão de Bias do canhão em -100V."""
+        print('--- adjust_bias...')
+
+        # Ajusta tensão de Bias em -100V.
+        epics.caput('AS-Glob:AP-InjCtrl:MultBunBiasVolt-SP', -100.0)
+        # epics.caput('AS-Glob:AP-InjCtrl:SglBunBiasVolt-SP', -100.0)
+
+        return True
+
+    def s12_adjust_egunfilament(self):
+        """Ajusta a corrente de filamento em 1A."""
+        print('--- adjust_egunfilament...')
+
+        # Ajusta corrente de filamento em 1.1A.
+        epics.caput('AS-Glob:AP-InjCtrl:FilaOpCurr-SP', 1.1)
+        if not MachineShutdown._wait_value(
+                'LI-01:EG-FilaPS:currentinsoft', 1.1, 0.2, 10.0):
+            return False
+
+        return True
+
     def s13_disable_egun_highvoltage(self):
         """Disable egun high voltage."""
-        if self._dry_run:
-            return True
         print('---disable_egun_highvoltage...')
 
         # Ajusta a alta tensão do canhão e checa.
@@ -596,45 +382,16 @@ class MachineShutdown:
 
         return True
 
-    def s11_adjust_egunbias(self):
-        """Ajusta a tensão de Bias do canhão em -100V."""
-        if self._dry_run:
-            return True
-        print('--- adjust_bias...')
-
-        # Ajusta tensão de Bias em -100V.
-        epics.caput('AS-Glob:AP-InjCtrl:MultBunBiasVolt-SP', -100.0)
-        # epics.caput('AS-Glob:AP-InjCtrl:SglBunBiasVolt-SP', -100.0)
-
-        return True
-
-    def s12_adjust_egunfilament(self):
-        """Ajusta a corrente de filamento em 1A."""
-        if self._dry_run:
-            return True
-        print('--- adjust_egunfilament...')
-
-        # Ajusta corrente de filamento em 1.1A.
-        epics.caput('AS-Glob:AP-InjCtrl:FilaOpCurr-SP', 1.1)
-        if not MachineShutdown._wait_value(
-                'LI-01:EG-FilaPS:currentinsoft', 1.1, 0.2, 10.0):
-            return False
-
-        return True
-
     def s14_start_counter(self):
         """Checa inicio de contagem para liberar túnel."""
-        if self._dry_run:
-            return True
         print('--- start_counter...')
 
         # Verificar se a contagem regressiva para liberar acesso
         # ao túnel iniciou."""
-        # counter = epics.caget('AS-Glob:PP-Summary:TunAccessWaitTimeLeft-Mon')
-        # if counter == 360:
+        # dev = self._devices['asppsctrl']
+        # if dev.time_left_for_tunnel_access() == 360:
         #     return False
-
-        print('start_counter')
+    
         msg = (
             'Confirme se a contagem regressiva para '
             'liberar acesso ao túnel iniciou')
@@ -642,10 +399,194 @@ class MachineShutdown:
 
         return True
 
+    def s15_disable_ps_triggers(self):
+        """Desliga os triggers das fontes."""
+        print('--- disable_ps_triggers...')
+
+        print('Desabilitando os triggers...')
+        # desliga os trigger's das fontes da TB, TS, BO e SI
+        epics.caput('BO-Glob:TI-Mags-Corrs:State-Sel', 0)
+        epics.caput('BO-Glob:TI-Mags-Fams:State-Sel', 0)
+        epics.caput('SI-01:TI-Mags-FFCorrs:State-Sel', 0)
+        epics.caput('SI-Glob:TI-Mags-Bends:State-Sel', 0)
+        epics.caput('SI-Glob:TI-Mags-Corrs:State-Sel', 0)
+        epics.caput('SI-Glob:TI-Mags-QTrims:State-Sel', 0)
+        epics.caput('SI-Glob:TI-Mags-Quads:State-Sel', 0)
+        epics.caput('SI-Glob:TI-Mags-Sexts:State-Sel', 0)
+        epics.caput('SI-Glob:TI-Mags-Skews:State-Sel', 0)
+        epics.caput('TB-Glob:TI-Mags:State-Sel', 0)
+        epics.caput('TS-Glob:TI-Mags:State-Sel', 0)
+        time.sleep(0.5)
+
+        pvnames = [
+            'BO-Glob:TI-Mags-Corrs:State-Sel',
+            'BO-Glob:TI-Mags-Fams:State-Sel',
+            'SI-01:TI-Mags-FFCorrs:State-Sel',
+            'SI-Glob:TI-Mags-Bends:State-Sel',
+            'SI-Glob:TI-Mags-Corrs:State-Sel',
+            'SI-Glob:TI-Mags-QTrims:State-Sel',
+            'SI-Glob:TI-Mags-Quads:State-Sel',
+            'SI-Glob:TI-Mags-Sexts:State-Sel',
+            'SI-Glob:TI-Mags-Skews:State-Sel',
+            'TB-Glob:TI-Mags:State-Sel',
+            'TS-Glob:TI-Mags:State-Sel',
+            ]
+        value_targets = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        value_tols = [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5]
+        return MachineShutdown._wait_value_set(
+           pvnames, value_targets, value_tols, 2.0)
+
+    def s16_turn_off_sofbmode(self):
+        """Desabilita o nodo SOFBMode."""
+        print('--- turn_off_sofbmode...')
+
+        timeout = 50  # [s]
+        print('Desligando o modo SOFBMode...')
+        for sec in ('LI', 'TB', 'BO', 'TS', 'SI'):
+            print(sec)
+            if not \
+                    MachineShutdown._ps_sofbmode(sec=sec, timeout=timeout):
+                return False
+
+        return True
+
+    def s17_set_ps_and_dclinks_to_slowref(self):
+        """Altera o modo das fontes e dclinks de OpMode para SlowRef."""
+        print('--- set_ps_and_dclinks_to_slowref...')
+
+        print('DCLinks_Opmode_to_Slowref...')
+        timeout = 50  # [s]
+
+        dclinks = set()
+        psnames = list()
+        psnames = psnames + _PSSearch.get_psnames(dict(sec='LI', dis='PS'))
+        psnames = psnames + _PSSearch.get_psnames(dict(sec='TB', dis='PS'))
+        psnames = psnames + _PSSearch.get_psnames(dict(sec='TS', dis='PS'))
+        psnames = psnames + _PSSearch.get_psnames(dict(sec='SI', dis='PS'))
+        for psname in psnames:
+            dclinks_ = _PSSearch.conv_psname_2_dclink(psname)
+            if not dclinks_:
+                continue
+            for dclink in dclinks_:
+                psmodel = _PSSearch.conv_psname_2_psmodel(dclink)
+                if 'REGATRON' not in psmodel:
+                    dclinks.add(dclink)
+
+        pvnames = []
+        for dclink in dclinks:
+            print(dclink)
+            pvname = dclink + ':' + 'OpMode-Sel'
+            pvnames.append(psname + ':' + 'CtrlMode-Mon')
+            epics.caput(pvname, 0)
+        values = [0.0, ] * len(pvnames)
+        tols = [0.2] * len(pvnames)
+        if not MachineShutdown._wait_value_set(pvnames, values, tols, timeout):
+            return False
+
+        # Altera o modo das fontes de OpMode para SlowRef da TB
+        for sec in ('TB', 'TS', 'BO', 'SI'):
+            if not MachineShutdown._ps_set_slowref(sec=sec):
+                return False
+
+        return True
+
+    def s18_set_ps_current_to_zero(self):
+        """Seleciona e zera a corrente de todas as fontes dos aceleradores."""
+        print('--- set_ps_current_to_zero...')
+
+        # NOTE: timeout waiting for FCH !!!
+
+        timeout = 50  # [s]
+        # for sec in ('LI', 'TB', 'TS', 'BO', 'SI'):
+        for sec in ('SI', ):
+            if not MachineShutdown._ps_zero(sec=sec, timeout=timeout):
+                return False
+
+        return True
+
+    def s19_reset_ps_and_dclinks(self):
+        """Reseta as fontes e DCLinks e verifica sinais de interlock."""
+        print('--- reset_ps_and_dclinks...')
+
+        timeout = 50  # [s]
+        # Reset PS
+        for sec in ('TB', 'TS', 'BO', 'SI'):
+            if not MachineShutdown._ps_interlocks(sec=sec, timeout=timeout):
+                return False
+
+        # Reset dos DCLinks
+        dclinks = set()
+        psnames = list()
+        psnames = psnames + _PSSearch.get_psnames(dict(sec='LI', dis='PS'))
+        psnames = psnames + _PSSearch.get_psnames(dict(sec='TB', dis='PS'))
+        psnames = psnames + _PSSearch.get_psnames(dict(sec='TS', dis='PS'))
+        psnames = psnames + _PSSearch.get_psnames(dict(sec='SI', dis='PS'))
+        for psname in psnames:
+            dclinks_ = _PSSearch.conv_psname_2_dclink(psname)
+            if not dclinks_:
+                continue
+            for dclink in dclinks_:
+                psmodel = _PSSearch.conv_psname_2_psmodel(dclink)
+                if 'REGATRON' not in psmodel:
+                    dclinks.add(dclink)
+
+        pvnames = []
+        for dclink in dclinks:
+            pvnames.append(dclink + ':' + 'IntlkSoft-Mon')
+            pvnames.append(dclink + ':' + 'IntlKHard-Mon')
+            pvname = dclink + ':' + 'Reset-Cmd'
+            epics.caput(pvname, 1)
+
+        values = [0.0, ] * len(pvnames)
+        tols = [0.2] * len(pvnames)
+
+        return MachineShutdown._wait_value_set(pvnames, values, tols, timeout)
+
+    def s20_turn_ps_off(self):
+        """Desliga todas as fontes."""
+        print('--- turn_ps_off...')
+
+        timeout = 50  # [s]
+        for sec in ('LI', 'TB', 'TS', 'BO', 'SI'):
+            if not MachineShutdown._ps_turn_off(sec=sec, timeout=timeout):
+                return False
+
+        return True
+
+    def s21_turn_dclinks_off(self):
+        """Desliga os DC links das fontes."""
+        print('--- turn_dclinks_off...')
+
+        timeout = 50  # [s]
+        dclinks = set()
+        psnames = list()
+        psnames = psnames + _PSSearch.get_psnames(dict(sec='LI', dis='PS'))
+        psnames = psnames + _PSSearch.get_psnames(dict(sec='TB', dis='PS'))
+        psnames = psnames + _PSSearch.get_psnames(dict(sec='TS', dis='PS'))
+        psnames = psnames + _PSSearch.get_psnames(dict(sec='SI', dis='PS'))
+        for psname in psnames:
+            dclinks_ = _PSSearch.conv_psname_2_dclink(psname)
+            if not dclinks_:
+                continue
+            for dclink in dclinks_:
+                psmodel = _PSSearch.conv_psname_2_psmodel(dclink)
+                if 'REGATRON' not in psmodel:
+                    dclinks.add(dclink)
+
+        pvnames = []
+        for dclink in dclinks:
+            print(dclink)
+            pvname = dclink + ':' + 'PwrState-Sel'
+            pvnames.append(psname + ':' + 'PwrState-Sts')
+            epics.caput(pvname, 0)
+
+        values = [0.0, ] * len(pvnames)
+        tols = [0.2] * len(pvnames)
+
+        return MachineShutdown._wait_value_set(pvnames, values, tols, timeout)
+
     def s22_free_access(self):
         """Aguardar zerar contagem."""
-        if self._dry_run:
-            return True
         print('--- free_access...')
 
         # Aguardar o contador chegar em 0, após 6 horas, para
@@ -707,6 +648,21 @@ class MachineShutdown:
             return False
         return True
 
+    @property
+    def connected(self):
+        """."""
+        for dev in self._devices.values():
+            if not dev.connected:
+                return False
+        return True
+
+    def wait_for_connection(self, timeout):
+        """."""
+        for dev in self._devices.values():
+            if not dev.wait_for_connection(timeout):
+                return False
+        return True
+
     def _create_devices(self):
         """."""
         devices = dict()
@@ -714,7 +670,9 @@ class MachineShutdown:
         # self._devices['injctrl'] = InjCtrl()
         # self._devices['evg'] = EVG()
         # self._devices['egtriggerps'] = EGTriggerPS()
-        devices['ppsctrl'] = _PPSCtrl()
+
+        # devices['asppsctrl'] = _ASPPSCtrl()
+        devices['asmpsctrl'] = _ASMPSCtrl()
         devices['apu22_06SB'] = IDParking(_APU.DEVICES.APU22_06SB)
         devices['apu22_07SP'] = IDParking(_APU.DEVICES.APU22_07SP)
         devices['apu22_08SB'] = IDParking(_APU.DEVICES.APU22_08SB)
@@ -839,7 +797,7 @@ class MachineShutdown:
 
 if __name__ == '__main__':
     """."""
-    ms = MachineShutdown(dry_run=True)
+    ms = MachineShutdown()
     if ms.execute_procedure():
         print('machine shutdown success')
     else:
