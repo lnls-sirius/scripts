@@ -1,8 +1,8 @@
 #!/usr/bin/env python-sirius
-"""."""
+"""Machine shutdown script."""
 
 import time as _time
-import epics
+import epics as _epics
 
 from siriuspy.devices import ASPPSCtrl as _ASPPSCtrl
 from siriuspy.devices import ASMPSCtrl as _ASMPSCtrl
@@ -82,16 +82,16 @@ class IDParking:
         # print('cmd move to parking...')
         if not self._device.cmd_move_start():
             return False
-        time.sleep(2.0)  # aguarda 2 seg.
+        _time.sleep(2.0)  # aguarda 2 seg.
 
         # wait for end of movement of timeout
         # print('wait end of movement...')
         timeout, sleep = 70, 0.2  # [s]
-        t0 = time.time()
+        t0 = _time.time()
         while self._device.is_moving:
-            if time.time() - t0 > timeout:
+            if _time.time() - t0 > timeout:
                 return False
-            time.sleep(sleep)
+            _time.sleep(sleep)
 
         return True
 
@@ -121,7 +121,7 @@ class MachineShutdown:
 
         # Executa a PV em questão alterando para o modo maintenance
         maintenance = 5
-        epics.caput('AS-Glob:AP-MachShift:Mode-Sel', maintenance)
+        _epics.caput('AS-Glob:AP-MachShift:Mode-Sel', maintenance)
 
         return MachineShutdown._wait_value(
             'AS-Glob:AP-MachShift:Mode-Sts', maintenance, 0.5, 2.0)
@@ -133,7 +133,7 @@ class MachineShutdown:
         print('Alterando o modo de injeção para Decay.')
         # Executa a PV em questão alterando o modo de injeção para Decay.
         decay = 0
-        epics.caput('AS-Glob:AP-InjCtrl:Mode-Sel', decay)
+        _epics.caput('AS-Glob:AP-InjCtrl:Mode-Sel', decay)
 
         return MachineShutdown._wait_value(
             'AS-Glob:AP-InjCtrl:Mode-Sts', decay, 0.5, 2.0)
@@ -143,19 +143,19 @@ class MachineShutdown:
         print('--- injcontrol_disable...')
 
         print('Desligando Injection')
-        epics.caput('AS-RaMO:TI-EVG:InjectionEvt-Sel', 0)
+        _epics.caput('AS-RaMO:TI-EVG:InjectionEvt-Sel', 0)
         if not MachineShutdown._wait_value(
                 'AS-RaMO:TI-EVG:InjectionEvt-Sts', 0, 0.5, 2.0):
             return False
 
         print('Desligando Egun trigger')
-        epics.caput('LI-01:EG-TriggerPS:enable', 0)
+        _epics.caput('LI-01:EG-TriggerPS:enable', 0)
         if not MachineShutdown._wait_value(
                 'LI-01:EG-TriggerPS:enablereal', 0, 0.5, 2.0):
             return False
 
         print('Desligando Sistema de Injeção')
-        epics.caput('AS-Glob:AP-InjCtrl:InjSysTurnOff-Cmd', 0)
+        _epics.caput('AS-Glob:AP-InjCtrl:InjSysTurnOff-Cmd', 0)
         if not MachineShutdown._wait_value(
                 'AS-Glob:AP-InjCtrl:InjSysCmdSts-Mon', 0, 0.5, 30.0):
             return False
@@ -191,20 +191,20 @@ class MachineShutdown:
         # Parâmetros do FOFB:
         print('FOFB Turn off...')
         # Desabilita o Loop
-        epics.caput('SI-Glob:AP-FOFB:LoopState-Sel', 0)
+        _epics.caput('SI-Glob:AP-FOFB:LoopState-Sel', 0)
         if not MachineShutdown._wait_value(
                 'SI-Glob:AP-FOFB:LoopState-Sts', 0, 0.5, 12.0):
             return False
 
         print('SOFB Turn off...')
         # Desabilita Auto correction State
-        epics.caput('SI-Glob:AP-SOFB:LoopState-Sel', 0)
+        _epics.caput('SI-Glob:AP-SOFB:LoopState-Sel', 0)
         if not MachineShutdown._wait_value(
                 'SI-Glob:AP-SOFB:LoopState-Sts', 0, 0.5, 5.0):
             return False
 
         # Desabilita Synchronization
-        epics.caput('SI-Glob:AP-SOFB:CorrSync-Sel', 0)
+        _epics.caput('SI-Glob:AP-SOFB:CorrSync-Sel', 0)
         if not MachineShutdown._wait_value(
                 'SI-Glob:AP-SOFB:CorrSync-Sts', 0, 0.5, 5.0):
             return False
@@ -216,9 +216,9 @@ class MachineShutdown:
         print('--- bbb_turnoff...')
 
         # desliga os loops H, V e L do bbb.
-        epics.caput('SI-Glob:DI-BbBProc-H:FBCTRL', 0)
-        epics.caput('SI-Glob:DI-BbBProc-V:FBCTRL', 0)
-        epics.caput('SI-Glob:DI-BbBProc-L:FBCTRL', 0)
+        _epics.caput('SI-Glob:DI-BbBProc-H:FBCTRL', 0)
+        _epics.caput('SI-Glob:DI-BbBProc-V:FBCTRL', 0)
+        _epics.caput('SI-Glob:DI-BbBProc-L:FBCTRL', 0)
 
         pvnames = [
             'SI-Glob:DI-BbBProc-H:FBCTRL',
@@ -239,11 +239,11 @@ class MachineShutdown:
         # Alterando a taxa de incremento
         print('Alterando a taxa de incremento para 2mV/s')
         incrate_rate = 6
-        epics.caput('SR-RF-DLLRF-01:AMPREF:INCRATE:S', incrate_rate)
-        time.sleep(1.0)
+        _epics.caput('SR-RF-DLLRF-01:AMPREF:INCRATE:S', incrate_rate)
+        _time.sleep(1.0)
 
         print('Muda referência do loop para 60mV')
-        epics.caput('SR-RF-DLLRF-01:mV:AL:REF-SP', 60)
+        _epics.caput('SR-RF-DLLRF-01:mV:AL:REF-SP', 60)
         if not MachineShutdown._wait_value(
                'SR-RF-DLLRF-01:SL:REF:AMP', 60, 0.5, 180.0):
             return False
@@ -255,35 +255,35 @@ class MachineShutdown:
 
         # Desabilitando o loop de controle
         print('Desabilitando o loop de controle')
-        epics.caput('SR-RF-DLLRF-01:SL:S', 0)
-        time.sleep(1.0)
+        _epics.caput('SR-RF-DLLRF-01:SL:S', 0)
+        _time.sleep(1.0)
 
         # Desligando as Chaves PIN
         print('Desligando as Chaves PIN')
-        epics.caput('RA-RaSIA01:RF-LLRFPreAmp-1:PINSw1Dsbl-Cmd', 1)
-        epics.caput('RA-RaSIA01:RF-LLRFPreAmp-1:PINSw2Dsbl-Cmd', 1)
-        time.sleep(1.0)
-        epics.caput('RA-RaSIA01:RF-LLRFPreAmp-1:PINSw1Dsbl-Cmd', 0)
-        epics.caput('RA-RaSIA01:RF-LLRFPreAmp-1:PINSw2Dsbl-Cmd', 0)
-        time.sleep(1.0)
+        _epics.caput('RA-RaSIA01:RF-LLRFPreAmp-1:PINSw1Dsbl-Cmd', 1)
+        _epics.caput('RA-RaSIA01:RF-LLRFPreAmp-1:PINSw2Dsbl-Cmd', 1)
+        _time.sleep(1.0)
+        _epics.caput('RA-RaSIA01:RF-LLRFPreAmp-1:PINSw1Dsbl-Cmd', 0)
+        _epics.caput('RA-RaSIA01:RF-LLRFPreAmp-1:PINSw2Dsbl-Cmd', 0)
+        _time.sleep(1.0)
 
         # Desligando os amplificadores DC/TDK
         print('Desligando os amplificadores DC/TDK')
-        epics.caput('RA-ToSIA01:RF-TDKSource:PwrDCDsbl-Sel', 1)
-        epics.caput('RA-ToSIA02:RF-TDKSource:PwrDCDsbl-Sel', 1)
-        time.sleep(1.0)
-        epics.caput('RA-ToSIA01:RF-TDKSource:PwrDCDsbl-Sel', 0)
-        epics.caput('RA-ToSIA02:RF-TDKSource:PwrDCDsbl-Sel', 0)
-        time.sleep(1.0)
+        _epics.caput('RA-ToSIA01:RF-TDKSource:PwrDCDsbl-Sel', 1)
+        _epics.caput('RA-ToSIA02:RF-TDKSource:PwrDCDsbl-Sel', 1)
+        _time.sleep(1.0)
+        _epics.caput('RA-ToSIA01:RF-TDKSource:PwrDCDsbl-Sel', 0)
+        _epics.caput('RA-ToSIA02:RF-TDKSource:PwrDCDsbl-Sel', 0)
+        _time.sleep(1.0)
 
         # Desligando os amplificadores AC/TDK
         print('Desligando os amplificadores AC/TDK')
-        epics.caput('RA-ToSIA01:RF-ACPanel:PwrACDsbl-Sel', 1)
-        epics.caput('RA-ToSIA02:RF-ACPanel:PwrACDsbl-Sel', 1)
-        time.sleep(1.0)
-        epics.caput('RA-ToSIA01:RF-ACPanel:PwrACDsbl-Sel', 0)
-        epics.caput('RA-ToSIA02:RF-ACPanel:PwrACDsbl-Sel', 0)
-        time.sleep(1.0)
+        _epics.caput('RA-ToSIA01:RF-ACPanel:PwrACDsbl-Sel', 1)
+        _epics.caput('RA-ToSIA02:RF-ACPanel:PwrACDsbl-Sel', 1)
+        _time.sleep(1.0)
+        _epics.caput('RA-ToSIA01:RF-ACPanel:PwrACDsbl-Sel', 0)
+        _epics.caput('RA-ToSIA02:RF-ACPanel:PwrACDsbl-Sel', 0)
+        _time.sleep(1.0)
 
         return True
 
@@ -293,33 +293,33 @@ class MachineShutdown:
 
         # Desabilitando a rampa do Booster
         ramp = 0
-        epics.caput('BR-RF-DLLRF-01:RmpEnbl-Sel', ramp)
+        _epics.caput('BR-RF-DLLRF-01:RmpEnbl-Sel', ramp)
         if not MachineShutdown._wait_value(
                 'BR-RF-DLLRF-01:RmpEnbl-Sts', ramp, 0, 2.0):
             return False
-        time.sleep(2.0)
+        _time.sleep(2.0)
 
         print('Desligando o loop de controle...')
-        epics.caput('BR-RF-DLLRF-01:SL:S', 0)
-        time.sleep(1.0)
+        _epics.caput('BR-RF-DLLRF-01:SL:S', 0)
+        _time.sleep(1.0)
 
         print('Desligando a chave PIN...')
-        epics.caput('RA-RaBO01:RF-LLRFPreAmp:PinSwDsbl-Cmd', 1)
-        time.sleep(0.5)
-        epics.caput('RA-RaBO01:RF-LLRFPreAmp:PinSwDsbl-Cmd', 0)
-        time.sleep(0.5)
+        _epics.caput('RA-RaBO01:RF-LLRFPreAmp:PinSwDsbl-Cmd', 1)
+        _time.sleep(0.5)
+        _epics.caput('RA-RaBO01:RF-LLRFPreAmp:PinSwDsbl-Cmd', 0)
+        _time.sleep(0.5)
 
         print('Desligando os Amplificador DC/DC...')
-        epics.caput('RA-ToBO:RF-SSAmpTower:PwrCnvDsbl-Sel', 1)
-        time.sleep(0.5)
-        epics.caput('RA-ToBO:RF-SSAmpTower:PwrCnvDsbl-Sel', 0)
-        time.sleep(0.5)
+        _epics.caput('RA-ToBO:RF-SSAmpTower:PwrCnvDsbl-Sel', 1)
+        _time.sleep(0.5)
+        _epics.caput('RA-ToBO:RF-SSAmpTower:PwrCnvDsbl-Sel', 0)
+        _time.sleep(0.5)
 
         print('Desligando os Amplificador 300VDC...')
-        epics.caput('RA-ToBO:RF-ACDCPanel:300VdcDsbl-Sel', 1)
-        time.sleep(0.5)
-        epics.caput('RA-ToBO:RF-ACDCPanel:300VdcDsbl-Sel', 0)
-        time.sleep(0.5)
+        _epics.caput('RA-ToBO:RF-ACDCPanel:300VdcDsbl-Sel', 1)
+        _time.sleep(0.5)
+        _epics.caput('RA-ToBO:RF-ACDCPanel:300VdcDsbl-Sel', 0)
+        _time.sleep(0.5)
 
         return True
 
@@ -328,11 +328,11 @@ class MachineShutdown:
         print('---modulators_turnoff...')
 
         # Desliga os botões CHARGE e TRIGOUT dos moduladores
-        epics.caput('LI-01:PU-Modltr-1:CHARGE', 0)
-        epics.caput('LI-01:PU-Modltr-2:CHARGE', 0)
-        time.sleep(1.0)
-        epics.caput('LI-01:PU-Modltr-1:TRIGOUT', 0)
-        epics.caput('LI-01:PU-Modltr-2:TRIGOUT', 0)
+        _epics.caput('LI-01:PU-Modltr-1:CHARGE', 0)
+        _epics.caput('LI-01:PU-Modltr-2:CHARGE', 0)
+        _time.sleep(1.0)
+        _epics.caput('LI-01:PU-Modltr-1:TRIGOUT', 0)
+        _epics.caput('LI-01:PU-Modltr-2:TRIGOUT', 0)
 
         return True
 
@@ -341,8 +341,8 @@ class MachineShutdown:
         print('--- adjust_bias...')
 
         # Ajusta tensão de Bias em -100V.
-        epics.caput('AS-Glob:AP-InjCtrl:MultBunBiasVolt-SP', -100.0)
-        # epics.caput('AS-Glob:AP-InjCtrl:SglBunBiasVolt-SP', -100.0)
+        _epics.caput('AS-Glob:AP-InjCtrl:MultBunBiasVolt-SP', -100.0)
+        # _epics.caput('AS-Glob:AP-InjCtrl:SglBunBiasVolt-SP', -100.0)
 
         return True
 
@@ -351,7 +351,7 @@ class MachineShutdown:
         print('--- adjust_egunfilament...')
 
         # Ajusta corrente de filamento em 1.1A.
-        epics.caput('AS-Glob:AP-InjCtrl:FilaOpCurr-SP', 1.1)
+        _epics.caput('AS-Glob:AP-InjCtrl:FilaOpCurr-SP', 1.1)
         if not MachineShutdown._wait_value(
                 'LI-01:EG-FilaPS:currentinsoft', 1.1, 0.2, 10.0):
             return False
@@ -363,19 +363,19 @@ class MachineShutdown:
         print('---disable_egun_highvoltage...')
 
         # Ajusta a alta tensão do canhão e checa.
-        epics.caput('AS-Glob:AP-InjCtrl:HVOpVolt-SP', 0.000)
+        _epics.caput('AS-Glob:AP-InjCtrl:HVOpVolt-SP', 0.000)
         if not MachineShutdown._wait_value(
                 'AS-Glob:AP-InjCtrl:HVOpVoltCmdSts-Mon', 0, 0.5, 100.0):
             return False
 
         # desabilita enable
-        epics.caput('LI-01:EG-HVPS:enable', 0)
+        _epics.caput('LI-01:EG-HVPS:enable', 0)
         if not MachineShutdown._wait_value(
                 'LI-01:EG-HVPS:enstatus', 0, 0.5, 2.0):
             return False
 
         # checar se alta tensão foi desligada.
-        epics.caput('LI-01:EG-HVPS:switch', 0)
+        _epics.caput('LI-01:EG-HVPS:switch', 0)
         if not MachineShutdown._wait_value(
                 'LI-01:EG-HVPS:swstatus', 0, 0.5, 2.0):
             return False
@@ -391,7 +391,6 @@ class MachineShutdown:
         # dev = self._devices['asppsctrl']
         # if dev.time_left_for_tunnel_access() == 360:
         #     return False
-    
         msg = (
             'Confirme se a contagem regressiva para '
             'liberar acesso ao túnel iniciou')
@@ -405,18 +404,18 @@ class MachineShutdown:
 
         print('Desabilitando os triggers...')
         # desliga os trigger's das fontes da TB, TS, BO e SI
-        epics.caput('BO-Glob:TI-Mags-Corrs:State-Sel', 0)
-        epics.caput('BO-Glob:TI-Mags-Fams:State-Sel', 0)
-        epics.caput('SI-01:TI-Mags-FFCorrs:State-Sel', 0)
-        epics.caput('SI-Glob:TI-Mags-Bends:State-Sel', 0)
-        epics.caput('SI-Glob:TI-Mags-Corrs:State-Sel', 0)
-        epics.caput('SI-Glob:TI-Mags-QTrims:State-Sel', 0)
-        epics.caput('SI-Glob:TI-Mags-Quads:State-Sel', 0)
-        epics.caput('SI-Glob:TI-Mags-Sexts:State-Sel', 0)
-        epics.caput('SI-Glob:TI-Mags-Skews:State-Sel', 0)
-        epics.caput('TB-Glob:TI-Mags:State-Sel', 0)
-        epics.caput('TS-Glob:TI-Mags:State-Sel', 0)
-        time.sleep(0.5)
+        _epics.caput('BO-Glob:TI-Mags-Corrs:State-Sel', 0)
+        _epics.caput('BO-Glob:TI-Mags-Fams:State-Sel', 0)
+        _epics.caput('SI-01:TI-Mags-FFCorrs:State-Sel', 0)
+        _epics.caput('SI-Glob:TI-Mags-Bends:State-Sel', 0)
+        _epics.caput('SI-Glob:TI-Mags-Corrs:State-Sel', 0)
+        _epics.caput('SI-Glob:TI-Mags-QTrims:State-Sel', 0)
+        _epics.caput('SI-Glob:TI-Mags-Quads:State-Sel', 0)
+        _epics.caput('SI-Glob:TI-Mags-Sexts:State-Sel', 0)
+        _epics.caput('SI-Glob:TI-Mags-Skews:State-Sel', 0)
+        _epics.caput('TB-Glob:TI-Mags:State-Sel', 0)
+        _epics.caput('TS-Glob:TI-Mags:State-Sel', 0)
+        _time.sleep(0.5)
 
         pvnames = [
             'BO-Glob:TI-Mags-Corrs:State-Sel',
@@ -430,11 +429,11 @@ class MachineShutdown:
             'SI-Glob:TI-Mags-Skews:State-Sel',
             'TB-Glob:TI-Mags:State-Sel',
             'TS-Glob:TI-Mags:State-Sel',
-            ]
+        ]
         value_targets = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
         value_tols = [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5]
         return MachineShutdown._wait_value_set(
-           pvnames, value_targets, value_tols, 2.0)
+            pvnames, value_targets, value_tols, 2.0)
 
     def s16_turn_off_sofbmode(self):
         """Desabilita o nodo SOFBMode."""
@@ -477,7 +476,7 @@ class MachineShutdown:
             print(dclink)
             pvname = dclink + ':' + 'OpMode-Sel'
             pvnames.append(psname + ':' + 'CtrlMode-Mon')
-            epics.caput(pvname, 0)
+            _epics.caput(pvname, 0)
         values = [0.0, ] * len(pvnames)
         tols = [0.2] * len(pvnames)
         if not MachineShutdown._wait_value_set(pvnames, values, tols, timeout):
@@ -535,7 +534,7 @@ class MachineShutdown:
             pvnames.append(dclink + ':' + 'IntlkSoft-Mon')
             pvnames.append(dclink + ':' + 'IntlKHard-Mon')
             pvname = dclink + ':' + 'Reset-Cmd'
-            epics.caput(pvname, 1)
+            _epics.caput(pvname, 1)
 
         values = [0.0, ] * len(pvnames)
         tols = [0.2] * len(pvnames)
@@ -578,7 +577,7 @@ class MachineShutdown:
             print(dclink)
             pvname = dclink + ':' + 'PwrState-Sel'
             pvnames.append(psname + ':' + 'PwrState-Sts')
-            epics.caput(pvname, 0)
+            _epics.caput(pvname, 0)
 
         values = [0.0, ] * len(pvnames)
         tols = [0.2] * len(pvnames)
@@ -693,7 +692,7 @@ class MachineShutdown:
                 continue
             pvname = psname + ':' + 'SOFBMode-Sel'
             pvnames.append(psname + ':' + 'SOFBMode-Sts')
-            epics.caput(pvname, 0)
+            _epics.caput(pvname, 0)
         values, tols = [0.0, ] * len(pvnames), [0.2] * len(pvnames)
         if not MachineShutdown._wait_value_set(
                 pvnames, values, tols, timeout):
@@ -709,7 +708,7 @@ class MachineShutdown:
             if 'FCH' in psname or 'FCV' in psname:
                 continue
             pvname = psname + ':' + 'OpMode-Sel'
-            epics.caput(pvname, 'SlowRef')
+            _epics.caput(pvname, 'SlowRef')
         return True
 
     @staticmethod
@@ -720,7 +719,7 @@ class MachineShutdown:
             # print(psname)
             pvname = psname + ':' + 'Current-SP'
             pvnames.append(psname + ':' + 'Current-RB')
-            epics.caput(pvname, 0.0)
+            _epics.caput(pvname, 0.0)
         values, tols = [0.0, ] * len(pvnames), [0.2] * len(pvnames)
         if not MachineShutdown._wait_value_set(pvnames, values, tols, timeout):
             return False
@@ -735,7 +734,7 @@ class MachineShutdown:
             pvnames.append(psname + ':' + 'IntlkHard-Mon')
             pvname = psname + ':' + 'Reset-Cmd'
             if sec != 'LI':
-                epics.caput(pvname, 1)
+                _epics.caput(pvname, 1)
         values, tols = [1, ] * len(pvnames), [0.2] * len(pvnames)
         if not MachineShutdown._wait_value_set(pvnames, values, tols, timeout):
             return False
@@ -748,7 +747,7 @@ class MachineShutdown:
         for psname in psnames:
             pvname = psname + ':' + 'PwrState-Sel'
             pvnames.append(psname + ':' + 'PwrState-Sts')
-            epics.caput(pvname, 0)
+            _epics.caput(pvname, 0)
         values, tols = [0.0, ] * len(pvnames), [0.2] * len(pvnames)
         if not MachineShutdown._wait_value_set(pvnames, values, tols, timeout):
             return False
@@ -757,17 +756,17 @@ class MachineShutdown:
     @staticmethod
     def _wait_value(pvname, value_target, value_tol, timeout, sleep=0.1):
         """."""
-        pvd = epics.PV(pvname)
-        time0 = time.time()
+        pvd = _epics.PV(pvname)
+        time0 = _time.time()
         strf = (
             'timeout: não foi possível esperar a PV {} chegar ao '
             'seu valor de target!')
         while abs(pvd.value - value_target) > value_tol:
-            if time.time() - time0 > timeout:
+            if _time.time() - time0 > timeout:
                 if sleep != 0:
                     print(strf.format(pvname))
                 return False
-            time.sleep(sleep)
+            _time.sleep(sleep)
         return True
 
     @staticmethod
@@ -778,7 +777,7 @@ class MachineShutdown:
         strf = (
             'timeout: não foi possível esperar todas as PVs '
             'chegarem aos seus valores de target!')
-        time0 = time.time()
+        time0 = _time.time()
         while pvnames_not_ready:
             print(len(pvnames_not_ready))
             # print(pvnames_not_ready)
@@ -787,11 +786,11 @@ class MachineShutdown:
                         pvname, value_targets[idx], value_tols[idx],
                         timeout=0, sleep=0.0):
                     pvnames_not_ready.remove((pvname, idx))
-            if time.time() - time0 > timeout:
+            if _time.time() - time0 > timeout:
                 print(strf)
                 return False
             if pvnames_not_ready:
-                time.sleep(0.2)
+                _time.sleep(0.2)
         return True
 
 
