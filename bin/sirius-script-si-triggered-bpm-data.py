@@ -18,7 +18,7 @@ def configure_acquisition_params(orbacq):
     params.orbit_acq_rate = 'TbT'
     params.orbit_timeout = 60*4  # 3 minutes between top-up injections
 
-    params.orbit_nrpoints_before = 0
+    params.orbit_nrpoints_before = 1_000
     params.orbit_nrpoints_after = 10_000
     params.orbit_acq_repeat = 0
     params.trigbpm_delay = 0
@@ -64,13 +64,16 @@ def create_devices():
 def read_feedback_status(devs, orbacq):
     """."""
     sofb, fofb, bbbl, bbbh, bbbv, bopsrmp, borfrmp = devs
-    orbacq.data['sofb_loop_state'] = sofb.autocorrsts
-    orbacq.data['fofb_loop_state'] = fofb.loop_state
-    orbacq.data['bbbl_loop_state'] = bbbl.feedback.loop_state
-    orbacq.data['bbbh_loop_state'] = bbbh.feedback.loop_state
-    orbacq.data['bbbv_loop_state'] = bbbv.feedback.loop_state
-    orbacq.data['bo_ps_ramp_state'] = bopsrmp.is_on
-    orbacq.data['bo_rf_ramp_state'] = borfrmp.is_on
+    if orbacq.data is not None:
+        orbacq.data['sofb_loop_state'] = sofb.autocorrsts
+        orbacq.data['fofb_loop_state'] = fofb.loop_state
+        orbacq.data['bbbl_loop_state'] = bbbl.feedback.loop_state
+        orbacq.data['bbbh_loop_state'] = bbbh.feedback.loop_state
+        orbacq.data['bbbv_loop_state'] = bbbv.feedback.loop_state
+        orbacq.data['bo_ps_ramp_state'] = bopsrmp.is_on
+        orbacq.data['bo_rf_ramp_state'] = borfrmp.is_on
+    else:
+        raise Exception('data is None, problem with acquisition!')
 
 
 if __name__ == "__main__":
