@@ -7,12 +7,18 @@ import logging as _log
 import epics as _epics
 
 from siriuspy.callbacks import Callback as _Callback
+from siriuspy.namesys import SiriusPVName as _PVName
+from siriuspy.search import PSSearch as _PSSearch, \
+    HLTimeSearch as _HLTimeSearch
+from siriuspy.pwrsupply.csdev import Const as _PSC
 from siriuspy.devices import Devices as _Devices, \
     ASMPSCtrl as _ASMPSCtrl, ASPPSCtrl as _ASPPSCtrl, \
     APU as _APU, EPU as _EPU, PAPU as _PAPU, \
     MachShift as _MachShift, InjCtrl as _InjCtrl, \
     EVG as _EVG, EGTriggerPS as _EGTriggerPS
-from siriuspy.search import PSSearch as _PSSearch
+from siriuspy.devices.pstesters import \
+    Triggers as _PSTriggers, PSTesterFactory as _PSTesterFactory
+
 
 
 # Configure Logging
@@ -99,6 +105,10 @@ class IDParking(_Devices):
 
 class MachineShutdown(_Devices, _Callback):
     """Machine Shutdown device."""
+
+    DEFAULT_CHECK_TIMEOUT = 10
+    DEFAULT_CONN_TIMEOUT = 5
+    DEFAULT_TINYSLEEP = 0.1
 
     def __init__(self, log_callback=None):
         self._abort = False
@@ -427,192 +437,26 @@ class MachineShutdown(_Devices, _Callback):
         return True
 
     def s15_disable_ps_triggers(self):
-        """Desliga os triggers das fontes."""
-        print('--- disable_ps_triggers...')
+        """Disable PS triggers."""
+        self.log('Disabling PS triggers...')
+        return self._disable_ps_triggers('PS')
 
-        print('Desabilitando os triggers...')
-        # desliga os trigger's das fontes da TB, TS, BO e SI
-        _epics.caput('BO-Glob:TI-Mags-Corrs:State-Sel', 0)
-        _epics.caput('BO-Glob:TI-Mags-Fams:State-Sel', 0)
-        _epics.caput('SI-01:TI-Mags-FFCorrs:State-Sel', 0)
-        _epics.caput('SI-Glob:TI-Mags-Bends:State-Sel', 0)
-        _epics.caput('SI-Glob:TI-Mags-Corrs:State-Sel', 0)
-        _epics.caput('SI-Glob:TI-Mags-QTrims:State-Sel', 0)
-        _epics.caput('SI-Glob:TI-Mags-Quads:State-Sel', 0)
-        _epics.caput('SI-Glob:TI-Mags-Sexts:State-Sel', 0)
-        _epics.caput('SI-Glob:TI-Mags-Skews:State-Sel', 0)
-        _epics.caput('TB-Glob:TI-Mags:State-Sel', 0)
-        _epics.caput('TS-Glob:TI-Mags:State-Sel', 0)
-        _time.sleep(0.5)
+    def s16_run_ps_turn_off_procedure(self):
+        """Do turn off PS procedure."""
+        self.log('Executing Turn Off PS...')
+        return self._exec_ps_turnoff('PS')
 
-        pvnames = [
-            'BO-Glob:TI-Mags-Corrs:State-Sel',
-            'BO-Glob:TI-Mags-Fams:State-Sel',
-            'SI-01:TI-Mags-FFCorrs:State-Sel',
-            'SI-Glob:TI-Mags-Bends:State-Sel',
-            'SI-Glob:TI-Mags-Corrs:State-Sel',
-            'SI-Glob:TI-Mags-QTrims:State-Sel',
-            'SI-Glob:TI-Mags-Quads:State-Sel',
-            'SI-Glob:TI-Mags-Sexts:State-Sel',
-            'SI-Glob:TI-Mags-Skews:State-Sel',
-            'TB-Glob:TI-Mags:State-Sel',
-            'TS-Glob:TI-Mags:State-Sel',
-        ]
-        value_targets = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-        value_tols = [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5]
-        return MachineShutdown._wait_value_set(
-            pvnames, value_targets, value_tols, 2.0)
+    def s17_disable_pu_triggers(self):
+        """Disable PU triggers."""
+        self.log('Disabling PU triggers...')
+        return self._disable_ps_triggers('PU')
 
-    def s16_turn_off_sofbmode(self):
-        """Desabilita o nodo SOFBMode."""
-        print('--- turn_off_sofbmode...')
+    def s18_run_pu_turn_off_procedure(self):
+        """Do turn off PU procedure."""
+        self.log('Executing Turn Off PU...')
+        return self._exec_ps_turnoff('PU')
 
-        timeout = 50  # [s]
-        print('Desligando o modo SOFBMode...')
-        for sec in ('LI', 'TB', 'BO', 'TS', 'SI'):
-            print(sec)
-            if not \
-                    MachineShutdown._ps_sofbmode(sec=sec, timeout=timeout):
-                return False
-
-        return True
-
-    def s17_set_ps_and_dclinks_to_slowref(self):
-        """Altera o modo das fontes e dclinks de OpMode para SlowRef."""
-        print('--- set_ps_and_dclinks_to_slowref...')
-
-        print('DCLinks_Opmode_to_Slowref...')
-        timeout = 50  # [s]
-
-        dclinks = set()
-        psnames = list()
-        psnames = psnames + _PSSearch.get_psnames(dict(sec='LI', dis='PS'))
-        psnames = psnames + _PSSearch.get_psnames(dict(sec='TB', dis='PS'))
-        psnames = psnames + _PSSearch.get_psnames(dict(sec='TS', dis='PS'))
-        psnames = psnames + _PSSearch.get_psnames(dict(sec='SI', dis='PS'))
-        for psname in psnames:
-            dclinks_ = _PSSearch.conv_psname_2_dclink(psname)
-            if not dclinks_:
-                continue
-            for dclink in dclinks_:
-                psmodel = _PSSearch.conv_psname_2_psmodel(dclink)
-                if 'REGATRON' not in psmodel:
-                    dclinks.add(dclink)
-
-        pvnames = []
-        for dclink in dclinks:
-            print(dclink)
-            pvname = dclink + ':' + 'OpMode-Sel'
-            pvnames.append(psname + ':' + 'CtrlMode-Mon')
-            _epics.caput(pvname, 0)
-        values = [0.0, ] * len(pvnames)
-        tols = [0.2] * len(pvnames)
-        if not MachineShutdown._wait_value_set(pvnames, values, tols, timeout):
-            return False
-
-        # Altera o modo das fontes de OpMode para SlowRef da TB
-        for sec in ('TB', 'TS', 'BO', 'SI'):
-            if not MachineShutdown._ps_set_slowref(sec=sec):
-                return False
-
-        return True
-
-    def s18_set_ps_current_to_zero(self):
-        """Seleciona e zera a corrente de todas as fontes dos aceleradores."""
-        print('--- set_ps_current_to_zero...')
-
-        # NOTE: timeout waiting for FCH !!!
-
-        timeout = 50  # [s]
-        # for sec in ('LI', 'TB', 'TS', 'BO', 'SI'):
-        for sec in ('SI', ):
-            if not MachineShutdown._ps_zero(sec=sec, timeout=timeout):
-                return False
-
-        return True
-
-    def s19_reset_ps_and_dclinks(self):
-        """Reseta as fontes e DCLinks e verifica sinais de interlock."""
-        print('--- reset_ps_and_dclinks...')
-
-        timeout = 50  # [s]
-        # Reset PS
-        for sec in ('TB', 'TS', 'BO', 'SI'):
-            if not MachineShutdown._ps_interlocks(sec=sec, timeout=timeout):
-                return False
-
-        # Reset dos DCLinks
-        dclinks = set()
-        psnames = list()
-        psnames = psnames + _PSSearch.get_psnames(dict(sec='LI', dis='PS'))
-        psnames = psnames + _PSSearch.get_psnames(dict(sec='TB', dis='PS'))
-        psnames = psnames + _PSSearch.get_psnames(dict(sec='TS', dis='PS'))
-        psnames = psnames + _PSSearch.get_psnames(dict(sec='SI', dis='PS'))
-        for psname in psnames:
-            dclinks_ = _PSSearch.conv_psname_2_dclink(psname)
-            if not dclinks_:
-                continue
-            for dclink in dclinks_:
-                psmodel = _PSSearch.conv_psname_2_psmodel(dclink)
-                if 'REGATRON' not in psmodel:
-                    dclinks.add(dclink)
-
-        pvnames = []
-        for dclink in dclinks:
-            pvnames.append(dclink + ':' + 'IntlkSoft-Mon')
-            pvnames.append(dclink + ':' + 'IntlKHard-Mon')
-            pvname = dclink + ':' + 'Reset-Cmd'
-            _epics.caput(pvname, 1)
-
-        values = [0.0, ] * len(pvnames)
-        tols = [0.2] * len(pvnames)
-
-        return MachineShutdown._wait_value_set(pvnames, values, tols, timeout)
-
-    def s20_turn_ps_off(self):
-        """Desliga todas as fontes."""
-        print('--- turn_ps_off...')
-
-        timeout = 50  # [s]
-        for sec in ('LI', 'TB', 'TS', 'BO', 'SI'):
-            if not MachineShutdown._ps_turn_off(sec=sec, timeout=timeout):
-                return False
-
-        return True
-
-    def s21_turn_dclinks_off(self):
-        """Desliga os DC links das fontes."""
-        print('--- turn_dclinks_off...')
-
-        timeout = 50  # [s]
-        dclinks = set()
-        psnames = list()
-        psnames = psnames + _PSSearch.get_psnames(dict(sec='LI', dis='PS'))
-        psnames = psnames + _PSSearch.get_psnames(dict(sec='TB', dis='PS'))
-        psnames = psnames + _PSSearch.get_psnames(dict(sec='TS', dis='PS'))
-        psnames = psnames + _PSSearch.get_psnames(dict(sec='SI', dis='PS'))
-        for psname in psnames:
-            dclinks_ = _PSSearch.conv_psname_2_dclink(psname)
-            if not dclinks_:
-                continue
-            for dclink in dclinks_:
-                psmodel = _PSSearch.conv_psname_2_psmodel(dclink)
-                if 'REGATRON' not in psmodel:
-                    dclinks.add(dclink)
-
-        pvnames = []
-        for dclink in dclinks:
-            print(dclink)
-            pvname = dclink + ':' + 'PwrState-Sel'
-            pvnames.append(psname + ':' + 'PwrState-Sts')
-            _epics.caput(pvname, 0)
-
-        values = [0.0, ] * len(pvnames)
-        tols = [0.2] * len(pvnames)
-
-        return MachineShutdown._wait_value_set(pvnames, values, tols, timeout)
-
-    def s22_free_access(self):
+    def s19_free_access(self):
         """Aguardar zerar contagem."""
         print('--- free_access...')
 
@@ -658,20 +502,13 @@ class MachineShutdown(_Devices, _Callback):
             return False
         if not self.s15_disable_ps_triggers():
             return False
-        if not self.s16_turn_off_sofbmode():
+        if not self.s16_run_ps_turn_off_procedure():
             return False
-        if not self.s17_set_ps_and_dclinks_to_slowref():
+        if not self.s17_disable_pu_triggers():
             return False
-        if not self.s18_set_ps_current_to_zero():
+        if not self.s18_run_pu_turn_off_procedure():
             return False
-        if not self.s19_reset_ps_and_dclinks():
-            return False
-        if not self.s20_turn_ps_off():
-            return False
-        if not self.s21_turn_dclinks_off():
-            return False
-        # TODO desligar pulsados
-        if not self.s22_free_access():
+        if not self.s19_free_access():
             return False
         return True
 
@@ -704,78 +541,59 @@ class MachineShutdown(_Devices, _Callback):
         devices['epu50_10SB'] = IDParking(_EPU.DEVICES.EPU50_10SB)
         devices['papu50_17SA'] = IDParking(_PAPU.DEVICES.PAPU50_17SA)
 
+        # PS
+        self._pstrigs = _HLTimeSearch.get_hl_triggers(filters={'dev': 'Mags'})
+        devices['pstrigs'] = _PSTriggers(self._pstrigs)
+
+        self._psnames = _PSSearch.get_psnames(
+            dict(sec='(LI|TB|BO|TS|SI)', dis='PS'))
+        self._psnames_fbp = [
+            psn for psn in self._psnames if
+            _PSSearch.conv_psname_2_psmodel(psn) == 'FBP']
+        self._psnames_not_li = [
+            psn for psn in self._psnames if 'LI-' not in psn]
+        self._psnames_set_manual = [
+            psn for psn in self._psnames if _PVName(psn).dev
+            in ('FCH', 'FCV')]
+        self._psnames_set_slowref = [
+            psn for psn in self._psnames if
+            _PVName(psn).dev not in ('FCH', 'FCV') and 'LI-' not in psn]
+        for psn in self._psnames:
+            devices[psn] = _PSTesterFactory.create(psn)
+
+        dclinks_regatron = set()
+        dclinks_not_regatron = set()
+        for name in self._psnames:
+            if 'LI' in name:
+                continue
+            dclinks = _PSSearch.conv_psname_2_dclink(name)
+            if dclinks:
+                dclink_model = _PSSearch.conv_psname_2_psmodel(dclinks[0])
+                if dclink_model != 'REGATRON_DCLink':
+                    dclinks_not_regatron.update(dclinks)
+                else:
+                    for dcl in dclinks:
+                        dcl_typ = _PSSearch.conv_psname_2_pstype(dcl)
+                        if dcl_typ == 'as-dclink-regatron-master':
+                            dclinks_regatron.add(dcl)
+        self._dclinks_regatron = list(dclinks_regatron)
+        self._dclinks_not_regatron = list(dclinks_not_regatron)
+        self._dclinks = list(dclinks_regatron | dclinks_not_regatron)
+        for dcl in self._dclinks:
+            devices[dcl] = _PSTesterFactory.create(dcl)
+
+        # PU
+        self._putrigs = _HLTimeSearch.get_hl_triggers(
+            filters={'dev': '.*(Kckr|Sept).*'})
+        devices['putrigs'] = _PSTriggers(self._putrigs)
+
+        self._punames = _PSSearch.get_psnames({
+            'sec': '(TB|BO|TS|SI)', 'dis': 'PU', 'dev': '.*(Kckr|Sept)',
+            'propty_name': '(?!:CCoil).*'})
+        for pun in self._punames:
+            devices[pun] = _PSTesterFactory.create(pun)
+
         return devices
-
-    @staticmethod
-    def _ps_sofbmode(sec, timeout):
-        psnames = _PSSearch.get_psnames(dict(sec=sec, dis='PS'))
-        pvnames = []
-        for psname in psnames:
-            psmodel = _PSSearch.conv_psname_2_psmodel(psname)
-            if psmodel != 'FBP':
-                continue
-            pvname = psname + ':' + 'SOFBMode-Sel'
-            pvnames.append(psname + ':' + 'SOFBMode-Sts')
-            _epics.caput(pvname, 0)
-        values, tols = [0.0, ] * len(pvnames), [0.2] * len(pvnames)
-        if not MachineShutdown._wait_value_set(
-                pvnames, values, tols, timeout):
-            return False
-        return True
-
-    @staticmethod
-    def _ps_set_slowref(sec):
-        # Altera o modo das fontes de OpMode para SlowRef
-        # NOTE: implementar checagem do OpMode-Sts
-        psnames = _PSSearch.get_psnames(dict(sec=sec, dis='PS'))
-        for psname in psnames:
-            if 'FCH' in psname or 'FCV' in psname:
-                continue
-            pvname = psname + ':' + 'OpMode-Sel'
-            _epics.caput(pvname, 'SlowRef')
-        return True
-
-    @staticmethod
-    def _ps_zero(sec, timeout):
-        psnames = _PSSearch.get_psnames(dict(sec=sec, dis='PS'))
-        pvnames = []
-        for psname in psnames:
-            # print(psname)
-            pvname = psname + ':' + 'Current-SP'
-            pvnames.append(psname + ':' + 'Current-RB')
-            _epics.caput(pvname, 0.0)
-        values, tols = [0.0, ] * len(pvnames), [0.2] * len(pvnames)
-        if not MachineShutdown._wait_value_set(pvnames, values, tols, timeout):
-            return False
-        return True
-
-    @staticmethod
-    def _ps_interlocks(sec, timeout):
-        psnames = _PSSearch.get_psnames(dict(sec=sec, dis='PS'))
-        pvnames = []
-        for psname in psnames:
-            pvnames.append(psname + ':' + 'IntlkSoft-Mon')
-            pvnames.append(psname + ':' + 'IntlkHard-Mon')
-            pvname = psname + ':' + 'Reset-Cmd'
-            if sec != 'LI':
-                _epics.caput(pvname, 1)
-        values, tols = [1, ] * len(pvnames), [0.2] * len(pvnames)
-        if not MachineShutdown._wait_value_set(pvnames, values, tols, timeout):
-            return False
-        return True
-
-    @staticmethod
-    def _ps_turn_off(sec, timeout):
-        psnames = _PSSearch.get_psnames(dict(sec=sec, dis='PS'))
-        pvnames = []
-        for psname in psnames:
-            pvname = psname + ':' + 'PwrState-Sel'
-            pvnames.append(psname + ':' + 'PwrState-Sts')
-            _epics.caput(pvname, 0)
-        values, tols = [0.0, ] * len(pvnames), [0.2] * len(pvnames)
-        if not MachineShutdown._wait_value_set(pvnames, values, tols, timeout):
-            return False
-        return True
 
     @staticmethod
     def _wait_value(pvname, value_target, value_tol, timeout, sleep=0.1):
@@ -815,6 +633,313 @@ class MachineShutdown(_Devices, _Callback):
                 return False
             if pvnames_not_ready:
                 _time.sleep(0.2)
+        return True
+
+    def _disable_ps_triggers(self, devtype):
+        """Desliga os triggers das fontes."""
+        self.log(f'Disabling triggers for {devtype}...')
+
+        trigdev = self._devrefs[f'{devtype.lower()}trigs']
+        triggers = trigdev.triggers
+
+        # send command to disable
+        for trig in triggers.values():
+            trig.state = 0
+
+        # check if is disabled
+        need_check = set(triggers)
+        _t0 = _time.time()
+        while _time.time() - _t0 < self.DEFAULT_CHECK_TIMEOUT:
+            for trig in triggers.values():
+                if trig not in need_check:
+                    continue
+                if not trig.wait_for_connection(self.DEFAULT_CONN_TIMEOUT):
+                    continue
+                if trig.state == 0:
+                    need_check.remove(trig)
+                if self._abort:
+                    break
+            if (not need_check) or (self._abort):
+                break
+            _time.sleep(self.DEFAULT_TINYSLEEP)
+        if need_check:
+            for trig in need_check:
+                self.log(f'ERR:Failed to disable trigger {trig}')
+            return False
+        return True
+
+    def _ps_command_set(
+            self, devnames, method, description,
+            conn_timeout=DEFAULT_CONN_TIMEOUT, **kwargs):
+        """Set PS property."""
+        nrdevs = len(devnames)
+        strf = 'Executed {} for {}/{}'
+        done = 0
+        for dev in devnames:
+            if dev in self._ps_failed:
+                continue
+            tester = self._devrefs[dev]
+            if not tester.wait_for_connection(conn_timeout):
+                self.log(f'ERR:Failed to connect to {dev}')
+                self._ps_failed.append(dev)
+                continue
+            func = getattr(tester, method)
+            func(**kwargs)
+            done += 1
+            if done % 20 == 0:
+                self.log(strf.format(description, done, nrdevs))
+            if self._abort:
+                break
+        self.log(strf.format(description, done, nrdevs))
+        return True
+
+    def _ps_command_check(
+            self, devnames, method, description,
+            conn_timeout=DEFAULT_CONN_TIMEOUT,
+            check_timeout=DEFAULT_CHECK_TIMEOUT,
+            tiny_sleep=DEFAULT_TINYSLEEP, **kwargs):
+        """Check PS state."""
+        devnames = set(devnames) - set(self._ps_failed)
+        nrdevs = len(devnames)
+        need_check = list(devnames)
+        checked, checked_log = 0, 0
+
+        strf = 'Done {} for {}/{}'
+
+        _t0 = _time.time()
+        while _time.time() - _t0 < check_timeout:
+            for dev in devnames:
+                if dev not in need_check:
+                    continue
+                tester = self._devrefs[dev]
+                if not tester.wait_for_connection(conn_timeout):
+                    continue
+                func = getattr(tester, method)
+                if func(**kwargs):
+                    need_check.remove(dev)
+                    checked = nrdevs - len(need_check)
+                if (checked % 20 == 0 and checked_log < checked) \
+                        or checked == nrdevs:
+                    self.log(strf.format(description, checked, nrdevs))
+                    checked_log = checked
+                if self._abort:
+                    break
+            if (not need_check) or (self._abort):
+                break
+            _time.sleep(tiny_sleep)
+        if need_check:
+            for dev in need_check:
+                self._ps_failed.append(dev)
+                self.log(f'ERR:Failed to execute {description} for {dev}')
+            return False
+        return True
+
+    def _exec_ps_turnoff(self, devtype):
+        ps_turnoff = {
+            'Check communication': [
+                {
+                    'func': self._ps_command_check,
+                    'devnames': self._psnames + self._dclinks,
+                    'method': 'check_comm',
+                    'block': True,
+                },
+            ],
+            'Turn SOFBMode Off': [
+                {
+                    'func': self._ps_command_set,
+                    'devnames': self._psnames_fbp,
+                    'method': 'set_sofbmode',
+                    'kwargs': {'state': 'off'},
+                },
+                {
+                    'func': self._ps_command_check,
+                    'devnames': self._psnames_fbp,
+                    'method': 'check_sofbmode',
+                    'kwargs': {'state': 'off'},
+                    'block': True,
+                },
+            ],
+            'Set PS and DCLinks OpMode to SlowRef': [
+                {
+                    'func': self._ps_command_set,
+                    'devnames':
+                        self._psnames_set_slowref + self._dclinks_not_regatron,
+                    'method': 'set_opmode',
+                    'kwargs': {'state': _PSC.OpMode.SlowRef},
+                },
+                {
+                    'func': self._ps_command_set,
+                    'devnames': self._psnames_set_manual,
+                    'method': 'set_opmode',
+                    'kwargs': {'state': _PSC.OpModeFOFBSel.manual},
+                },
+                {
+                    'func': self._ps_command_check,
+                    'devnames':
+                        self._psnames_set_slowref + self._dclinks_not_regatron,
+                    'method': 'check_opmode',
+                    'kwargs': {'state': [
+                        _PSC.States.SlowRef, _PSC.States.Off,
+                        _PSC.States.Interlock, _PSC.States.Initializing]},
+                    'block': True,
+                },
+                {
+                    'func': self._ps_command_check,
+                    'devnames': self._psnames_set_manual,
+                    'method': 'check_opmode',
+                    'kwargs': {'state': _PSC.OpModeFOFBSts.manual},
+                    'block': True,
+                },
+            ],
+            'Set PS Current to zero': [
+                {
+                    'func': self._ps_command_set,
+                    'devnames': self._psnames,
+                    'method': 'set_current',
+                    'kwargs': {'value': 0},
+                },
+                {
+                    'func': self._ps_command_check,
+                    'devnames': self._psnames,
+                    'method': 'check_current',
+                    'kwargs': {'value': 0, 'check_timeout': 50},
+                    'block': True,
+                },
+            ],
+            'Reset PS and DCLinks': [
+                {
+                    'func': self._ps_command_set,
+                    'devnames': self._psnames_not_li + self._dclinks,
+                    'method': 'reset',
+                },
+                {
+                    'func': self._ps_command_check,
+                    'devnames': self._psnames_not_li + self._dclinks,
+                    'method': 'check_intlk',
+                    'block': False,
+                },
+            ],
+            'Turn PS PwrState Off': [
+                {
+                    'func': self._ps_command_set,
+                    'devnames': self._psnames,
+                    'method': 'set_pwrstate',
+                    'kwargs': {'state': 'off'},
+                },
+                {
+                    'func': self._ps_command_check,
+                    'devnames': self._psnames,
+                    'method': 'check_pwrstate',
+                    'kwargs': {'state': 'off', 'check_timeout': 20},
+                    'block': True,
+                },
+            ],
+            'Turn DCLinks PwrState Off': [
+                {
+                    'func': self._ps_command_set,
+                    'devnames': self._dclinks,
+                    'method': 'set_pwrstate',
+                    'kwargs': {'state': 'off'},
+                },
+                {
+                    'func': self._ps_command_check,
+                    'devnames': self._dclinks,
+                    'method': 'check_pwrstate',
+                    'kwargs': {'state': 'off', 'check_timeout': 20},
+                    'block': True,
+                },
+            ],
+        }
+
+        pu_turnoff = {
+            'Set PU Voltage to zero': [
+                {
+                    'func': self._ps_command_set,
+                    'devnames': self._punames,
+                    'method': 'set_voltage',
+                },
+                {
+                    'func': self._ps_command_check,
+                    'devnames': self._punames,
+                    'method': 'check_voltage',
+                    'kwargs': {'check_timeout': 60},
+                    'block': True,
+                },
+            ],
+            'Reset PU': [
+                {
+                    'func': self._ps_command_set,
+                    'devnames': self._punames,
+                    'method': 'reset',
+                },
+                {
+                    'func': self._ps_command_check,
+                    'devnames': self._punames,
+                    'method': 'check_intlk',
+                    'block': False,
+                },
+            ],
+            'Disable PU Pulse': [
+                {
+                    'func': self._ps_command_set,
+                    'devnames': self._punames,
+                    'method': 'set_pulse',
+                    'kwargs': {'state': 'off'},
+                },
+                {
+                    'func': self._ps_command_check,
+                    'devnames': self._punames,
+                    'method': 'check_pulse',
+                    'kwargs': {'state': 'off'},
+                    'block': True,
+                },
+            ],
+            'Turn PU Off': [
+                {
+                    'func': self._ps_command_set,
+                    'devnames': self._punames,
+                    'method': 'set_pwrstate',
+                    'kwargs': {'state': 'off'},
+                },
+                {
+                    'func': self._ps_command_check,
+                    'devnames': self._punames,
+                    'method': 'check_pwrstate',
+                    'kwargs': {'state': 'off', 'check_timeout': 20},
+                    'block': True,
+                },
+            ],
+        }
+
+        procedure = ps_turnoff if devtype == 'PS' else \
+            pu_turnoff if devtype == 'PU' else None
+        if procedure is None:
+            raise ValueError(f'procedure not defined for devtype {devtype}')
+
+        self._ps_failed = list()
+        interrupt = False
+        for description, cmdlist in procedure.items():
+            for cmd in cmdlist:
+                func = cmd['func']
+                devnames = cmd['devnames']
+                method = cmd['method']
+                kwargs = cmd.get('kwargs', dict())
+                block = cmd.get('block', None)
+                ret = func(devnames, method, description, **kwargs)
+                if not ret and block:
+                    interrupt = True
+                    break
+            if interrupt:
+                self.log('ERR:Turn Off Procedure failed for {devtype}.')
+                self.log('ERR:Verify errors before continue.')
+                break
+            if not self.continue_execution():
+                self.log('ERR:Abort received, interrupting.')
+                break
+        if self._ps_failed:
+            for psn in self._ps_failed:
+                self.log(f'ERR:Verify {psn}.')
+            return False
         return True
 
 
