@@ -101,12 +101,21 @@ class MachineShutdown(_Devices, _Callback):
     """Machine Shutdown device."""
 
     def __init__(self, log_callback=None):
+        self._abort = False
+
         self._devrefs = self._create_devices()
         devices = list(self._devrefs.values())
 
         _Devices.__init__(self, 'AS-Glob:AP-MachShutdown', devices)
 
         _Callback.__init__(self, log_callback)
+
+    def continue_execution(self):
+        """Check whether to continue execution based on abort flag state."""
+        if self._abort:
+            self._abort = False
+            return False
+        return True
 
     def log(self, message):
         """Update execution logs."""
