@@ -7,11 +7,11 @@ import logging as _log
 import epics as _epics
 
 from siriuspy.callbacks import Callback as _Callback
-from siriuspy.devices import ASPPSCtrl as _ASPPSCtrl
-from siriuspy.devices import ASMPSCtrl as _ASMPSCtrl
-from siriuspy.devices import APU as _APU
-from siriuspy.devices import EPU as _EPU
-from siriuspy.devices import PAPU as _PAPU
+from siriuspy.devices import Devices as _Devices, \
+    ASMPSCtrl as _ASMPSCtrl, ASPPSCtrl as _ASPPSCtrl, \
+    APU as _APU, EPU as _EPU, PAPU as _PAPU, \
+    MachShift as _MachShift, InjCtrl as _InjCtrl, \
+    EVG as _EVG, EGTriggerPS as _EGTriggerPS
 from siriuspy.search import PSSearch as _PSSearch
 
 
@@ -21,32 +21,24 @@ _log.basicConfig(
     datefmt='%F %T', level=_log.INFO, filemode='a')
 
 
-class IDParking:
+class IDParking(_Devices):
     """ID."""
 
     TIMEOUT_WAIT_FOR_CONNECTION = 5.0  # [s]
 
     def __init__(self, devname):
         """Init."""
-        # NOTE: eventually define only properties that are necessary
         if 'EPU' in devname:
-            self._device = _EPU(devname)
+            device = _EPU(devname)
         elif 'PAPU' in devname:
-            self._device = _PAPU(devname)
+            device = _PAPU(devname)
         elif 'APU' in devname:
-            self._device = _APU(devname)
+            device = _APU(devname)
         else:
             raise ValueError('Invalid ID device type')
+        self._device = device
 
-    @property
-    def connected(self):
-        """."""
-        return self._device.connected
-
-    @property
-    def wait_for_connection(self):
-        """."""
-        self._device.wait_for_connection()
+        super().__init__(devname, [device, ])
 
     @property
     def park_device(self):
@@ -105,13 +97,16 @@ class IDParking:
         return True
 
 
-class MachineShutdown(_Callback):
-    """Machine Shutdown class."""
+class MachineShutdown(_Devices, _Callback):
+    """Machine Shutdown device."""
 
     def __init__(self, log_callback=None):
-        """."""
-        self._devices = self._create_devices()
-        super().__init__(log_callback)
+        self._devrefs = self._create_devices()
+        devices = list(self._devrefs.values())
+
+        _Devices.__init__(self, 'AS-Glob:AP-MachShutdown', devices)
+
+        _Callback.__init__(self, log_callback)
 
     def log(self, message):
         """Update execution logs."""
@@ -131,7 +126,7 @@ class MachineShutdown(_Callback):
         """Try to close gamma shutter."""
         print('--- close_gamma_shutter...')
 
-        dev = self._devices['asmpsctrl']
+        dev = self._devrefs['asmpsctrl']
         is_ok = dev.cmd_gamma_disable()
         if not is_ok:
             print('WARN:Could not close gamma shutter.')
@@ -191,19 +186,19 @@ class MachineShutdown(_Callback):
         print('--- ids_parking...')
 
         # NOTE: parallelize this!
-        if not self._devices['epu50_10SB'].park_device():
+        if not self._devrefs['epu50_10SB'].park_device():
             return False
-        if not self._devices['apu22_06SB'].park_device():
+        if not self._devrefs['apu22_06SB'].park_device():
             return False
-        if not self._devices['apu22_07SP'].park_device():
+        if not self._devrefs['apu22_07SP'].park_device():
             return False
-        if not self._devices['apu22_08SB'].park_device():
+        if not self._devrefs['apu22_08SB'].park_device():
             return False
-        if not self._devices['apu22_09SA'].park_device():
+        if not self._devrefs['apu22_09SA'].park_device():
             return False
-        if not self._devices['apu58_11SP'].park_device():
+        if not self._devrefs['apu58_11SP'].park_device():
             return False
-        if not self._devices['papu50_17SA'].park_device():
+        if not self._devrefs['papu50_17SA'].park_device():
             return False
 
         return True
@@ -412,7 +407,7 @@ class MachineShutdown(_Callback):
 
         # Verificar se a contagem regressiva para liberar acesso
         # ao túnel iniciou."""
-        # dev = self._devices['asppsctrl']
+        # dev = self._devrefs['asppsctrl']
         # if dev.time_left_for_tunnel_access() == 360:
         #     return False
         msg = (
@@ -671,31 +666,27 @@ class MachineShutdown(_Callback):
             return False
         return True
 
-    @property
-    def connected(self):
-        """."""
-        for dev in self._devices.values():
-            if not dev.connected:
-                return False
-        return True
-
-    def wait_for_connection(self, timeout):
-        """."""
-        for dev in self._devices.values():
-            if not dev.wait_for_connection(timeout):
-                return False
-        return True
-
     def _create_devices(self):
         """."""
         devices = dict()
-        # self._devices['machshift'] = MachShift()
-        # self._devices['injctrl'] = InjCtrl()
-        # self._devices['evg'] = EVG()
-        # self._devices['egtriggerps'] = EGTriggerPS()
 
-        # devices['asppsctrl'] = _ASPPSCtrl()
+        # MachShift
+        devices['machshift'] = _MachShift()
+
+        # InjCtrl
+        devices['injctrl'] = _InjCtrl()
+
+        # EVG
+        devices['evg'] = _EVG()
+
+        # EGun
+        devices['egtriggerps'] = _EGTriggerPS()
+
+        # Interlock
+        devices['asppsctrl'] = _ASPPSCtrl()
         devices['asmpsctrl'] = _ASMPSCtrl()
+
+        # IDs
         devices['apu22_06SB'] = IDParking(_APU.DEVICES.APU22_06SB)
         devices['apu22_07SP'] = IDParking(_APU.DEVICES.APU22_07SP)
         devices['apu22_08SB'] = IDParking(_APU.DEVICES.APU22_08SB)
