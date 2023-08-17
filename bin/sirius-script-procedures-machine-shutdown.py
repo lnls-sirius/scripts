@@ -2,14 +2,23 @@
 """Machine shutdown script."""
 
 import time as _time
+import logging as _log
+
 import epics as _epics
 
+from siriuspy.callbacks import Callback as _Callback
 from siriuspy.devices import ASPPSCtrl as _ASPPSCtrl
 from siriuspy.devices import ASMPSCtrl as _ASMPSCtrl
 from siriuspy.devices import APU as _APU
 from siriuspy.devices import EPU as _EPU
 from siriuspy.devices import PAPU as _PAPU
 from siriuspy.search import PSSearch as _PSSearch
+
+
+# Configure Logging
+_log.basicConfig(
+    format='%(levelname)7s | %(asctime)s ::: %(message)s',
+    datefmt='%F %T', level=_log.INFO, filemode='a')
 
 
 class IDParking:
@@ -96,12 +105,27 @@ class IDParking:
         return True
 
 
-class MachineShutdown:
+class MachineShutdown(_Callback):
     """Machine Shutdown class."""
 
-    def __init__(self):
+    def __init__(self, log_callback=None):
         """."""
         self._devices = self._create_devices()
+        super().__init__(log_callback)
+
+    def log(self, message):
+        """Update execution logs."""
+        if self.has_callbacks:
+            self.run_callbacks(message)
+            return
+        if 'ERR' in message:
+            _log.error(message[4:])
+        elif 'FATAL' in message:
+            _log.error(message[6:])
+        elif 'WARN' in message:
+            _log.warning(message[5:])
+        else:
+            _log.info(message)
 
     def s01_close_gamma_shutter(self):
         """Try to close gamma shutter."""
