@@ -3,6 +3,7 @@
 
 import time as _time
 import logging as _log
+from threading import Thread as _Thread
 
 import epics as _epics
 
@@ -11,6 +12,8 @@ from siriuspy.namesys import SiriusPVName as _PVName
 from siriuspy.search import PSSearch as _PSSearch, \
     HLTimeSearch as _HLTimeSearch
 from siriuspy.pwrsupply.csdev import Const as _PSC
+from siriuspy.machshift.csdev import Const as _MachShiftC
+from siriuspy.injctrl.csdev import Const as _InjCtrlC
 from siriuspy.devices import Devices as _Devices, \
     ASMPSCtrl as _ASMPSCtrl, ASPPSCtrl as _ASPPSCtrl, \
     APU as _APU, EPU as _EPU, PAPU as _PAPU, \
@@ -20,115 +23,20 @@ from siriuspy.devices.pstesters import \
     Triggers as _PSTriggers, PSTesterFactory as _PSTesterFactory
 
 
-
 # Configure Logging
 _log.basicConfig(
     format='%(levelname)7s | %(asctime)s ::: %(message)s',
     datefmt='%F %T', level=_log.INFO, filemode='a')
 
 
-class IDParking(_Devices):
-    """ID."""
-
-    TIMEOUT_WAIT_FOR_CONNECTION = 5.0  # [s]
-
-    def __init__(self, devname):
-        """Init."""
-        if 'EPU' in devname:
-            device = _EPU(devname)
-        elif 'PAPU' in devname:
-            device = _PAPU(devname)
-        elif 'APU' in devname:
-            device = _APU(devname)
-        else:
-            raise ValueError('Invalid ID device type')
-        self._device = device
-
-        super().__init__(devname, [device, ])
-
-    @property
-    def park_device(self):
-        """Park ID."""
-        # check connections
-        # print('check connections...')
-        if not self._device.wait_for_connection(
-                timeout=IDParking.TIMEOUT_WAIT_FOR_CONNECTION):
-            return False
-
-        # Desabilita a movimentação dos IDs pelas linhas.
-        # print('disable beamline controls...')
-        if not self._device.cmd_beamline_ctrl_disable():
-            return False
-
-        # Para a movimentação dos IDs
-        # print('cmd move stop...')
-        if not self._device.cmd_move_stop():
-            return False
-
-        # Seta as velocidades de Phase e Gap
-        # print('cmd set speeds...')
-        value = self._device.phase_speed_max
-        if not self._device.set_phase_speed(value):
-            return False
-        if isinstance(self._device, _EPU):
-            value = self._device.gap_speed_max
-            if not self._device.set_gap_speed(value):
-                return False
-
-        # Seta os IDs para config de estacionamento
-        # print('cmd set phase and gap for parking...')
-        value = self._device.phase_parked
-        if not self._device.set_phase(value):
-            return False
-        if isinstance(self._device, _EPU):
-            value = self._device.gap_parked
-        if not self._device.set_gap(value):
-            return False
-
-        # Movimenta os IDs para a posição escolhida
-        # print('cmd move to parking...')
-        if not self._device.cmd_move_start():
-            return False
-        _time.sleep(2.0)  # aguarda 2 seg.
-
-        # wait for end of movement of timeout
-        # print('wait end of movement...')
-        timeout, sleep = 70, 0.2  # [s]
-        t0 = _time.time()
-        while self._device.is_moving:
-            if _time.time() - t0 > timeout:
-                return False
-            _time.sleep(sleep)
-
-        return True
-
-
-class MachineShutdown(_Devices, _Callback):
-    """Machine Shutdown device."""
-
-    DEFAULT_CHECK_TIMEOUT = 10
-    DEFAULT_CONN_TIMEOUT = 5
-    DEFAULT_TINYSLEEP = 0.1
+class LogCallback(_Callback):
+    """Base class for logging using callbacks."""
 
     def __init__(self, log_callback=None):
-        self._abort = False
-
-        self._devrefs = self._create_devices()
-        devices = list(self._devrefs.values())
-
-        _Devices.__init__(self, 'AS-Glob:AP-MachShutdown', devices)
-
-        _Callback.__init__(self, log_callback)
-
-    def continue_execution(self):
-        """Check whether to continue execution based on abort flag state."""
-        if self._abort:
-            self._abort = False
-            return False
-        return True
+        super().__init__(log_callback)
 
     def log(self, message):
-        """Update execution logs."""
+        """Log by callback."""
         if self.has_callbacks:
             self.run_callbacks(message)
             return
@@ -141,119 +49,239 @@ class MachineShutdown(_Devices, _Callback):
         else:
             _log.info(message)
 
+
+class IDParking(_Devices, LogCallback):
+    """ID."""
+
+    TIMEOUT_WAIT_FOR_CONNECTION = 5.0  # [s]
+
+    def __init__(self, devname, log_callback=None):
+        """Init."""
+        if 'EPU' in devname:
+            device = _EPU(devname)
+        elif 'PAPU' in devname:
+            device = _PAPU(devname)
+        elif 'APU' in devname:
+            device = _APU(devname)
+        else:
+            raise ValueError('Invalid ID device type')
+        self._device = device
+
+        _Devices.__init__(self, devname, [device, ])
+        LogCallback.__init__(self, log_callback)
+
+    def cmd_park_device(self):
+        """Park ID."""
+        # check connections
+        self.log('check connections...')
+        if not self._device.wait_for_connection(
+                timeout=IDParking.TIMEOUT_WAIT_FOR_CONNECTION):
+            return False
+
+        # Desabilita a movimentação dos IDs pelas linhas.
+        self.log('disable beamline controls...')
+        if not self._device.cmd_beamline_ctrl_disable():
+            return False
+
+        # Para a movimentação dos IDs
+        self.log('cmd move stop...')
+        if not self._device.cmd_move_stop():
+            return False
+
+        # Seta as velocidades de Phase e Gap
+        self.log('cmd set speeds...')
+        value = self._device.phase_speed_max
+        if not self._device.set_phase_speed(value):
+            return False
+        if isinstance(self._device, _EPU):
+            value = self._device.gap_speed_max
+            if not self._device.set_gap_speed(value):
+                return False
+
+        # Seta os IDs para config de estacionamento
+        self.log('cmd set phase and gap for parking...')
+        value = self._device.phase_parked
+        if not self._device.set_phase(value):
+            return False
+        if isinstance(self._device, _EPU):
+            value = self._device.gap_parked
+        if not self._device.set_gap(value):
+            return False
+
+        # Movimenta os IDs para a posição escolhida
+        self.log('cmd move to parking...')
+        if not self._device.cmd_move_start():
+            return False
+        _time.sleep(2.0)  # aguarda 2 seg.
+
+        # wait for end of movement of timeout
+        self.log('wait end of movement...')
+        timeout, sleep = 70, 0.2  # [s]
+        t0 = _time.time()
+        while self._device.is_moving:
+            if _time.time() - t0 > timeout:
+                return False
+            _time.sleep(sleep)
+
+        return True
+
+
+class MachineShutdown(_Devices, LogCallback):
+    """Machine Shutdown device."""
+
+    # TODO: verify which steps we want to keep bloking procedure execution
+
+    DEFAULT_CHECK_TIMEOUT = 10
+    DEFAULT_CONN_TIMEOUT = 5
+    DEFAULT_TINYSLEEP = 0.1
+
+    def __init__(self, log_callback=None):
+        self._abort = False
+
+        self._devrefs = self._create_devices()
+        devices = list(self._devrefs.values())
+        _Devices.__init__(self, 'AS-Glob:AP-MachShutdown', devices)
+
+        self._log_callback = log_callback
+        LogCallback.__init__(self, log_callback)
+
+    def continue_execution(self):
+        """Check whether to continue execution based on abort flag state."""
+        if self._abort:
+            self._abort = False
+            return False
+        return True
+
     def s01_close_gamma_shutter(self):
         """Try to close gamma shutter."""
-        print('--- close_gamma_shutter...')
+        self.log('Step 01: Closing gamma shutter...')
 
         dev = self._devrefs['asmpsctrl']
         is_ok = dev.cmd_gamma_disable()
         if not is_ok:
-            print('WARN:Could not close gamma shutter.')
+            self.log('WARN:Could not close gamma shutter.')
         else:
-            print('Gamma Shutter closed.')
+            self.log('Gamma Shutter closed.')
         return is_ok
 
     def s02_macshift_update(self):
-        """Altera o modo do Turno de operação."""
-        print('--- macshift_update...')
+        """Change Machine Shift to Maintenance."""
+        self.log('Step 02: Updating Machine Shift...')
 
-        # Executa a PV em questão alterando para o modo maintenance
-        maintenance = 5
+        maintenance = _MachShiftC.MachShift.Maintenance
         _epics.caput('AS-Glob:AP-MachShift:Mode-Sel', maintenance)
 
-        return MachineShutdown._wait_value(
+        is_ok = MachineShutdown._wait_value(
             'AS-Glob:AP-MachShift:Mode-Sts', maintenance, 0.5, 2.0)
+        if not is_ok:
+            self.log('WARN:Could not change MachShift to Maintenance.')
+        else:
+            self.log('...done.')
+        return is_ok
 
     def s03_injmode_update(self):
-        """."""
-        print('--- injmode_update...')
+        """Change Injection Mode to Decay."""
+        self.log('Step 03: Changing Injection Mode to Decay...')
 
-        print('Alterando o modo de injeção para Decay.')
-        # Executa a PV em questão alterando o modo de injeção para Decay.
-        decay = 0
+        decay = _InjCtrlC.InjMode.Decay
         _epics.caput('AS-Glob:AP-InjCtrl:Mode-Sel', decay)
 
-        return MachineShutdown._wait_value(
+        is_ok = MachineShutdown._wait_value(
             'AS-Glob:AP-InjCtrl:Mode-Sts', decay, 0.5, 2.0)
+        if not is_ok:
+            self.log('WARN:Could not change InjMode to Decay.')
+        else:
+            self.log('...done.')
+        return is_ok
 
     def s04_injcontrol_disable(self):
-        """Desabilta o Controle de Injeção."""
-        print('--- injcontrol_disable...')
+        """Turn off injection system."""
+        self.log('Step 04: Turning off Injection system...')
 
-        print('Desligando Injection')
+        self.log('Turning off EVG Injection table...')
         _epics.caput('AS-RaMO:TI-EVG:InjectionEvt-Sel', 0)
-        if not MachineShutdown._wait_value(
-                'AS-RaMO:TI-EVG:InjectionEvt-Sts', 0, 0.5, 2.0):
+        is_ok = MachineShutdown._wait_value(
+            'AS-RaMO:TI-EVG:InjectionEvt-Sts', 0, 0.5, 2.0)
+        if not is_ok:
+            self.log('ERR:Could not turn off Injection table.')
             return False
 
-        print('Desligando Egun trigger')
+        self.log('...done. Turning off Egun trigger...')
         _epics.caput('LI-01:EG-TriggerPS:enable', 0)
-        if not MachineShutdown._wait_value(
-                'LI-01:EG-TriggerPS:enablereal', 0, 0.5, 2.0):
+        is_ok = MachineShutdown._wait_value(
+            'LI-01:EG-TriggerPS:enablereal', 0, 0.5, 2.0)
+        if not is_ok:
+            self.log('ERR:Could not turn off Injection table.')
             return False
 
-        print('Desligando Sistema de Injeção')
+        self.log('...done. Turning off injection system...')
         _epics.caput('AS-Glob:AP-InjCtrl:InjSysTurnOff-Cmd', 0)
-        if not MachineShutdown._wait_value(
-                'AS-Glob:AP-InjCtrl:InjSysCmdSts-Mon', 0, 0.5, 30.0):
+        is_ok = MachineShutdown._wait_value(
+            'AS-Glob:AP-InjCtrl:InjSysCmdSts-Mon', 0, 0.5, 30.0)
+        if not is_ok:
+            self.log('ERR:Could not turn off Injection system.')
             return False
-
         return True
 
     def s05_ids_parking(self):
-        """Altera as condições dos IDs para desligamento da Máquina."""
-        print('--- ids_parking...')
+        """Park IDs."""
+        self.log('Step 05: Parking IDs...')
 
-        # NOTE: parallelize this!
-        if not self._devrefs['epu50_10SB'].park_device():
-            return False
-        if not self._devrefs['apu22_06SB'].park_device():
-            return False
-        if not self._devrefs['apu22_07SP'].park_device():
-            return False
-        if not self._devrefs['apu22_08SB'].park_device():
-            return False
-        if not self._devrefs['apu22_09SA'].park_device():
-            return False
-        if not self._devrefs['apu58_11SP'].park_device():
-            return False
-        if not self._devrefs['papu50_17SA'].park_device():
-            return False
-
+        ids = [
+            'apu22_06SB', 'apu22_07SP', 'apu22_08SB', 'apu22_09SA',
+            'apu58_11SP', 'epu50_10SB', 'papu50_17SA',
+        ]
+        self.log('Sending park command for IDs...')
+        threads = list()
+        for idref in ids:
+            dev = self._devrefs[idref]
+            thread = _Thread(target=dev.cmd_park_device, daemon=True)
+            thread.start()
+            threads.append(thread)
+        self.log('...waiting...')
+        for thread in threads:
+            thread.join()
+        self.log('...finished ID Parking routine.')
+        # once we do not want this step block the machine shutdown script in
+        # case of problems, we do not need to return False in case of any
+        # False return.
         return True
 
     def s06_sofb_fofb_turnoff(self):
-        """Desliga o FOFB e posteriormente o SOFB."""
-        print('--- sofb_fofb_turnoff...')
+        """Turn off orbit feedback loops."""
+        self.log('Step 06: Turning off FOFB and SOFB...')
 
-        # Parâmetros do FOFB:
-        print('FOFB Turn off...')
-        # Desabilita o Loop
+        self.log('Turning off FOFB loop...')
         _epics.caput('SI-Glob:AP-FOFB:LoopState-Sel', 0)
-        if not MachineShutdown._wait_value(
-                'SI-Glob:AP-FOFB:LoopState-Sts', 0, 0.5, 12.0):
+        is_ok = MachineShutdown._wait_value(
+            'SI-Glob:AP-FOFB:LoopState-Sts', 0, 0.5, 12.0)
+        if not is_ok:
+            self.log('ERR:Could not turn off FOFB loop.')
             return False
 
-        print('SOFB Turn off...')
-        # Desabilita Auto correction State
+        self.log('...done. Turning off SOFB loop...')
         _epics.caput('SI-Glob:AP-SOFB:LoopState-Sel', 0)
-        if not MachineShutdown._wait_value(
-                'SI-Glob:AP-SOFB:LoopState-Sts', 0, 0.5, 5.0):
+        is_ok = MachineShutdown._wait_value(
+            'SI-Glob:AP-SOFB:LoopState-Sts', 0, 0.5, 5.0)
+        if not is_ok:
+            self.log('ERR:Could not turn off SOFB loop.')
             return False
 
-        # Desabilita Synchronization
+        self.log('...done. Disabling SOFB Synchronization...')
         _epics.caput('SI-Glob:AP-SOFB:CorrSync-Sel', 0)
-        if not MachineShutdown._wait_value(
-                'SI-Glob:AP-SOFB:CorrSync-Sts', 0, 0.5, 5.0):
+        is_ok = MachineShutdown._wait_value(
+            'SI-Glob:AP-SOFB:CorrSync-Sts', 0, 0.5, 5.0)
+        if not is_ok:
+            self.log('ERR:Could not disable SOFB Synchronization.')
             return False
 
         return True
 
     def s07_bbb_turnoff(self):
-        """Desabilita o bbb Hor, Vert e Long."""
-        print('--- bbb_turnoff...')
+        """Turn off BbB loops."""
+        self.log('Step 07: Turning off BbB...')
 
-        # desliga os loops H, V e L do bbb.
+        self.log('Disabling BbB loops...')
         _epics.caput('SI-Glob:DI-BbBProc-H:FBCTRL', 0)
         _epics.caput('SI-Glob:DI-BbBProc-V:FBCTRL', 0)
         _epics.caput('SI-Glob:DI-BbBProc-L:FBCTRL', 0)
@@ -265,210 +293,222 @@ class MachineShutdown(_Devices, _Callback):
         ]
         values = [0, 0, 0]
         tols = [0.5, 0.5, 0.5]
-        if not MachineShutdown._wait_value_set(
-                pvnames, values, tols, 2.0):
+        is_ok = MachineShutdown._wait_value_set(
+            pvnames, values, tols, 2.0)
+        if not is_ok:
+            self.log('ERR:Could not disable BbB loops.')
             return False
+        self.log('...done.')
         return True
 
     def s08_sirf_turnoff(self):
-        """Ajusta os parâmetros da RF do Anel para desligamento."""
-        print('--- sirf_turnoff...')
+        """Turn off SI RF."""
+        self.log('Step 08: Turning off SI RF...')
 
-        # Alterando a taxa de incremento
-        print('Alterando a taxa de incremento para 2mV/s')
+        self.log('Changing increase rate to 2mV/s...')
         incrate_rate = 6
         _epics.caput('SR-RF-DLLRF-01:AMPREF:INCRATE:S', incrate_rate)
         _time.sleep(1.0)
+        # TODO add verification
 
-        print('Muda referência do loop para 60mV')
+        self.log('...done. Changing loop reference to 60mV...')
         _epics.caput('SR-RF-DLLRF-01:mV:AL:REF-SP', 60)
         if not MachineShutdown._wait_value(
                'SR-RF-DLLRF-01:SL:REF:AMP', 60, 0.5, 180.0):
             return False
 
-        print('Checando se o feixe acumulado foi derrubado')
+        self.log('...done. Check if stored beam was dumped...')
         if not MachineShutdown._wait_value(
                 'SI-14C4:DI-DCCT:Current-Mon', 0, 0.5, 5.0):
             return False
 
-        # Desabilitando o loop de controle
-        print('Desabilitando o loop de controle')
+        self.log('...done. Disabling slow loop control...')
         _epics.caput('SR-RF-DLLRF-01:SL:S', 0)
         _time.sleep(1.0)
+        # TODO add verification
 
-        # Desligando as Chaves PIN
-        print('Desligando as Chaves PIN')
+        self.log('...done. Disabling PinSw...')
         _epics.caput('RA-RaSIA01:RF-LLRFPreAmp-1:PINSw1Dsbl-Cmd', 1)
         _epics.caput('RA-RaSIA01:RF-LLRFPreAmp-1:PINSw2Dsbl-Cmd', 1)
         _time.sleep(1.0)
         _epics.caput('RA-RaSIA01:RF-LLRFPreAmp-1:PINSw1Dsbl-Cmd', 0)
         _epics.caput('RA-RaSIA01:RF-LLRFPreAmp-1:PINSw2Dsbl-Cmd', 0)
         _time.sleep(1.0)
+        # TODO add verification
 
-        # Desligando os amplificadores DC/TDK
-        print('Desligando os amplificadores DC/TDK')
+        self.log('...done. Disabling DC/TDK amplifiers...')
         _epics.caput('RA-ToSIA01:RF-TDKSource:PwrDCDsbl-Sel', 1)
         _epics.caput('RA-ToSIA02:RF-TDKSource:PwrDCDsbl-Sel', 1)
         _time.sleep(1.0)
         _epics.caput('RA-ToSIA01:RF-TDKSource:PwrDCDsbl-Sel', 0)
         _epics.caput('RA-ToSIA02:RF-TDKSource:PwrDCDsbl-Sel', 0)
         _time.sleep(1.0)
+        # TODO add verification
 
-        # Desligando os amplificadores AC/TDK
-        print('Desligando os amplificadores AC/TDK')
+        self.log('...done. Disabling AC/TDK amplifiers...')
         _epics.caput('RA-ToSIA01:RF-ACPanel:PwrACDsbl-Sel', 1)
         _epics.caput('RA-ToSIA02:RF-ACPanel:PwrACDsbl-Sel', 1)
         _time.sleep(1.0)
         _epics.caput('RA-ToSIA01:RF-ACPanel:PwrACDsbl-Sel', 0)
         _epics.caput('RA-ToSIA02:RF-ACPanel:PwrACDsbl-Sel', 0)
         _time.sleep(1.0)
+        # TODO add verification
 
         return True
 
     def s09_borf_turnoff(self):
-        """Ajustes dos parâmetros do Booster para desligamento."""
-        print('--- borf_turnoff...')
+        """Turn off BO RF."""
+        self.log('Step 09: Turning off BO RF...')
 
-        # Desabilitando a rampa do Booster
-        ramp = 0
-        _epics.caput('BR-RF-DLLRF-01:RmpEnbl-Sel', ramp)
+        self.log('Disabling BO RF Rmp...')
+        _epics.caput('BR-RF-DLLRF-01:RmpEnbl-Sel', 0)
         if not MachineShutdown._wait_value(
-                'BR-RF-DLLRF-01:RmpEnbl-Sts', ramp, 0, 2.0):
+                'BR-RF-DLLRF-01:RmpEnbl-Sts', 0, 0, 2.0):
             return False
         _time.sleep(2.0)
 
-        print('Desligando o loop de controle...')
+        self.log('...done. Disabling slow loop control...')
         _epics.caput('BR-RF-DLLRF-01:SL:S', 0)
         _time.sleep(1.0)
+        # TODO add verification
 
-        print('Desligando a chave PIN...')
+        self.log('...done. Disabling PinSw...')
         _epics.caput('RA-RaBO01:RF-LLRFPreAmp:PinSwDsbl-Cmd', 1)
         _time.sleep(0.5)
         _epics.caput('RA-RaBO01:RF-LLRFPreAmp:PinSwDsbl-Cmd', 0)
         _time.sleep(0.5)
+        # TODO add verification
 
-        print('Desligando os Amplificador DC/DC...')
+        self.log('...done. Disabling DC/DC amplifier...')
         _epics.caput('RA-ToBO:RF-SSAmpTower:PwrCnvDsbl-Sel', 1)
         _time.sleep(0.5)
         _epics.caput('RA-ToBO:RF-SSAmpTower:PwrCnvDsbl-Sel', 0)
         _time.sleep(0.5)
+        # TODO add verification
 
-        print('Desligando os Amplificador 300VDC...')
+        self.log('...done. Disabling 300VDC amplifier...')
         _epics.caput('RA-ToBO:RF-ACDCPanel:300VdcDsbl-Sel', 1)
         _time.sleep(0.5)
         _epics.caput('RA-ToBO:RF-ACDCPanel:300VdcDsbl-Sel', 0)
         _time.sleep(0.5)
+        # TODO add verification
 
         return True
 
     def s10_modulators_turnoff(self):
-        """."""
-        print('---modulators_turnoff...')
+        """Turn off modulators."""
+        self.log('Step 10: Turning off modulators...')
 
-        # Desliga os botões CHARGE e TRIGOUT dos moduladores
+        self.log('Disabling CHARGE...')
         _epics.caput('LI-01:PU-Modltr-1:CHARGE', 0)
         _epics.caput('LI-01:PU-Modltr-2:CHARGE', 0)
+        # TODO add verification
+
         _time.sleep(1.0)
+
+        self.log('...done. Disabling TRIGOUT...')
         _epics.caput('LI-01:PU-Modltr-1:TRIGOUT', 0)
         _epics.caput('LI-01:PU-Modltr-2:TRIGOUT', 0)
+        # TODO add verification
 
+        self.log('...done.')
         return True
 
     def s11_adjust_egunbias(self):
-        """Ajusta a tensão de Bias do canhão em -100V."""
-        print('--- adjust_bias...')
+        """Adjust Bias Voltage to -100V."""
+        self.log('Step 11: Adjusting bias voltage...')
 
-        # Ajusta tensão de Bias em -100V.
+        self.log('Setting bias voltage to 100V...')
         _epics.caput('AS-Glob:AP-InjCtrl:MultBunBiasVolt-SP', -100.0)
         # _epics.caput('AS-Glob:AP-InjCtrl:SglBunBiasVolt-SP', -100.0)
+        # TODO add verification
 
+        self.log('...done.')
         return True
 
     def s12_adjust_egunfilament(self):
-        """Ajusta a corrente de filamento em 1A."""
-        print('--- adjust_egunfilament...')
+        """Adjust EGun Bias Filament current."""
+        self.log('Step 12: Adjusting EGun Bias Filament current...')
 
-        # Ajusta corrente de filamento em 1.1A.
+        self.log('Setting Bias Filament current to 1.1A...')
         _epics.caput('AS-Glob:AP-InjCtrl:FilaOpCurr-SP', 1.1)
-        if not MachineShutdown._wait_value(
-                'LI-01:EG-FilaPS:currentinsoft', 1.1, 0.2, 10.0):
+        is_ok = MachineShutdown._wait_value(
+            'LI-01:EG-FilaPS:currentinsoft', 1.1, 0.2, 10.0)
+        if not is_ok:
+            self.log('ERR:Could not adjust EGun filament.')
             return False
 
+        self.log('...done.')
         return True
 
     def s13_disable_egun_highvoltage(self):
         """Disable egun high voltage."""
-        print('---disable_egun_highvoltage...')
+        self.log('Step 13: Disabling EGun high voltage...')
 
-        # Ajusta a alta tensão do canhão e checa.
+        self.log('Setting EGun High Voltage to 0V...')
         _epics.caput('AS-Glob:AP-InjCtrl:HVOpVolt-SP', 0.000)
-        if not MachineShutdown._wait_value(
-                'AS-Glob:AP-InjCtrl:HVOpVoltCmdSts-Mon', 0, 0.5, 100.0):
+        is_ok = MachineShutdown._wait_value(
+            'AS-Glob:AP-InjCtrl:HVOpVoltCmdSts-Mon', 0, 0.5, 100.0)
+        if not is_ok:
+            self.log('ERR:Timed out waiting for egun high voltage.')
             return False
 
-        # desabilita enable
+        self.log('...done. Disabling EGun High Voltage Enable State...')
         _epics.caput('LI-01:EG-HVPS:enable', 0)
-        if not MachineShutdown._wait_value(
-                'LI-01:EG-HVPS:enstatus', 0, 0.5, 2.0):
+        is_ok = MachineShutdown._wait_value(
+            'LI-01:EG-HVPS:enstatus', 0, 0.5, 2.0)
+        if not is_ok:
+            self.log('ERR:Could not disable egun high voltage Enable.')
             return False
 
-        # checar se alta tensão foi desligada.
+        self.log('...done. Disabling EGun High Voltage Switch...')
         _epics.caput('LI-01:EG-HVPS:switch', 0)
-        if not MachineShutdown._wait_value(
-                'LI-01:EG-HVPS:swstatus', 0, 0.5, 2.0):
+        is_ok = MachineShutdown._wait_value(
+            'LI-01:EG-HVPS:swstatus', 0, 0.5, 2.0)
+        if not is_ok:
+            self.log('ERR:Could not disable egun high voltage Switch.')
             return False
 
+        self.log('...done.')
         return True
 
     def s14_start_counter(self):
-        """Checa inicio de contagem para liberar túnel."""
-        print('--- start_counter...')
+        """Check whether the countdown to tunnel access has started."""
+        self.log('Step 14: Checking tunnel access countdown...')
 
-        # Verificar se a contagem regressiva para liberar acesso
-        # ao túnel iniciou."""
-        # dev = self._devrefs['asppsctrl']
-        # if dev.time_left_for_tunnel_access() == 360:
-        #     return False
         msg = (
-            'Confirme se a contagem regressiva para '
-            'liberar acesso ao túnel iniciou')
+            'Check whether the countdown to tunnel access has started.')
         input(msg)
+        # dev = self._devrefs['asppsctrl']
+        # if dev.time_left_to_tunnel_access() == 360:
+        #     return False
 
         return True
 
     def s15_disable_ps_triggers(self):
         """Disable PS triggers."""
-        self.log('Disabling PS triggers...')
+        self.log('Step 15: Disabling PS triggers...')
         return self._disable_ps_triggers('PS')
 
     def s16_run_ps_turn_off_procedure(self):
         """Do turn off PS procedure."""
-        self.log('Executing Turn Off PS...')
+        self.log('Step 16: Executing Turn Off PS...')
         return self._exec_ps_turnoff('PS')
 
     def s17_disable_pu_triggers(self):
         """Disable PU triggers."""
-        self.log('Disabling PU triggers...')
+        self.log('Step 17: Disabling PU triggers...')
         return self._disable_ps_triggers('PU')
 
     def s18_run_pu_turn_off_procedure(self):
         """Do turn off PU procedure."""
-        self.log('Executing Turn Off PU...')
+        self.log('Step 18: Executing Turn Off PU...')
         return self._exec_ps_turnoff('PU')
 
     def s19_free_access(self):
-        """Aguardar zerar contagem."""
-        print('--- free_access...')
-
-        # Aguardar o contador chegar em 0, após 6 horas, para
-        # liberar acesso ao túnel."""
-        print('free_access')
-        msg = (
-            'Aguarde o contador chegar em 0, após 6 horas, '
-            'para liberar acessoa ao túnel')
-        input(msg)
-
-        return True
+        """Wait for tunnel access to be allowed."""
+        self.log('Final Step: Wait for tunnel access to be released...')
+        input()
 
     def execute_procedure(self):
         """Executa na sequência os passos a seguir."""
@@ -508,8 +548,7 @@ class MachineShutdown(_Devices, _Callback):
             return False
         if not self.s18_run_pu_turn_off_procedure():
             return False
-        if not self.s19_free_access():
-            return False
+        self.s19_free_access()
         return True
 
     def _create_devices(self):
@@ -533,13 +572,20 @@ class MachineShutdown(_Devices, _Callback):
         devices['asmpsctrl'] = _ASMPSCtrl()
 
         # IDs
-        devices['apu22_06SB'] = IDParking(_APU.DEVICES.APU22_06SB)
-        devices['apu22_07SP'] = IDParking(_APU.DEVICES.APU22_07SP)
-        devices['apu22_08SB'] = IDParking(_APU.DEVICES.APU22_08SB)
-        devices['apu22_09SA'] = IDParking(_APU.DEVICES.APU22_09SA)
-        devices['apu58_11SP'] = IDParking(_APU.DEVICES.APU58_11SP)
-        devices['epu50_10SB'] = IDParking(_EPU.DEVICES.EPU50_10SB)
-        devices['papu50_17SA'] = IDParking(_PAPU.DEVICES.PAPU50_17SA)
+        devices['apu22_06SB'] = IDParking(
+            _APU.DEVICES.APU22_06SB, log_callback=self._log_callback)
+        devices['apu22_07SP'] = IDParking(
+            _APU.DEVICES.APU22_07SP, log_callback=self._log_callback)
+        devices['apu22_08SB'] = IDParking(
+            _APU.DEVICES.APU22_08SB, log_callback=self._log_callback)
+        devices['apu22_09SA'] = IDParking(
+            _APU.DEVICES.APU22_09SA, log_callback=self._log_callback)
+        devices['apu58_11SP'] = IDParking(
+            _APU.DEVICES.APU58_11SP, log_callback=self._log_callback)
+        devices['epu50_10SB'] = IDParking(
+            _EPU.DEVICES.EPU50_10SB, log_callback=self._log_callback)
+        devices['papu50_17SA'] = IDParking(
+            _PAPU.DEVICES.PAPU50_17SA, log_callback=self._log_callback)
 
         # PS
         self._pstrigs = _HLTimeSearch.get_hl_triggers(filters={'dev': 'Mags'})
