@@ -162,7 +162,10 @@ class MachineShutdown(_Devices, LogCallback):
             self.log('WARN:Could not close gamma shutter.')
         else:
             self.log('Gamma Shutter closed.')
-        return is_ok
+        # NOTE: we will return True here once this is not
+        # impeditive to dump the beam and proceed with the
+        # machine shutdown.
+        return True
 
     def s02_macshift_update(self):
         """Change Machine Shift to Maintenance."""
