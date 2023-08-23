@@ -19,7 +19,12 @@ from siriuspy.devices import Devices as _Devices, \
     APU as _APU, EPU as _EPU, PAPU as _PAPU, \
     MachShift as _MachShift, InjCtrl as _InjCtrl, \
     EVG as _EVG, EGTriggerPS as _EGTriggerPS, \
-    HLFOFB as _HLFOFB, SOFB as _SOFB
+    HLFOFB as _HLFOFB, SOFB as _SOFB, \
+    ASLLRF as _ASLLRF, \
+    SILLRFPreAmp as _SILLRFPreAmp, BOLLRFPreAmp as _BOLLRFPreAmp, \
+    SIRFDCAmp as _SIRFDCAmp, BORFDCAmp as _BORFDCAmp, \
+    SIRFACAmp as _SIRFACAmp, BORF300VDCAmp as _BORF300VDCAmp, \
+    DCCT as _DCCT
 from siriuspy.devices.pstesters import \
     Triggers as _PSTriggers, PSTesterFactory as _PSTesterFactory
 from siriuspy.devices.bbb import Feedback as _BbBFB, \
@@ -307,54 +312,64 @@ class MachineShutdown(_Devices, LogCallback):
         """Turn off SI RF."""
         self.log('Step 08: Turning off SI RF...')
 
-        self.log('Changing increase rate to 2mV/s...')
-        incrate_rate = 6
-        _epics.caput('SR-RF-DLLRF-01:AMPREF:INCRATE:S', incrate_rate)
-        _time.sleep(1.0)
-        # TODO add verification
+        llrf = self._devrefs['sillrf']
+        preamp = self._devrefs['sillrfpreamp']
+        dcamp1 = self._devrefs['sirfdcamp1']
+        dcamp2 = self._devrefs['sirfdcamp2']
+        acamp1 = self._devrefs['sirfacamp1']
+        acamp2 = self._devrefs['sirfacamp2']
+
+        self.log('Changing voltage increase rate to 2mV/s...')
+        incrate = llrf.VoltIncRates.vel_2p0
+        llrf.voltage_incrate = incrate
+        if not self.wait_voltage_incrate(incrate, timeout=5):
+            self.log('ERR:Could not set voltage increase rate to 2mV/s.')
+            return False
+        _time.sleep(1.0)  # is this necessary?
 
         self.log('...done. Changing loop reference to 60mV...')
-        _epics.caput('SR-RF-DLLRF-01:mV:AL:REF-SP', 60)
-        if not MachineShutdown._wait_value(
-               'SR-RF-DLLRF-01:SL:REF:AMP', 60, 0.5, 180.0):
+        if not llrf.set_voltage(60, timeout=180, wait_mon=False):
+            self.log('ERR:Could not set loop reference to 60mV.')
             return False
 
         self.log('...done. Check if stored beam was dumped...')
-        if not MachineShutdown._wait_value(
-                'SI-14C4:DI-DCCT:Current-Mon', 0, 0.5, 5.0):
+        dcct = self._devrefs['dcct']
+        if dcct.is_beam_stored:
+            self.log('ERR:DCCT is indicating stored beam.')
             return False
 
         self.log('...done. Disabling slow loop control...')
-        _epics.caput('SR-RF-DLLRF-01:SL:S', 0)
-        _time.sleep(1.0)
-        # TODO add verification
+        if not llrf.set_slow_loop_state(0):
+            self.log('ERR:Could not disable LLRF slow loop.')
+            return False
+        _time.sleep(1.0)  # is this necessary?
 
         self.log('...done. Disabling PinSw...')
-        _epics.caput('RA-RaSIA01:RF-LLRFPreAmp-1:PINSw1Dsbl-Cmd', 1)
-        _epics.caput('RA-RaSIA01:RF-LLRFPreAmp-1:PINSw2Dsbl-Cmd', 1)
-        _time.sleep(1.0)
-        _epics.caput('RA-RaSIA01:RF-LLRFPreAmp-1:PINSw1Dsbl-Cmd', 0)
-        _epics.caput('RA-RaSIA01:RF-LLRFPreAmp-1:PINSw2Dsbl-Cmd', 0)
-        _time.sleep(1.0)
-        # TODO add verification
+        if not preamp.cmd_disable_pinsw_1(wait_mon=True):
+            self.log('ERR:Could not disable SSA1 PinSw.')
+            return False
+        if not preamp.cmd_disable_pinsw_2(wait_mon=True):
+            self.log('ERR:Could not disable SSA2 PinSw.')
+            return False
+        _time.sleep(1.0)  # is this necessary?
 
         self.log('...done. Disabling DC/TDK amplifiers...')
-        _epics.caput('RA-ToSIA01:RF-TDKSource:PwrDCDsbl-Sel', 1)
-        _epics.caput('RA-ToSIA02:RF-TDKSource:PwrDCDsbl-Sel', 1)
-        _time.sleep(1.0)
-        _epics.caput('RA-ToSIA01:RF-TDKSource:PwrDCDsbl-Sel', 0)
-        _epics.caput('RA-ToSIA02:RF-TDKSource:PwrDCDsbl-Sel', 0)
-        _time.sleep(1.0)
-        # TODO add verification
+        if not dcamp1.cmd_disable(wait_mon=True):
+            self.log('ERR:Could not disable SSA1 DC/TDK.')
+            return False
+        if not dcamp2.cmd_disable(wait_mon=True):
+            self.log('ERR:Could not disable SSA2 DC/TDK.')
+            return False
+        _time.sleep(1.0)  # is this necessary?
 
         self.log('...done. Disabling AC/TDK amplifiers...')
-        _epics.caput('RA-ToSIA01:RF-ACPanel:PwrACDsbl-Sel', 1)
-        _epics.caput('RA-ToSIA02:RF-ACPanel:PwrACDsbl-Sel', 1)
-        _time.sleep(1.0)
-        _epics.caput('RA-ToSIA01:RF-ACPanel:PwrACDsbl-Sel', 0)
-        _epics.caput('RA-ToSIA02:RF-ACPanel:PwrACDsbl-Sel', 0)
-        _time.sleep(1.0)
-        # TODO add verification
+        if not acamp1.cmd_disable(wait_mon=True):
+            self.log('ERR:Could not disable SSA1 AC/TDK.')
+            return False
+        if not acamp2.cmd_disable(wait_mon=True):
+            self.log('ERR:Could not disable SSA2 AC/TDK.')
+            return False
+        _time.sleep(1.0)  # is this necessary?
 
         return True
 
@@ -362,38 +377,40 @@ class MachineShutdown(_Devices, LogCallback):
         """Turn off BO RF."""
         self.log('Step 09: Turning off BO RF...')
 
+        llrf = self._devrefs['bollrf']
+        preamp = self._devrefs['bollrfpreamp']
+        dcamp = self._devrefs['borfdcamp']
+        vdcamp = self._devrefs['borf300vdcamp']
+
         self.log('Disabling BO RF Rmp...')
-        _epics.caput('BR-RF-DLLRF-01:RmpEnbl-Sel', 0)
-        if not MachineShutdown._wait_value(
-                'BR-RF-DLLRF-01:RmpEnbl-Sts', 0, 0, 2.0):
+        if not llrf.set_rmp_enable(0, timeout=2):
+            self.log('ERR:Could not disable BO RF Ramp.')
             return False
-        _time.sleep(2.0)
+        _time.sleep(2.0)  # is this necessary?
 
         self.log('...done. Disabling slow loop control...')
-        _epics.caput('BR-RF-DLLRF-01:SL:S', 0)
-        _time.sleep(1.0)
-        # TODO add verification
+        if not llrf.set_slow_loop_state(0):
+            self.log('ERR:Could not disable LLRF slow loop.')
+            return False
+        _time.sleep(1.0)  # is this necessary?
 
         self.log('...done. Disabling PinSw...')
-        _epics.caput('RA-RaBO01:RF-LLRFPreAmp:PinSwDsbl-Cmd', 1)
-        _time.sleep(0.5)
-        _epics.caput('RA-RaBO01:RF-LLRFPreAmp:PinSwDsbl-Cmd', 0)
-        _time.sleep(0.5)
-        # TODO add verification
+        if not preamp.cmd_disable_pinsw(wait_mon=True):
+            self.log('ERR:Could not disable SSA PinSw.')
+            return False
+        _time.sleep(0.5)  # is this necessary?
 
         self.log('...done. Disabling DC/DC amplifier...')
-        _epics.caput('RA-ToBO:RF-SSAmpTower:PwrCnvDsbl-Sel', 1)
-        _time.sleep(0.5)
-        _epics.caput('RA-ToBO:RF-SSAmpTower:PwrCnvDsbl-Sel', 0)
-        _time.sleep(0.5)
-        # TODO add verification
+        if not dcamp.cmd_disable(wait_mon=True):
+            self.log('ERR:Could not disable SSA DC/DC amplifier.')
+            return False
+        _time.sleep(0.5)  # is this necessary?
 
         self.log('...done. Disabling 300VDC amplifier...')
-        _epics.caput('RA-ToBO:RF-ACDCPanel:300VdcDsbl-Sel', 1)
-        _time.sleep(0.5)
-        _epics.caput('RA-ToBO:RF-ACDCPanel:300VdcDsbl-Sel', 0)
-        _time.sleep(0.5)
-        # TODO add verification
+        if not vdcamp.cmd_disable(wait_mon=True):
+            self.log('ERR:Could not disable SSA 300VDC amplifier.')
+            return False
+        _time.sleep(0.5)  # is this necessary?
 
         return True
 
@@ -599,6 +616,22 @@ class MachineShutdown(_Devices, LogCallback):
         devices['bbbhfb'] = _BbBFB(_BbB.DEVICES.H)
         devices['bbbvfb'] = _BbBFB(_BbB.DEVICES.V)
         devices['bbblfb'] = _BbBFB(_BbB.DEVICES.L)
+
+        # RF
+        devices['sillrf'] = _ASLLRF(_ASLLRF.DEVICES.SI)
+        devices['sillrfpreamp'] = _SILLRFPreAmp(_SILLRFPreAmp.DEVICES.SSA)
+        devices['sirfdcamp1'] = _SIRFDCAmp(_SIRFDCAmp.DEVICES.SSA1)
+        devices['sirfdcamp2'] = _SIRFDCAmp(_SIRFDCAmp.DEVICES.SSA2)
+        devices['sirfacamp1'] = _SIRFACAmp(_SIRFACAmp.DEVICES.SSA1)
+        devices['sirfacamp2'] = _SIRFACAmp(_SIRFACAmp.DEVICES.SSA2)
+        devices['bollrf'] = _ASLLRF(_ASLLRF.DEVICES.BO)
+        devices['bollrfpreamp'] = _BOLLRFPreAmp(_BOLLRFPreAmp.DEVICES.SSA)
+        devices['borfdcamp'] = _BORFDCAmp(_BORFDCAmp.DEVICES.SSA)
+        devices['borf300vdcamp'] = _BORF300VDCAmp(_BORF300VDCAmp.DEVICES.SSA)
+
+        # DCCT
+        devices['dcct'] = _DCCT(_DCCT.DEVICES.SI_14C4)
+
         # PS
         self._pstrigs = _HLTimeSearch.get_hl_triggers(filters={'dev': 'Mags'})
         devices['pstrigs'] = _PSTriggers(self._pstrigs)
