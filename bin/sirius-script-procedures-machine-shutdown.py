@@ -171,59 +171,63 @@ class MachineShutdown(_Devices, LogCallback):
         """Change Machine Shift to Maintenance."""
         self.log('Step 02: Updating Machine Shift...')
 
-        maintenance = _MachShiftC.MachShift.Maintenance
-        _epics.caput('AS-Glob:AP-MachShift:Mode-Sel', maintenance)
+        new_mode = 'Maintenance'
 
-        is_ok = MachineShutdown._wait_value(
-            'AS-Glob:AP-MachShift:Mode-Sts', maintenance, 0.5, 2.0)
+        machshift = self._devrefs['machshift']
+        machshift.mode = new_mode
+
+        is_ok = machshift.wait_mode(new_mode)
         if not is_ok:
             self.log('WARN:Could not change MachShift to Maintenance.')
         else:
-            self.log('...done.')
-        return is_ok
+            self.log('Machine Shift updated.')
+        # NOTE: we will return True here once this is not
+        # impeditive to dump the beam and proceed with the
+        # machine shutdown.
+        return True
 
     def s03_injmode_update(self):
         """Change Injection Mode to Decay."""
         self.log('Step 03: Changing Injection Mode to Decay...')
 
-        decay = _InjCtrlC.InjMode.Decay
-        _epics.caput('AS-Glob:AP-InjCtrl:Mode-Sel', decay)
+        injctrl = self._devrefs['injctrl']
 
-        is_ok = MachineShutdown._wait_value(
-            'AS-Glob:AP-InjCtrl:Mode-Sts', decay, 0.5, 2.0)
+        new_injmode = 'Decay'
+
+        injctrl.injmode = new_injmode
+        is_ok = injctrl.wait_injmode(new_injmode)
         if not is_ok:
             self.log('WARN:Could not change InjMode to Decay.')
-        else:
-            self.log('...done.')
-        return is_ok
+            return False
+
+        self.log('InjMode changed to Decay.')
+        return True
 
     def s04_injcontrol_disable(self):
         """Turn off injection system."""
         self.log('Step 04: Turning off Injection system...')
 
         self.log('Turning off EVG Injection table...')
-        _epics.caput('AS-RaMO:TI-EVG:InjectionEvt-Sel', 0)
-        is_ok = MachineShutdown._wait_value(
-            'AS-RaMO:TI-EVG:InjectionEvt-Sts', 0, 0.5, 2.0)
+        is_ok = self._devrefs['evg'].cmd_turn_off_injection(wait_rb=True)
         if not is_ok:
             self.log('ERR:Could not turn off Injection table.')
             return False
 
         self.log('...done. Turning off Egun trigger...')
-        _epics.caput('LI-01:EG-TriggerPS:enable', 0)
-        is_ok = MachineShutdown._wait_value(
-            'LI-01:EG-TriggerPS:enablereal', 0, 0.5, 2.0)
+        is_ok = self._devrefs['egtriggerps'].cmd_disable_trigger()
         if not is_ok:
-            self.log('ERR:Could not turn off Injection table.')
+            self.log('ERR:Could not turn off EGun trigger.')
             return False
 
         self.log('...done. Turning off injection system...')
-        _epics.caput('AS-Glob:AP-InjCtrl:InjSysTurnOff-Cmd', 0)
-        is_ok = MachineShutdown._wait_value(
-            'AS-Glob:AP-InjCtrl:InjSysCmdSts-Mon', 0, 0.5, 30.0)
+        injctrl = self._devrefs['injctrl']
+        injctrl.cmd_injsys_turn_off()
+        is_ok = injctrl.wait_injsys_cmd_finish()
         if not is_ok:
             self.log('ERR:Could not turn off Injection system.')
             return False
+
+        self.log('...done.')
         return True
 
     def s05_ids_parking(self):
