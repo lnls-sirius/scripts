@@ -12,19 +12,18 @@ from siriuspy.namesys import SiriusPVName as _PVName
 from siriuspy.search import PSSearch as _PSSearch, \
     HLTimeSearch as _HLTimeSearch
 from siriuspy.pwrsupply.csdev import Const as _PSC
-from siriuspy.machshift.csdev import Const as _MachShiftC
-from siriuspy.injctrl.csdev import Const as _InjCtrlC
 from siriuspy.devices import Devices as _Devices, \
     ASMPSCtrl as _ASMPSCtrl, ASPPSCtrl as _ASPPSCtrl, \
     APU as _APU, EPU as _EPU, PAPU as _PAPU, \
     MachShift as _MachShift, InjCtrl as _InjCtrl, \
     EVG as _EVG, EGTriggerPS as _EGTriggerPS, \
+    EGFilament as _EGFilament, EGHVPS as _EGHVPS, \
     HLFOFB as _HLFOFB, SOFB as _SOFB, \
     ASLLRF as _ASLLRF, \
     SILLRFPreAmp as _SILLRFPreAmp, BOLLRFPreAmp as _BOLLRFPreAmp, \
     SIRFDCAmp as _SIRFDCAmp, BORFDCAmp as _BORFDCAmp, \
     SIRFACAmp as _SIRFACAmp, BORF300VDCAmp as _BORF300VDCAmp, \
-    DCCT as _DCCT
+    DCCT as _DCCT, LIModltr as _LIModltr
 from siriuspy.devices.pstesters import \
     Triggers as _PSTriggers, PSTesterFactory as _PSTesterFactory
 from siriuspy.devices.bbb import Feedback as _BbBFB, \
@@ -418,42 +417,50 @@ class MachineShutdown(_Devices, LogCallback):
         """Turn off modulators."""
         self.log('Step 10: Turning off modulators...')
 
+        devs = (self._devrefs['limod1'], self._devrefs['limod2'])
+
         self.log('Disabling CHARGE...')
-        _epics.caput('LI-01:PU-Modltr-1:CHARGE', 0)
-        _epics.caput('LI-01:PU-Modltr-2:CHARGE', 0)
-        # TODO add verification
+        self._set_devices_propty(devs, 'CHARGE', 0)
+        if not self._wait_devices_propty(devs, 'CHARGE', 0):
+            self.log('ERR:Could not disable Modulators CHARGE.')
+            return False
 
         _time.sleep(1.0)
 
         self.log('...done. Disabling TRIGOUT...')
-        _epics.caput('LI-01:PU-Modltr-1:TRIGOUT', 0)
-        _epics.caput('LI-01:PU-Modltr-2:TRIGOUT', 0)
-        # TODO add verification
+        self._set_devices_propty(devs, 'TRIGOUT', 0)
+        if not self._wait_devices_propty(devs, 'TRIGOUT', 0):
+            self.log('ERR:Could not disable Modulators TRIGOUT.')
+            return False
 
         self.log('...done.')
         return True
 
     def s11_adjust_egunbias(self):
         """Adjust Bias Voltage to -100V."""
-        self.log('Step 11: Adjusting bias voltage...')
+        self.log('Step 11: Adjusting EGun bias voltage...')
 
-        self.log('Setting bias voltage to 100V...')
-        _epics.caput('AS-Glob:AP-InjCtrl:MultBunBiasVolt-SP', -100.0)
-        # _epics.caput('AS-Glob:AP-InjCtrl:SglBunBiasVolt-SP', -100.0)
-        # TODO add verification
+        injctrl = self._devrefs['injctrl']
 
-        self.log('...done.')
+        self.log('Setting bias voltage to -100V...')
+        if injctrl.injtype_str == 'SingleBunch':
+            injctrl.bias_volt_sglbun = -100.0
+        else:
+            injctrl.bias_volt_multbun = -100.0
+        injctrl.wait_bias_volt_cmd_finish(timeout=10)
         return True
 
     def s12_adjust_egunfilament(self):
         """Adjust EGun Bias Filament current."""
         self.log('Step 12: Adjusting EGun Bias Filament current...')
 
+        injctrl = self._devrefs['injctrl']
+        egfila = self._devrefs['egfila']
+
         self.log('Setting Bias Filament current to 1.1A...')
-        _epics.caput('AS-Glob:AP-InjCtrl:FilaOpCurr-SP', 1.1)
-        is_ok = MachineShutdown._wait_value(
-            'LI-01:EG-FilaPS:currentinsoft', 1.1, 0.2, 10.0)
-        if not is_ok:
+        injctrl.filacurr_opvalue = 1.1
+        injctrl.wait_filacurr_cmd_finish(timeout=10)
+        if not egfila.wait_current(1.1, timeout=1):
             self.log('ERR:Could not adjust EGun filament.')
             return False
 
@@ -464,28 +471,19 @@ class MachineShutdown(_Devices, LogCallback):
         """Disable egun high voltage."""
         self.log('Step 13: Disabling EGun high voltage...')
 
+        injctrl = self._devrefs['injctrl']
+        eghv = self._devrefs['eghvolt']
+
         self.log('Setting EGun High Voltage to 0V...')
-        _epics.caput('AS-Glob:AP-InjCtrl:HVOpVolt-SP', 0.000)
-        is_ok = MachineShutdown._wait_value(
-            'AS-Glob:AP-InjCtrl:HVOpVoltCmdSts-Mon', 0, 0.5, 100.0)
-        if not is_ok:
+        injctrl.hvolt_opvalue = 0.0
+        injctrl.wait_hvolt_cmd_finish(timoeut=100)
+        if not eghv.wait_voltage(0, timeout=1):
             self.log('ERR:Timed out waiting for egun high voltage.')
             return False
 
         self.log('...done. Disabling EGun High Voltage Enable State...')
-        _epics.caput('LI-01:EG-HVPS:enable', 0)
-        is_ok = MachineShutdown._wait_value(
-            'LI-01:EG-HVPS:enstatus', 0, 0.5, 2.0)
-        if not is_ok:
-            self.log('ERR:Could not disable egun high voltage Enable.')
-            return False
-
-        self.log('...done. Disabling EGun High Voltage Switch...')
-        _epics.caput('LI-01:EG-HVPS:switch', 0)
-        is_ok = MachineShutdown._wait_value(
-            'LI-01:EG-HVPS:swstatus', 0, 0.5, 2.0)
-        if not is_ok:
-            self.log('ERR:Could not disable egun high voltage Switch.')
+        if not eghv.cmd_turn_off(timoeut=5):
+            self.log('ERR:Could not disable egun high voltage')
             return False
 
         self.log('...done.')
@@ -585,6 +583,8 @@ class MachineShutdown(_Devices, LogCallback):
 
         # EGun
         devices['egtriggerps'] = _EGTriggerPS()
+        devices['egfila'] = _EGFilament()
+        devices['eghvolt'] = _EGHVPS()
 
         # Interlock
         devices['asppsctrl'] = _ASPPSCtrl()
@@ -631,6 +631,10 @@ class MachineShutdown(_Devices, LogCallback):
 
         # DCCT
         devices['dcct'] = _DCCT(_DCCT.DEVICES.SI_14C4)
+
+        # Linac Modulators
+        devices['limod1'] = _LIModltr(_LIModltr.DEVICES.LI_MOD1)
+        devices['limod2'] = _LIModltr(_LIModltr.DEVICES.LI_MOD2)
 
         # PS
         self._pstrigs = _HLTimeSearch.get_hl_triggers(filters={'dev': 'Mags'})
