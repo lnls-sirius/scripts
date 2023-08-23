@@ -245,13 +245,14 @@ class MachineShutdown(_Devices, LogCallback):
             thread = _Thread(target=dev.cmd_park_device, daemon=True)
             thread.start()
             threads.append(thread)
-        self.log('...waiting...')
+        self.log('...waiting for parking...')
         for thread in threads:
             thread.join()
         self.log('...finished ID Parking routine.')
-        # once we do not want this step block the machine shutdown script in
-        # case of problems, we do not need to return False in case of any
-        # False return.
+
+        # NOTE: once we do not want this step block the machine shutdown
+        # script in case of problems, we do not need to return False in
+        # case of any False return.
         return True
 
     def s06_sofb_fofb_turnoff(self):
