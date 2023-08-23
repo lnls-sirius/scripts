@@ -18,9 +18,12 @@ from siriuspy.devices import Devices as _Devices, \
     ASMPSCtrl as _ASMPSCtrl, ASPPSCtrl as _ASPPSCtrl, \
     APU as _APU, EPU as _EPU, PAPU as _PAPU, \
     MachShift as _MachShift, InjCtrl as _InjCtrl, \
-    EVG as _EVG, EGTriggerPS as _EGTriggerPS
+    EVG as _EVG, EGTriggerPS as _EGTriggerPS, \
+    HLFOFB as _HLFOFB, SOFB as _SOFB
 from siriuspy.devices.pstesters import \
     Triggers as _PSTriggers, PSTesterFactory as _PSTesterFactory
+from siriuspy.devices.bbb import Feedback as _BbBFB, \
+    BunchbyBunch as _BbB
 
 
 # Configure Logging
@@ -260,28 +263,23 @@ class MachineShutdown(_Devices, LogCallback):
         self.log('Step 06: Turning off FOFB and SOFB...')
 
         self.log('Turning off FOFB loop...')
-        _epics.caput('SI-Glob:AP-FOFB:LoopState-Sel', 0)
-        is_ok = MachineShutdown._wait_value(
-            'SI-Glob:AP-FOFB:LoopState-Sts', 0, 0.5, 12.0)
+        is_ok = self._devrefs['fofb'].cmd_turn_off_loop_state(timeout=12)
         if not is_ok:
             self.log('ERR:Could not turn off FOFB loop.')
             return False
 
         self.log('...done. Turning off SOFB loop...')
-        _epics.caput('SI-Glob:AP-SOFB:LoopState-Sel', 0)
-        is_ok = MachineShutdown._wait_value(
-            'SI-Glob:AP-SOFB:LoopState-Sts', 0, 0.5, 5.0)
+        is_ok = self._devrefs['sofb'].cmd_turn_off_autocorr(timeout=5)
         if not is_ok:
             self.log('ERR:Could not turn off SOFB loop.')
             return False
 
         self.log('...done. Disabling SOFB Synchronization...')
-        _epics.caput('SI-Glob:AP-SOFB:CorrSync-Sel', 0)
-        is_ok = MachineShutdown._wait_value(
-            'SI-Glob:AP-SOFB:CorrSync-Sts', 0, 0.5, 5.0)
+        is_ok = self._devrefs['sofb'].cmd_turn_off_synckick(timeout=5)
         if not is_ok:
             self.log('ERR:Could not disable SOFB Synchronization.')
-            return False
+            # NOTE: we will not return False here because the correctors
+            # mode will be controlled also in the PS turn of procedure.
 
         return True
 
@@ -290,19 +288,15 @@ class MachineShutdown(_Devices, LogCallback):
         self.log('Step 07: Turning off BbB...')
 
         self.log('Disabling BbB loops...')
-        _epics.caput('SI-Glob:DI-BbBProc-H:FBCTRL', 0)
-        _epics.caput('SI-Glob:DI-BbBProc-V:FBCTRL', 0)
-        _epics.caput('SI-Glob:DI-BbBProc-L:FBCTRL', 0)
 
-        pvnames = [
-            'SI-Glob:DI-BbBProc-H:FBCTRL',
-            'SI-Glob:DI-BbBProc-V:FBCTRL',
-            'SI-Glob:DI-BbBProc-L:FBCTRL',
-        ]
-        values = [0, 0, 0]
-        tols = [0.5, 0.5, 0.5]
-        is_ok = MachineShutdown._wait_value_set(
-            pvnames, values, tols, 2.0)
+        self._defrefs['bbbhfb'].loop_state = 0
+        self._defrefs['bbbvfb'].loop_state = 0
+        self._defrefs['bbblfb'].loop_state = 0
+
+        is_ok = \
+            self._defrefs['bbbhfb'].loop_state == 0 and \
+            self._defrefs['bbbvfb'].loop_state == 0 and \
+            self._defrefs['bbblfb'].loop_state == 0
         if not is_ok:
             self.log('ERR:Could not disable BbB loops.')
             return False
@@ -595,6 +589,16 @@ class MachineShutdown(_Devices, LogCallback):
         devices['papu50_17SA'] = IDParking(
             _PAPU.DEVICES.PAPU50_17SA, log_callback=self._log_callback)
 
+        # SOFB
+        devices['fofb'] = _HLFOFB()
+
+        # FOFB
+        devices['sofb'] = _SOFB(_SOFB.DEVICES.SI)
+
+        # BbB
+        devices['bbbhfb'] = _BbBFB(_BbB.DEVICES.H)
+        devices['bbbvfb'] = _BbBFB(_BbB.DEVICES.V)
+        devices['bbblfb'] = _BbBFB(_BbB.DEVICES.L)
         # PS
         self._pstrigs = _HLTimeSearch.get_hl_triggers(filters={'dev': 'Mags'})
         devices['pstrigs'] = _PSTriggers(self._pstrigs)
