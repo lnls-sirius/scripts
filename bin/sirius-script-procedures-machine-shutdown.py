@@ -134,8 +134,6 @@ class IDParking(_Devices, LogCallback):
 class MachineShutdown(_Devices, LogCallback):
     """Machine Shutdown device."""
 
-    # TODO: verify which steps we want to keep bloking procedure execution
-
     DEFAULT_CHECK_TIMEOUT = 10
     DEFAULT_CONN_TIMEOUT = 5
     DEFAULT_TINYSLEEP = 0.1
@@ -268,13 +266,13 @@ class MachineShutdown(_Devices, LogCallback):
         is_ok = self._devrefs['fofb'].cmd_turn_off_loop_state(timeout=12)
         if not is_ok:
             self.log('ERR:Could not turn off FOFB loop.')
-            return False
+            return False  # TODO: do we want to abort procedure in this case?
 
         self.log('...done. Turning off SOFB loop...')
         is_ok = self._devrefs['sofb'].cmd_turn_off_autocorr(timeout=5)
         if not is_ok:
             self.log('ERR:Could not turn off SOFB loop.')
-            return False
+            return False  # TODO: do we want to abort procedure in this case?
 
         self.log('...done. Disabling SOFB Synchronization...')
         is_ok = self._devrefs['sofb'].cmd_turn_off_synckick(timeout=5)
@@ -301,8 +299,8 @@ class MachineShutdown(_Devices, LogCallback):
             self._defrefs['bbblfb'].loop_state == 0
         if not is_ok:
             self.log('ERR:Could not disable BbB loops.')
-            return False
-        self.log('...done.')
+        else:
+            self.log('...done.')
         return True
 
     def s08_sirf_turnoff(self):
@@ -460,9 +458,8 @@ class MachineShutdown(_Devices, LogCallback):
         injctrl.wait_filacurr_cmd_finish(timeout=10)
         if not egfila.wait_current(1.1, timeout=1):
             self.log('ERR:Could not adjust EGun filament.')
-            return False
-
-        self.log('...done.')
+        else:
+            self.log('...done.')
         return True
 
     def s13_disable_egun_highvoltage(self):
