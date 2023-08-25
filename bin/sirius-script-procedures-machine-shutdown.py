@@ -316,8 +316,7 @@ class MachineShutdown(_Devices, LogCallback):
 
         self.log('Changing voltage increase rate to 2mV/s...')
         incrate = llrf.VoltIncRates.vel_2p0
-        llrf.voltage_incrate = incrate
-        if not self.wait_voltage_incrate(incrate, timeout=5):
+        if not llrf.set_voltage_incrate(incrate, timeout=5):
             self.log('ERR:Could not set voltage increase rate to 2mV/s.')
             return False
         _time.sleep(1.0)  # is this necessary?
@@ -492,9 +491,8 @@ class MachineShutdown(_Devices, LogCallback):
             'Check whether the countdown to tunnel access has started.')
         input(msg)
         # dev = self._devrefs['asppsctrl']
-        # if dev.time_left_to_tunnel_access() == 360:
+        # if dev.remaining_time_for_tunnel_access() == 360:
         #     return False
-
         return True
 
     def s15_disable_ps_triggers(self):
@@ -614,13 +612,13 @@ class MachineShutdown(_Devices, LogCallback):
 
         # RF
         devices['sillrf'] = _ASLLRF(_ASLLRF.DEVICES.SI)
-        devices['sillrfpreamp'] = _SILLRFPreAmp(_SILLRFPreAmp.DEVICES.SSA)
+        devices['sillrfpreamp'] = _SILLRFPreAmp(_SILLRFPreAmp.DEVICES.SIA01)
         devices['sirfdcamp1'] = _SIRFDCAmp(_SIRFDCAmp.DEVICES.SSA1)
         devices['sirfdcamp2'] = _SIRFDCAmp(_SIRFDCAmp.DEVICES.SSA2)
         devices['sirfacamp1'] = _SIRFACAmp(_SIRFACAmp.DEVICES.SSA1)
         devices['sirfacamp2'] = _SIRFACAmp(_SIRFACAmp.DEVICES.SSA2)
         devices['bollrf'] = _ASLLRF(_ASLLRF.DEVICES.BO)
-        devices['bollrfpreamp'] = _BOLLRFPreAmp(_BOLLRFPreAmp.DEVICES.SSA)
+        devices['bollrfpreamp'] = _BOLLRFPreAmp(_BOLLRFPreAmp.DEVICES.BO01)
         devices['borfdcamp'] = _BORFDCAmp(_BORFDCAmp.DEVICES.SSA)
         devices['borf300vdcamp'] = _BORF300VDCAmp(_BORF300VDCAmp.DEVICES.SSA)
 
