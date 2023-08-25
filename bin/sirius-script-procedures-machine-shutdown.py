@@ -5,8 +5,6 @@ import time as _time
 import logging as _log
 from threading import Thread as _Thread
 
-import epics as _epics
-
 from siriuspy.callbacks import Callback as _Callback
 from siriuspy.namesys import SiriusPVName as _PVName
 from siriuspy.search import PSSearch as _PSSearch, \
@@ -689,46 +687,6 @@ class MachineShutdown(_Devices, LogCallback):
             devices[pun] = _PSTesterFactory.create(pun)
 
         return devices
-
-    @staticmethod
-    def _wait_value(pvname, value_target, value_tol, timeout, sleep=0.1):
-        """."""
-        pvd = _epics.PV(pvname)
-        time0 = _time.time()
-        strf = (
-            'timeout: não foi possível esperar a PV {} chegar ao '
-            'seu valor de target!')
-        while abs(pvd.value - value_target) > value_tol:
-            if _time.time() - time0 > timeout:
-                if sleep != 0:
-                    print(strf.format(pvname))
-                return False
-            _time.sleep(sleep)
-        return True
-
-    @staticmethod
-    def _wait_value_set(pvnames, value_targets, value_tols, timeout):
-        """."""
-        pvnames_not_ready = [
-            (pvname, idx) for idx, pvname in enumerate(pvnames)]
-        strf = (
-            'timeout: não foi possível esperar todas as PVs '
-            'chegarem aos seus valores de target!')
-        time0 = _time.time()
-        while pvnames_not_ready:
-            print(len(pvnames_not_ready))
-            # print(pvnames_not_ready)
-            for pvname, idx in pvnames_not_ready:
-                if MachineShutdown._wait_value(
-                        pvname, value_targets[idx], value_tols[idx],
-                        timeout=0, sleep=0.0):
-                    pvnames_not_ready.remove((pvname, idx))
-            if _time.time() - time0 > timeout:
-                print(strf)
-                return False
-            if pvnames_not_ready:
-                _time.sleep(0.2)
-        return True
 
     def _disable_ps_triggers(self, devtype):
         """Desliga os triggers das fontes."""
