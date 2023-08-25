@@ -139,13 +139,13 @@ class MachineShutdown(_Devices, LogCallback):
     DEFAULT_TINYSLEEP = 0.1
 
     def __init__(self, log_callback=None):
+        self._log_callback = log_callback
         self._abort = False
 
         self._devrefs = self._create_devices()
         devices = list(self._devrefs.values())
         _Devices.__init__(self, 'AS-Glob:AP-MachShutdown', devices)
 
-        self._log_callback = log_callback
         LogCallback.__init__(self, log_callback)
 
     def continue_execution(self):
@@ -289,14 +289,14 @@ class MachineShutdown(_Devices, LogCallback):
 
         self.log('Disabling BbB loops...')
 
-        self._defrefs['bbbhfb'].loop_state = 0
-        self._defrefs['bbbvfb'].loop_state = 0
-        self._defrefs['bbblfb'].loop_state = 0
+        self._devrefs['bbbhfb'].loop_state = 0
+        self._devrefs['bbbvfb'].loop_state = 0
+        self._devrefs['bbblfb'].loop_state = 0
 
         is_ok = \
-            self._defrefs['bbbhfb'].loop_state == 0 and \
-            self._defrefs['bbbvfb'].loop_state == 0 and \
-            self._defrefs['bbblfb'].loop_state == 0
+            self._devrefs['bbbhfb'].loop_state == 0 and \
+            self._devrefs['bbbvfb'].loop_state == 0 and \
+            self._devrefs['bbblfb'].loop_state == 0
         if not is_ok:
             self.log('ERR:Could not disable BbB loops.')
         else:
@@ -470,13 +470,13 @@ class MachineShutdown(_Devices, LogCallback):
 
         self.log('Setting EGun High Voltage to 0V...')
         injctrl.hvolt_opvalue = 0.0
-        injctrl.wait_hvolt_cmd_finish(timoeut=100)
+        injctrl.wait_hvolt_cmd_finish(timeout=100)
         if not eghv.wait_voltage(0, timeout=1):
             self.log('ERR:Timed out waiting for egun high voltage.')
             return False
 
         self.log('...done. Disabling EGun High Voltage Enable State...')
-        if not eghv.cmd_turn_off(timoeut=5):
+        if not eghv.cmd_turn_off(timeout=5):
             self.log('ERR:Could not disable egun high voltage')
             return False
 
@@ -612,15 +612,15 @@ class MachineShutdown(_Devices, LogCallback):
 
         # RF
         devices['sillrf'] = _ASLLRF(_ASLLRF.DEVICES.SI)
-        devices['sillrfpreamp'] = _SILLRFPreAmp(_SILLRFPreAmp.DEVICES.SIA01)
+        devices['sillrfpreamp'] = _SILLRFPreAmp()
         devices['sirfdcamp1'] = _SIRFDCAmp(_SIRFDCAmp.DEVICES.SSA1)
         devices['sirfdcamp2'] = _SIRFDCAmp(_SIRFDCAmp.DEVICES.SSA2)
         devices['sirfacamp1'] = _SIRFACAmp(_SIRFACAmp.DEVICES.SSA1)
         devices['sirfacamp2'] = _SIRFACAmp(_SIRFACAmp.DEVICES.SSA2)
         devices['bollrf'] = _ASLLRF(_ASLLRF.DEVICES.BO)
-        devices['bollrfpreamp'] = _BOLLRFPreAmp(_BOLLRFPreAmp.DEVICES.BO01)
-        devices['borfdcamp'] = _BORFDCAmp(_BORFDCAmp.DEVICES.SSA)
-        devices['borf300vdcamp'] = _BORF300VDCAmp(_BORF300VDCAmp.DEVICES.SSA)
+        devices['bollrfpreamp'] = _BOLLRFPreAmp()
+        devices['borfdcamp'] = _BORFDCAmp()
+        devices['borf300vdcamp'] = _BORF300VDCAmp()
 
         # DCCT
         devices['dcct'] = _DCCT(_DCCT.DEVICES.SI_14C4)
