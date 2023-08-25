@@ -227,8 +227,8 @@ class MachineShutdown(_Devices, LogCallback):
         self.log('...done. Turning off injection system...')
         injctrl = self._devrefs['injctrl']
         injctrl.cmd_injsys_turn_off()
-        is_ok = injctrl.wait_injsys_cmd_finish()
-        if not is_ok:
+        injctrl.wait_injsys_cmd_finish(timeout=30)
+        if not injctrl.check_injsys_cmd_completed():
             self.log('ERR:Could not turn off Injection system.')
             return False
 
