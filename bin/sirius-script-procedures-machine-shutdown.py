@@ -62,6 +62,9 @@ class IDParking(_Devices, LogCallback):
 
     def __init__(self, devname, log_callback=None):
         """Init."""
+        self._abort = False
+        self._is_parking = False
+
         if 'EPU' in devname:
             device = _EPU(devname)
         elif 'PAPU' in devname:
@@ -75,59 +78,107 @@ class IDParking(_Devices, LogCallback):
         _Devices.__init__(self, devname, [device, ])
         LogCallback.__init__(self, log_callback)
 
+    @property
+    def is_parking(self):
+        """Is running parking procedure."""
+        return self._is_parking
+
+    def abort_execution(self):
+        """Set abort execution flag."""
+        self._abort = True
+
+    def continue_execution(self):
+        """Check whether to continue execution based on abort flag state."""
+        if self._abort:
+            self._abort = False
+            self.log(f'ERR:Aborting {self.devname} parking.')
+            self._is_parking = False
+            return False
+        return True
+
     def cmd_park_device(self):
         """Park ID."""
-        # check connections
-        self.log('check connections...')
+        self._is_parking = True
+
+        self.log(f'Checking {self.devname} connections...')
         if not self._device.wait_for_connection(
                 timeout=IDParking.TIMEOUT_WAIT_FOR_CONNECTION):
+            self.log(f'ERR:{self.devname} not connected.')
+            self._is_parking = False
             return False
 
-        # Desabilita a movimentação dos IDs pelas linhas.
-        self.log('disable beamline controls...')
+        if not self.continue_execution():
+            return False
+
+        self.log(f'Disabling {self.devname} beamline control...')
         if not self._device.cmd_beamline_ctrl_disable():
+            self.log(f'ERR:Could not disable {self.devname} beamline control.')
+            self._is_parking = False
             return False
 
-        # Para a movimentação dos IDs
-        self.log('cmd move stop...')
+        if not self.continue_execution():
+            return False
+
+        self.log(f'Stopping {self.devname} movement...')
         if not self._device.cmd_move_stop():
+            self.log(f'ERR:Failed to stop {self.devname}.')
+            self._is_parking = False
             return False
 
-        # Seta as velocidades de Phase e Gap
-        self.log('cmd set speeds...')
+        if not self.continue_execution():
+            return False
+
+        self.log(f'Setting {self.devname} speeds...')
         value = self._device.phase_speed_max
         if not self._device.set_phase_speed(value):
+            self.log(f'ERR:Failed to set {self.devname} phase speed.')
+            self._is_parking = False
             return False
         if isinstance(self._device, _EPU):
             value = self._device.gap_speed_max
             if not self._device.set_gap_speed(value):
+                self.log(f'ERR:Failed to set {self.devname} gap speed.')
+                self._is_parking = False
                 return False
 
-        # Seta os IDs para config de estacionamento
-        self.log('cmd set phase and gap for parking...')
+        if not self.continue_execution():
+            return False
+
+        self.log(f'Setting {self.devname} phase and gap for parking...')
         value = self._device.phase_parked
         if not self._device.set_phase(value):
+            self.log(f'ERR:Failed to set {self.devname} phase.')
+            self._is_parking = False
             return False
         if isinstance(self._device, _EPU):
             value = self._device.gap_parked
         if not self._device.set_gap(value):
+            self.log(f'ERR:Failed to set {self.devname} gap.')
+            self._is_parking = False
             return False
 
-        # Movimenta os IDs para a posição escolhida
-        self.log('cmd move to parking...')
+        if not self.continue_execution():
+            return False
+
+        self.log(f'Moving {self.devname} to parking...')
         if not self._device.cmd_move_start():
+            self.log(f'ERR:Failed to move {self.devname}.')
+            self._is_parking = False
             return False
-        _time.sleep(2.0)  # aguarda 2 seg.
+        _time.sleep(2.0)  # wait 2s
 
-        # wait for end of movement of timeout
-        self.log('wait end of movement...')
+        self.log(f'Waiting end of {self.devname} movement...')
         timeout, sleep = 70, 0.2  # [s]
-        t0 = _time.time()
+        _t0 = _time.time()
         while self._device.is_moving:
-            if _time.time() - t0 > timeout:
+            if _time.time() - _t0 > timeout:
+                self.log(f'ERR:Timed out waiting for {self.devname}.')
+                self._is_parking = False
                 return False
             _time.sleep(sleep)
 
+        self.log(f'Successfully parked {self.devname}.')
+        self._is_parking = False
         return True
 
 
@@ -148,10 +199,19 @@ class MachineShutdown(_Devices, LogCallback):
 
         LogCallback.__init__(self, log_callback)
 
+    def abort_execution(self):
+        """Set abort execution flag."""
+        self._abort = True
+
     def continue_execution(self):
         """Check whether to continue execution based on abort flag state."""
         if self._abort:
             self._abort = False
+            self.log('ERR:Abort received.')
+            for idn in ['apu22_06SB', 'apu22_07SP', 'apu22_08SB', 'apu22_09SA',
+                        'apu58_11SP', 'epu50_10SB', 'papu50_17SA']:
+                if self._devrefs[idn].is_parking:
+                    self._devrefs[idn].abort_execution()
             return False
         return True
 
@@ -163,6 +223,7 @@ class MachineShutdown(_Devices, LogCallback):
         is_ok = dev.cmd_gamma_disable()
         if not is_ok:
             self.log('WARN:Could not close gamma shutter.')
+            self.log('WARN:Continuing anyway...')
         else:
             self.log('Gamma Shutter closed.')
         # NOTE: we will return True here once this is not
@@ -182,6 +243,7 @@ class MachineShutdown(_Devices, LogCallback):
         is_ok = machshift.wait_mode(new_mode)
         if not is_ok:
             self.log('WARN:Could not change MachShift to Maintenance.')
+            self.log('WARN:Continuing anyway...')
         else:
             self.log('Machine Shift updated.')
         # NOTE: we will return True here once this is not
@@ -200,7 +262,7 @@ class MachineShutdown(_Devices, LogCallback):
         injctrl.injmode = new_injmode
         is_ok = injctrl.wait_injmode(new_injmode)
         if not is_ok:
-            self.log('WARN:Could not change InjMode to Decay.')
+            self.log('ERR:Could not change InjMode to Decay.')
             return False
 
         self.log('InjMode changed to Decay.')
@@ -216,10 +278,16 @@ class MachineShutdown(_Devices, LogCallback):
             self.log('ERR:Could not turn off Injection table.')
             return False
 
+        if not self.continue_execution():
+            return False
+
         self.log('...done. Turning off Egun trigger...')
         is_ok = self._devrefs['egtriggerps'].cmd_disable_trigger()
         if not is_ok:
             self.log('ERR:Could not turn off EGun trigger.')
+            return False
+
+        if not self.continue_execution():
             return False
 
         self.log('...done. Turning off injection system...')
@@ -268,16 +336,23 @@ class MachineShutdown(_Devices, LogCallback):
             self.log('ERR:Could not turn off FOFB loop.')
             return False  # TODO: do we want to abort procedure in this case?
 
+        if not self.continue_execution():
+            return False
+
         self.log('...done. Turning off SOFB loop...')
         is_ok = self._devrefs['sofb'].cmd_turn_off_autocorr(timeout=5)
         if not is_ok:
             self.log('ERR:Could not turn off SOFB loop.')
             return False  # TODO: do we want to abort procedure in this case?
 
+        if not self.continue_execution():
+            return False
+
         self.log('...done. Disabling SOFB Synchronization...')
         is_ok = self._devrefs['sofb'].cmd_turn_off_synckick(timeout=5)
         if not is_ok:
-            self.log('ERR:Could not disable SOFB Synchronization.')
+            self.log('WARN:Could not disable SOFB Synchronization.')
+            self.log('WARN:Continuing anyway...')
             # NOTE: we will not return False here because the correctors
             # mode will be controlled also in the PS turn of procedure.
 
@@ -298,7 +373,8 @@ class MachineShutdown(_Devices, LogCallback):
             self._devrefs['bbbvfb'].loop_state == 0 and \
             self._devrefs['bbblfb'].loop_state == 0
         if not is_ok:
-            self.log('ERR:Could not disable BbB loops.')
+            self.log('WARN:Could not disable BbB loops.')
+            self.log('WARN:Continuing anyway...')
         else:
             self.log('...done.')
         return True
@@ -321,6 +397,9 @@ class MachineShutdown(_Devices, LogCallback):
             return False
         _time.sleep(1.0)  # is this necessary?
 
+        if not self.continue_execution():
+            return False
+
         self.log('...done. Changing loop reference to 60mV...')
         if not llrf.set_voltage(60, timeout=180, wait_mon=False):
             self.log('ERR:Could not set loop reference to 60mV.')
@@ -332,11 +411,17 @@ class MachineShutdown(_Devices, LogCallback):
             self.log('ERR:DCCT is indicating stored beam.')
             return False
 
+        if not self.continue_execution():
+            return False
+
         self.log('...done. Disabling slow loop control...')
         if not llrf.set_slow_loop_state(0):
             self.log('ERR:Could not disable LLRF slow loop.')
             return False
         _time.sleep(1.0)  # is this necessary?
+
+        if not self.continue_execution():
+            return False
 
         self.log('...done. Disabling PinSw...')
         if not preamp.cmd_disable_pinsw_1(wait_mon=True):
@@ -347,6 +432,9 @@ class MachineShutdown(_Devices, LogCallback):
             return False
         _time.sleep(1.0)  # is this necessary?
 
+        if not self.continue_execution():
+            return False
+
         self.log('...done. Disabling DC/TDK amplifiers...')
         if not dcamp1.cmd_disable(wait_mon=True):
             self.log('ERR:Could not disable SSA1 DC/TDK.')
@@ -355,6 +443,9 @@ class MachineShutdown(_Devices, LogCallback):
             self.log('ERR:Could not disable SSA2 DC/TDK.')
             return False
         _time.sleep(1.0)  # is this necessary?
+
+        if not self.continue_execution():
+            return False
 
         self.log('...done. Disabling AC/TDK amplifiers...')
         if not acamp1.cmd_disable(wait_mon=True):
@@ -382,11 +473,17 @@ class MachineShutdown(_Devices, LogCallback):
             return False
         _time.sleep(2.0)  # is this necessary?
 
+        if not self.continue_execution():
+            return False
+
         self.log('...done. Disabling slow loop control...')
         if not llrf.set_slow_loop_state(0):
             self.log('ERR:Could not disable LLRF slow loop.')
             return False
         _time.sleep(1.0)  # is this necessary?
+
+        if not self.continue_execution():
+            return False
 
         self.log('...done. Disabling PinSw...')
         if not preamp.cmd_disable_pinsw(wait_mon=True):
@@ -394,11 +491,17 @@ class MachineShutdown(_Devices, LogCallback):
             return False
         _time.sleep(0.5)  # is this necessary?
 
+        if not self.continue_execution():
+            return False
+
         self.log('...done. Disabling DC/DC amplifier...')
         if not dcamp.cmd_disable(wait_mon=True):
             self.log('ERR:Could not disable SSA DC/DC amplifier.')
             return False
         _time.sleep(0.5)  # is this necessary?
+
+        if not self.continue_execution():
+            return False
 
         self.log('...done. Disabling 300VDC amplifier...')
         if not vdcamp.cmd_disable(wait_mon=True):
@@ -456,7 +559,8 @@ class MachineShutdown(_Devices, LogCallback):
         injctrl.filacurr_opvalue = 1.1
         injctrl.wait_filacurr_cmd_finish(timeout=10)
         if not egfila.wait_current(1.1, timeout=1):
-            self.log('ERR:Could not adjust EGun filament.')
+            self.log('WARN:Could not adjust EGun filament.')
+            self.log('WARN:Continuing anyway...')
         else:
             self.log('...done.')
         return True
@@ -475,9 +579,12 @@ class MachineShutdown(_Devices, LogCallback):
             self.log('ERR:Timed out waiting for egun high voltage.')
             return False
 
+        if not self.continue_execution():
+            return False
+
         self.log('...done. Disabling EGun High Voltage Enable State...')
         if not eghv.cmd_turn_off(timeout=5):
-            self.log('ERR:Could not disable egun high voltage')
+            self.log('ERR:Could not disable egun high voltage.')
             return False
 
         self.log('...done.')
@@ -515,50 +622,36 @@ class MachineShutdown(_Devices, LogCallback):
         self.log('Step 18: Executing Turn Off PU...')
         return self._exec_ps_turnoff('PU')
 
-    def s19_free_access(self):
-        """Wait for tunnel access to be allowed."""
-        self.log('Final Step: Wait for tunnel access to be released...')
-        input()
-
     def execute_procedure(self):
-        """Executa na sequência os passos a seguir."""
-        if not self.s01_close_gamma_shutter():
-            return False
-        if not self.s02_macshift_update():
-            return False
-        if not self.s03_injmode_update():
-            return False
-        if not self.s04_injcontrol_disable():
-            return False
-        if not self.s05_ids_parking():
-            return False
-        if not self.s06_sofb_fofb_turnoff():
-            return False
-        if not self.s07_bbb_turnoff():
-            return False
-        if not self.s08_sirf_turnoff():
-            return False
-        if not self.s09_borf_turnoff():
-            return False
-        if not self.s10_modulators_turnoff():
-            return False
-        if not self.s11_adjust_egunbias():
-            return False
-        if not self.s12_adjust_egunfilament():
-            return False
-        if not self.s13_disable_egun_highvoltage():
-            return False
-        if not self.s14_start_counter():
-            return False
-        if not self.s15_disable_ps_triggers():
-            return False
-        if not self.s16_run_ps_turn_off_procedure():
-            return False
-        if not self.s17_disable_pu_triggers():
-            return False
-        if not self.s18_run_pu_turn_off_procedure():
-            return False
-        self.s19_free_access()
+        """Execute machine shutdown procedure."""
+        steps = (
+            self.s01_close_gamma_shutter,
+            self.s02_macshift_update,
+            self.s03_injmode_update,
+            self.s04_injcontrol_disable,
+            self.s05_ids_parking,
+            self.s06_sofb_fofb_turnoff,
+            self.s07_bbb_turnoff,
+            self.s08_sirf_turnoff,
+            self.s09_borf_turnoff,
+            self.s10_modulators_turnoff,
+            self.s11_adjust_egunbias,
+            self.s12_adjust_egunfilament,
+            self.s13_disable_egun_highvoltage,
+            self.s14_start_counter,
+            self.s15_disable_ps_triggers,
+            self.s16_run_ps_turn_off_procedure,
+            self.s17_disable_pu_triggers,
+            self.s18_run_pu_turn_off_procedure,
+        )
+        for i, step in enumerate(steps):
+            if not step():
+                self.log(f'ERR:Could not complete, failed in step {i:02}.')
+                return False
+            if not self.continue_execution():
+                self.log('ERR:Could not complete, abort received.')
+                return False
+        self.log('Final Step: Wait for tunnel access to be released.')
         return True
 
     def _create_devices(self):
@@ -738,8 +831,11 @@ class MachineShutdown(_Devices, LogCallback):
                 self.log(strf.format(description, done, nrdevs))
             if self._abort:
                 break
-        self.log(strf.format(description, done, nrdevs))
-        return True
+        else:
+            self.log(strf.format(description, done, nrdevs))
+            return True
+        self.log('ERR:Received abort during execution.')
+        return False
 
     def _ps_command_check(
             self, devnames, method, description,
@@ -775,6 +871,9 @@ class MachineShutdown(_Devices, LogCallback):
             if (not need_check) or (self._abort):
                 break
             _time.sleep(tiny_sleep)
+        if self._abort:
+            self.log('ERR:Received abort during checks.')
+            return False
         if need_check:
             for dev in need_check:
                 self._ps_failed.append(dev)
@@ -978,11 +1077,10 @@ class MachineShutdown(_Devices, LogCallback):
                     interrupt = True
                     break
             if interrupt:
-                self.log('ERR:Turn Off Procedure failed for {devtype}.')
+                self.log(f'ERR:Turn Off Procedure failed for {devtype}.')
                 self.log('ERR:Verify errors before continue.')
                 break
             if not self.continue_execution():
-                self.log('ERR:Abort received, interrupting.')
                 break
         if self._ps_failed:
             for psn in self._ps_failed:
