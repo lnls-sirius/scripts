@@ -152,10 +152,10 @@ class IDParking(_Devices, LogCallback):
             return False
         if isinstance(self._device, _EPU):
             value = self._device.gap_parked
-        if not self._device.set_gap(value):
-            self.log(f'ERR:Failed to set {self.devname} gap.')
-            self._is_parking = False
-            return False
+            if not self._device.set_gap(value):
+                self.log(f'ERR:Failed to set {self.devname} gap.')
+                self._is_parking = False
+                return False
 
         if not self.continue_execution():
             return False
