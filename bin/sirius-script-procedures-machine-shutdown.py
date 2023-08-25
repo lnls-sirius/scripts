@@ -813,12 +813,11 @@ class MachineShutdown(_Devices, LogCallback):
             self, devnames, method, description,
             conn_timeout=DEFAULT_CONN_TIMEOUT, **kwargs):
         """Set PS property."""
+        devnames = set(devnames) - set(self._ps_failed)
         nrdevs = len(devnames)
         strf = 'Executed {} for {}/{}'
         done = 0
         for dev in devnames:
-            if dev in self._ps_failed:
-                continue
             tester = self._devrefs[dev]
             if not tester.wait_for_connection(conn_timeout):
                 self.log(f'ERR:Failed to connect to {dev}')
