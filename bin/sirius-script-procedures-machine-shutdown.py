@@ -813,13 +813,13 @@ class MachineShutdown(_Devices, LogCallback):
         need_check = set(triggers)
         _t0 = _time.time()
         while _time.time() - _t0 < self.DEFAULT_CHECK_TIMEOUT:
-            for trig in triggers.values():
-                if trig not in need_check:
+            for trigname, trig in triggers.items():
+                if trigname not in need_check:
                     continue
                 if not trig.wait_for_connection(self.DEFAULT_CONN_TIMEOUT):
                     continue
                 if trig.state == 0:
-                    need_check.remove(trig)
+                    need_check.remove(trigname)
                 if self._abort:
                     break
             if (not need_check) or (self._abort):
@@ -829,6 +829,7 @@ class MachineShutdown(_Devices, LogCallback):
             for trig in need_check:
                 self.log(f'ERR:Failed to disable trigger {trig}')
             return False
+        self.log('...done.')
         return True
 
     def _ps_command_set(
