@@ -364,15 +364,13 @@ class MachineShutdown(_Devices, LogCallback):
 
         self.log('Disabling BbB loops...')
 
-        self._devrefs['bbbhfb'].loop_state = 0
-        self._devrefs['bbbvfb'].loop_state = 0
-        self._devrefs['bbblfb'].loop_state = 0
+        devices = [
+            self._devrefs[d] for d in ['bbbhfb', 'bbbvfb', 'bbblfb']]
 
-        is_ok = \
-            self._devrefs['bbbhfb'].loop_state == 0 and \
-            self._devrefs['bbbvfb'].loop_state == 0 and \
-            self._devrefs['bbblfb'].loop_state == 0
-        if not is_ok:
+        for dev in devices:
+            dev.loop_state = 0
+
+        if not self._wait_devices_propty(devices, 'FBCTRL', 0):
             self.log('WARN:Could not disable BbB loops.')
             self.log('WARN:Continuing anyway...')
         else:
