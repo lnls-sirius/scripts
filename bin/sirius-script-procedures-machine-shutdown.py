@@ -235,14 +235,14 @@ class MachineShutdown(_Devices, LogCallback):
         """Change Machine Shift to Maintenance."""
         self.log('Step 02: Updating Machine Shift...')
 
-        new_mode = 'Maintenance'
+        new_mode = 'Shutdown'
 
         machshift = self._devrefs['machshift']
         machshift.mode = new_mode
 
         is_ok = machshift.wait_mode(new_mode)
         if not is_ok:
-            self.log('WARN:Could not change MachShift to Maintenance.')
+            self.log('WARN:Could not change MachShift to Shutdown.')
             self.log('WARN:Continuing anyway...')
         else:
             self.log('Machine Shift updated.')
