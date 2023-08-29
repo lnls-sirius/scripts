@@ -1031,7 +1031,7 @@ class MachineShutdown(_Devices, LogCallback):
                     'func': self._ps_command_check,
                     'devnames': self._punames,
                     'method': 'check_voltage',
-                    'kwargs': {'check_timeout': 60},
+                    'kwargs': {'check_timeout': 240},
                     'block': True,
                 },
             ],
