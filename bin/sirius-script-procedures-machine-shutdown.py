@@ -18,6 +18,7 @@ from siriuspy.devices import Devices as _Devices, \
     EGFilament as _EGFilament, EGHVPS as _EGHVPS, \
     HLFOFB as _HLFOFB, SOFB as _SOFB, \
     ASLLRF as _ASLLRF, \
+    SIRFCavMonitor as _SIRFCavMonitor, BORFCavMonitor as _BORFCavMonitor, \
     SILLRFPreAmp as _SILLRFPreAmp, BOLLRFPreAmp as _BOLLRFPreAmp, \
     SIRFDCAmp as _SIRFDCAmp, BORFDCAmp as _BORFDCAmp, \
     SIRFACAmp as _SIRFACAmp, BORF300VDCAmp as _BORF300VDCAmp, \
@@ -382,6 +383,7 @@ class MachineShutdown(_Devices, LogCallback):
         self.log('Step 08: Turning off SI RF...')
 
         llrf = self._devrefs['sillrf']
+        cavmon = self._devrefs['sicavmon']
         preamp = self._devrefs['sillrfpreamp']
         dcamp1 = self._devrefs['sirfdcamp1']
         dcamp2 = self._devrefs['sirfdcamp2']
@@ -454,6 +456,13 @@ class MachineShutdown(_Devices, LogCallback):
             return False
         _time.sleep(1.0)  # is this necessary?
 
+        self.log('...done. Checking if power forward is less than 1W...')
+        if not self._wait_devices_propty(
+                cavmon, 'PwrFwd-Mon', 1, comp='lt', timeout=10):
+            self.log('ERR:Power forward is greater than 1W.')
+            return False
+
+        self.log('...done.')
         return True
 
     def s09_borf_turnoff(self):
@@ -461,6 +470,7 @@ class MachineShutdown(_Devices, LogCallback):
         self.log('Step 09: Turning off BO RF...')
 
         llrf = self._devrefs['bollrf']
+        cavmon = self._devrefs['bocavmon']
         preamp = self._devrefs['bollrfpreamp']
         dcamp = self._devrefs['borfdcamp']
         vdcamp = self._devrefs['borf300vdcamp']
@@ -472,6 +482,11 @@ class MachineShutdown(_Devices, LogCallback):
         _time.sleep(2.0)  # is this necessary?
 
         if not self.continue_execution():
+            return False
+
+        self.log('...done. Changing loop reference to 62mV...')
+        if not llrf.set_voltage(62, timeout=60, wait_mon=False):
+            self.log('ERR:Could not set loop reference to 62mV.')
             return False
 
         self.log('...done. Disabling slow loop control...')
@@ -507,6 +522,13 @@ class MachineShutdown(_Devices, LogCallback):
             return False
         _time.sleep(0.5)  # is this necessary?
 
+        self.log('...done. Checking if power forward is less than 1W...')
+        if not self._wait_devices_propty(
+                cavmon, 'PwrFwd-Mon', 1, comp='lt', timeout=10):
+            self.log('ERR:Power forward is greater than 1W.')
+            return False
+
+        self.log('...done.')
         return True
 
     def s10_modulators_turnoff(self):
@@ -703,12 +725,14 @@ class MachineShutdown(_Devices, LogCallback):
 
         # RF
         devices['sillrf'] = _ASLLRF(_ASLLRF.DEVICES.SI)
+        devices['sicavmon'] = _SIRFCavMonitor()
         devices['sillrfpreamp'] = _SILLRFPreAmp()
         devices['sirfdcamp1'] = _SIRFDCAmp(_SIRFDCAmp.DEVICES.SSA1)
         devices['sirfdcamp2'] = _SIRFDCAmp(_SIRFDCAmp.DEVICES.SSA2)
         devices['sirfacamp1'] = _SIRFACAmp(_SIRFACAmp.DEVICES.SSA1)
         devices['sirfacamp2'] = _SIRFACAmp(_SIRFACAmp.DEVICES.SSA2)
         devices['bollrf'] = _ASLLRF(_ASLLRF.DEVICES.BO)
+        devices['bocavmon'] = _BORFCavMonitor()
         devices['bollrfpreamp'] = _BOLLRFPreAmp()
         devices['borfdcamp'] = _BORFDCAmp()
         devices['borf300vdcamp'] = _BORF300VDCAmp()
