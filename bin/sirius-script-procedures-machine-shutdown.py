@@ -357,6 +357,7 @@ class MachineShutdown(_Devices, LogCallback):
             # NOTE: we will not return False here because the correctors
             # mode will be controlled also in the PS turn of procedure.
 
+        self.log('...done.')
         return True
 
     def s07_bbb_turnoff(self):
