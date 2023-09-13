@@ -10,7 +10,7 @@ from siriuspy.namesys import SiriusPVName as _PVName
 from siriuspy.search import PSSearch as _PSSearch, \
     HLTimeSearch as _HLTimeSearch
 from siriuspy.pwrsupply.csdev import Const as _PSC
-from siriuspy.devices import Devices as _Devices, \
+from siriuspy.devices import DeviceSet as _DeviceSet, \
     ASMPSCtrl as _ASMPSCtrl, ASPPSCtrl as _ASPPSCtrl, \
     APU as _APU, EPU as _EPU, PAPU as _PAPU, \
     MachShift as _MachShift, InjCtrl as _InjCtrl, \
@@ -56,7 +56,7 @@ class LogCallback(_Callback):
             _log.info(message)
 
 
-class IDParking(_Devices, LogCallback):
+class IDParking(_DeviceSet, LogCallback):
     """ID."""
 
     TIMEOUT_WAIT_FOR_CONNECTION = 5.0  # [s]
@@ -76,7 +76,7 @@ class IDParking(_Devices, LogCallback):
             raise ValueError('Invalid ID device type')
         self._device = device
 
-        _Devices.__init__(self, devname, [device, ])
+        _DeviceSet.__init__(self, [device, ], devname=devname)
         LogCallback.__init__(self, log_callback)
 
     @property
@@ -183,7 +183,7 @@ class IDParking(_Devices, LogCallback):
         return True
 
 
-class MachineShutdown(_Devices, LogCallback):
+class MachineShutdown(_DeviceSet, LogCallback):
     """Machine Shutdown device."""
 
     DEFAULT_CHECK_TIMEOUT = 10
@@ -196,7 +196,7 @@ class MachineShutdown(_Devices, LogCallback):
 
         self._devrefs = self._create_devices()
         devices = list(self._devrefs.values())
-        _Devices.__init__(self, 'AS-Glob:AP-MachShutdown', devices)
+        _DeviceSet.__init__(self, devices, devname='AS-Glob:AP-MachShutdown')
 
         LogCallback.__init__(self, log_callback)
 
