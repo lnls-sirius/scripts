@@ -340,6 +340,13 @@ class MachineShutdown(_DeviceSet, LogCallback):
         if not self.continue_execution():
             return False
 
+        is_ok = self._devrefs['fofb'].cmd_corr_set_current_zero()
+        if not is_ok:
+            self.log('WARN:Could not set fast correctors to zero.')
+            self.log('WARN:Continuing anyway...')
+            # NOTE: we will not return False here because the correctors
+            # will be set to zero also in the PS turn off procedure.
+
         self.log('...done. Turning off SOFB loop...')
         is_ok = self._devrefs['sofb'].cmd_turn_off_autocorr(timeout=5)
         if not is_ok:
@@ -355,7 +362,7 @@ class MachineShutdown(_DeviceSet, LogCallback):
             self.log('WARN:Could not disable SOFB Synchronization.')
             self.log('WARN:Continuing anyway...')
             # NOTE: we will not return False here because the correctors
-            # mode will be controlled also in the PS turn of procedure.
+            # mode will be controlled also in the PS turn off procedure.
 
         self.log('...done.')
         return True
