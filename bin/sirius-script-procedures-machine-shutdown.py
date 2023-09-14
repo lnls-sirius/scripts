@@ -567,8 +567,8 @@ class MachineShutdown(_DeviceSet, LogCallback):
         self.log('...done.')
         return True
 
-    def s11_adjust_egunbias(self):
-        """Adjust Bias Voltage to -100V."""
+    def s11_adjust_egun_bias(self):
+        """Adjust Bias Voltage to standby value."""
         self.log('Step 11: Adjusting EGun bias voltage...')
 
         injctrl = self._devrefs['injctrl']
@@ -582,8 +582,8 @@ class MachineShutdown(_DeviceSet, LogCallback):
         injctrl.wait_bias_volt_cmd_finish(timeout=10)
         return True
 
-    def s12_adjust_egunfilament(self):
-        """Adjust EGun Bias Filament current."""
+    def s12_adjust_egun_filament(self):
+        """Adjust EGun Bias Filament current to standby value."""
         self.log('Step 12: Adjusting EGun Bias Filament current...')
 
         injctrl = self._devrefs['injctrl']
@@ -670,8 +670,8 @@ class MachineShutdown(_DeviceSet, LogCallback):
             self.s08_sirf_turnoff,
             self.s09_borf_turnoff,
             self.s10_modulators_turnoff,
-            self.s11_adjust_egunbias,
-            self.s12_adjust_egunfilament,
+            self.s11_adjust_egun_bias,
+            self.s12_adjust_egun_filament,
             self.s13_disable_egun_highvoltage,
             self.s14_start_counter,
             self.s15_disable_ps_triggers,
