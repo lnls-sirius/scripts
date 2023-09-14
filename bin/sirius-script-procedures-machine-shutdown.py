@@ -190,6 +190,11 @@ class MachineShutdown(_DeviceSet, LogCallback):
     DEFAULT_CONN_TIMEOUT = 5
     DEFAULT_TINYSLEEP = 0.1
 
+    EG_FILA_CURR_STDBY = 1.1  # [A]
+    EG_BIAS_VOLT_STDBY = -100  # [V]
+    BORF_SLREF_STDBY = 62  # [mV]
+    SIRF_SLREF_STDBY = 60  # [mV]
+
     def __init__(self, log_callback=None):
         self._log_callback = log_callback
         self._abort = False
@@ -403,14 +408,14 @@ class MachineShutdown(_DeviceSet, LogCallback):
         if not llrf.set_voltage_incrate(incrate, timeout=5):
             self.log('ERR:Could not set voltage increase rate to 2mV/s.')
             return False
-        _time.sleep(1.0)  # is this necessary?
 
         if not self.continue_execution():
             return False
 
-        self.log('...done. Changing loop reference to 60mV...')
-        if not llrf.set_voltage(60, timeout=180, wait_mon=False):
-            self.log('ERR:Could not set loop reference to 60mV.')
+        ref = self.SIRF_SLREF_STDBY
+        self.log(f'...done. Changing loop reference to {ref}mV...')
+        if not llrf.set_voltage(ref, timeout=180, wait_mon=False):
+            self.log(f'ERR:Could not set loop reference to {ref}mV.')
             return False
 
         self.log('...done. Check if stored beam was dumped...')
@@ -487,14 +492,14 @@ class MachineShutdown(_DeviceSet, LogCallback):
         if not llrf.set_rmp_enable(0, timeout=2):
             self.log('ERR:Could not disable BO RF Ramp.')
             return False
-        _time.sleep(2.0)  # is this necessary?
 
         if not self.continue_execution():
             return False
 
-        self.log('...done. Changing loop reference to 62mV...')
-        if not llrf.set_voltage(62, timeout=60, wait_mon=False):
-            self.log('ERR:Could not set loop reference to 62mV.')
+        ref = self.BORF_SLREF_STDBY
+        self.log(f'...done. Changing loop reference to {ref}mV...')
+        if not llrf.set_voltage(ref, timeout=60, wait_mon=False):
+            self.log(f'ERR:Could not set loop reference to {ref}mV.')
             return False
 
         self.log('...done. Disabling slow loop control...')
@@ -568,11 +573,12 @@ class MachineShutdown(_DeviceSet, LogCallback):
 
         injctrl = self._devrefs['injctrl']
 
-        self.log('Setting bias voltage to -100V...')
+        volt = self.EG_BIAS_VOLT_STDBY
+        self.log(f'Setting bias voltage to {volt}V...')
         if injctrl.injtype_str == 'SingleBunch':
-            injctrl.bias_volt_sglbun = -100.0
+            injctrl.bias_volt_sglbun = volt
         else:
-            injctrl.bias_volt_multbun = -100.0
+            injctrl.bias_volt_multbun = volt
         injctrl.wait_bias_volt_cmd_finish(timeout=10)
         return True
 
@@ -583,10 +589,11 @@ class MachineShutdown(_DeviceSet, LogCallback):
         injctrl = self._devrefs['injctrl']
         egfila = self._devrefs['egfila']
 
-        self.log('Setting Bias Filament current to 1.1A...')
-        injctrl.filacurr_opvalue = 1.1
+        curr = self.EG_FILA_CURR_STDBY
+        self.log(f'Setting Bias Filament current to {curr:.1}A...')
+        injctrl.filacurr_opvalue = curr
         injctrl.wait_filacurr_cmd_finish(timeout=10)
-        if not egfila.wait_current(1.1, timeout=1):
+        if not egfila.wait_current(curr, timeout=1):
             self.log('WARN:Could not adjust EGun filament.')
             self.log('WARN:Continuing anyway...')
         else:
