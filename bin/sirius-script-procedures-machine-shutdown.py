@@ -1,6 +1,9 @@
 #!/usr/bin/env python-sirius
 """Machine shutdown script."""
 
+
+import sys as _sys
+import select as _select
 import time as _time
 import logging as _log
 from threading import Thread as _Thread
@@ -629,9 +632,17 @@ class MachineShutdown(_DeviceSet, LogCallback):
         """Check whether the countdown to tunnel access has started."""
         self.log('Step 14: Checking tunnel access countdown...')
 
-        msg = (
-            'Check whether the countdown to tunnel access has started.')
-        input(msg)
+        print('Check whether the countdown to tunnel access has ', end='')
+        print('started and press Enter (you have 30s to do so): ', end='')
+        _sys.stdout.flush()
+        i, _, _ = _select.select([_sys.stdin], [], [], 30)
+        if i:
+            _ = _sys.stdin.readline().strip()
+        else:
+            self.log('WARN: Timed out waiting enter, continuing anyway...')
+
+        # TODO: replace code above by commented code below when
+        # MPS IOC is ready.
         # dev = self._devrefs['asppsctrl']
         # if dev.remaining_time_for_tunnel_access() == 360:
         #     return False
