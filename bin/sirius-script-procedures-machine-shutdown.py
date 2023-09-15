@@ -697,19 +697,36 @@ class MachineShutdown(_DeviceSet, LogCallback):
         devices['machshift'] = _MachShift()
 
         # InjCtrl
-        devices['injctrl'] = _InjCtrl()
+        devices['injctrl'] = _InjCtrl(
+            props2init=(
+                'Mode-Sel', 'Mode-Sts', 'Type-Sts',
+                'InjSysTurnOff-Cmd', 'InjSysCmdSts-Mon',
+                'InjSysCmdDone-Mon', 'InjSysTurnOffOrder-RB',
+                'SglBunBiasVolt-SP', 'SglBunBiasVolt-RB',
+                'MultBunBiasVolt-SP', 'MultBunBiasVolt-RB',
+                'FilaOpCurr-SP', 'FilaOpCurr-RB',
+                'HVOpVolt-SP', 'HVOpVolt-RB',
+                'BiasVoltCmdSts-Mon', 'FilaOpCurrCmdSts-Mon',
+                'HVOpVoltCmdSts-Mon',
+            ))
 
         # EVG
-        devices['evg'] = _EVG()
+        devices['evg'] = _EVG(
+            props2init=('InjectionEvt-Sel', 'InjectionEvt-Sts'))
 
         # EGun
-        devices['egtriggerps'] = _EGTriggerPS()
-        devices['egfila'] = _EGFilament()
-        devices['eghvolt'] = _EGHVPS()
+        devices['egtriggerps'] = _EGTriggerPS(
+            props2init=('enable', 'enablereal'))
+        devices['egfila'] = _EGFilament(
+            props2init=('currentinsoft', ))
+        devices['eghvolt'] = _EGHVPS(
+            props2init=(
+                'voltinsoft', 'enable', 'enstatus', 'switch', 'swstatus'))
 
         # Interlock
         devices['asppsctrl'] = _ASPPSCtrl()
-        devices['asmpsctrl'] = _ASMPSCtrl()
+        devices['asmpsctrl'] = _ASMPSCtrl(
+            props2init=('DsblGamma-Cmd', 'AlarmGammaShutter-Mon'))
 
         # IDs
         devices['apu22_06SB'] = IDParking(
@@ -728,36 +745,63 @@ class MachineShutdown(_DeviceSet, LogCallback):
             _PAPU.DEVICES.PAPU50_17SA, log_callback=self._log_callback)
 
         # SOFB
-        devices['fofb'] = _HLFOFB()
+        devices['fofb'] = _HLFOFB(
+            props2init=(
+                'LoopState-Sel', 'LoopState-Sts',
+                'CorrSetCurrZero-Cmd', 'CorrSetCurrZeroDuration-RB',
+            ))
 
         # FOFB
-        devices['sofb'] = _SOFB(_SOFB.DEVICES.SI)
+        devices['sofb'] = _SOFB(
+            _SOFB.DEVICES.SI,
+            props2init=(
+                'LoopState-Sel', 'LoopState-Sts',
+                'CorrSync-Sel', 'CorrSync-Sts',
+            ))
 
         # BbB
-        devices['bbbhfb'] = _BbBFB(_BbB.DEVICES.H)
-        devices['bbbvfb'] = _BbBFB(_BbB.DEVICES.V)
-        devices['bbblfb'] = _BbBFB(_BbB.DEVICES.L)
+        devices['bbbhfb'] = _BbBFB(
+            _BbB.DEVICES.H, props2init=('FBCTRL', ))
+        devices['bbbvfb'] = _BbBFB(
+            _BbB.DEVICES.V, props2init=('FBCTRL', ))
+        devices['bbblfb'] = _BbBFB(
+            _BbB.DEVICES.L, props2init=('FBCTRL', ))
 
         # RF
-        devices['sillrf'] = _ASLLRF(_ASLLRF.DEVICES.SI)
+        devices['sillrf'] = _ASLLRF(
+            _ASLLRF.DEVICES.SI,
+            props2init=(
+                'AMPREF:INCRATE:S', 'AMPREF:INCRATE', 'SL', 'SL:S',
+                'SL:INP:AMP', 'SL:REF:AMP', 'mV:AL:REF-SP', 'mV:AL:REF-RB',
+            ))
         devices['sicavmon'] = _SIRFCavMonitor()
         devices['sillrfpreamp'] = _SILLRFPreAmp()
         devices['sirfdcamp1'] = _SIRFDCAmp(_SIRFDCAmp.DEVICES.SSA1)
         devices['sirfdcamp2'] = _SIRFDCAmp(_SIRFDCAmp.DEVICES.SSA2)
         devices['sirfacamp1'] = _SIRFACAmp(_SIRFACAmp.DEVICES.SSA1)
         devices['sirfacamp2'] = _SIRFACAmp(_SIRFACAmp.DEVICES.SSA2)
-        devices['bollrf'] = _ASLLRF(_ASLLRF.DEVICES.BO)
+
+        devices['bollrf'] = _ASLLRF(
+            _ASLLRF.DEVICES.BO,
+            props2init=(
+                'RmpEnbl-Sel', 'RmpEnbl-Sts', 'RmpReady-Mon', 'SL', 'SL:S',
+                'SL:INP:AMP', 'SL:REF:AMP', 'mV:AL:REF-SP', 'mV:AL:REF-RB',
+
+            ))
         devices['bocavmon'] = _BORFCavMonitor()
         devices['bollrfpreamp'] = _BOLLRFPreAmp()
         devices['borfdcamp'] = _BORFDCAmp()
         devices['borf300vdcamp'] = _BORF300VDCAmp()
 
         # DCCT
-        devices['dcct'] = _DCCT(_DCCT.DEVICES.SI_14C4)
+        devices['dcct'] = _DCCT(
+            _DCCT.DEVICES.SI_14C4, props2init=('StoredEBeam-Mon', ))
 
         # Linac Modulators
-        devices['limod1'] = _LIModltr(_LIModltr.DEVICES.LI_MOD1)
-        devices['limod2'] = _LIModltr(_LIModltr.DEVICES.LI_MOD2)
+        devices['limod1'] = _LIModltr(
+            _LIModltr.DEVICES.LI_MOD1, props2init=('CHARGE', 'TRIGOUT'))
+        devices['limod2'] = _LIModltr(
+            _LIModltr.DEVICES.LI_MOD2, props2init=('CHARGE', 'TRIGOUT'))
 
         # PS
         self._pstrigs = _HLTimeSearch.get_hl_triggers(filters={'dev': 'Mags'})
