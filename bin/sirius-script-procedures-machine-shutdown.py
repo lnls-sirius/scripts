@@ -197,6 +197,7 @@ class MachineShutdown(_DeviceSet, LogCallback):
     EG_BIAS_VOLT_STDBY = -100  # [V]
     BORF_SLREF_STDBY = 62  # [mV]
     SIRF_SLREF_STDBY = 60  # [mV]
+    EBEAM_MAX_CURRENT = 1  # [mA]
 
     def __init__(self, log_callback=None):
         self._log_callback = log_callback
@@ -423,7 +424,7 @@ class MachineShutdown(_DeviceSet, LogCallback):
 
         self.log('...done. Check if stored beam was dumped...')
         dcct = self._devrefs['dcct']
-        if dcct.is_beam_stored:
+        if dcct.current > MachineShutdown.EBEAM_MAX_CURRENT:
             self.log('ERR:DCCT is indicating stored beam.')
             return False
 
@@ -632,20 +633,20 @@ class MachineShutdown(_DeviceSet, LogCallback):
         """Check whether the countdown to tunnel access has started."""
         self.log('Step 14: Checking tunnel access countdown...')
 
-        print('Check whether the countdown to tunnel access has ', end='')
-        print('started and press Enter (you have 30s to do so): ', end='')
-        _sys.stdout.flush()
-        i, _, _ = _select.select([_sys.stdin], [], [], 30)
-        if i:
-            _ = _sys.stdin.readline().strip()
-        else:
-            self.log('WARN: Timed out waiting enter, continuing anyway...')
+        timeout = 5  # [s]
+        dev = self._devrefs['asppsctrl']
+        time0 = _time.time()
+        value_init = round(dev.remaining_time_for_tunnel_access)
+        while True:
+            value = round(dev.remaining_time_for_tunnel_access)
+            if value < value_init:
+                # countdown is running!
+                break
+            if _time.time() - time0 > timeout:
+                self.log(f'ERR:PPS Timer has not started countdown.')
+                return False
 
-        # TODO: replace code above by commented code below when
-        # MPS IOC is ready.
-        # dev = self._devrefs['asppsctrl']
-        # if dev.remaining_time_for_tunnel_access() == 360:
-        #     return False
+        self.log('...done.')
         return True
 
     def s15_disable_ps_triggers(self):
