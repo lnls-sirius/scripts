@@ -636,9 +636,9 @@ class MachineShutdown(_DeviceSet, LogCallback):
         timeout = 5  # [s]
         dev = self._devrefs['asppsctrl']
         time0 = _time.time()
-        value_init = round(dev.remaining_time_for_tunnel_access)
+        value_init = round(dev.tunnel_access_wait_time_left)
         while True:
-            value = round(dev.remaining_time_for_tunnel_access)
+            value = round(dev.tunnel_access_wait_time_left)
             if value < value_init:
                 # countdown is running!
                 break
