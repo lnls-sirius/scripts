@@ -6,14 +6,15 @@ from siriuspy.clientarch import PVData, PVDataSet, Time
 from siriushla.sirius_application import SiriusApplication
 from siriushla.widgets import SiriusMainWindow
 import subprocess
+import datetime
 import socket
 import os
 import sys, time
 from pickle import TRUE
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from optparse import Values
 from random import randint
-from datetime import date
+# from datetime import date
 from turtle import right
 import epics
 from PyQt5.QtWidgets import * 
@@ -23,6 +24,7 @@ from PyQt5.QtCore import *
 PORT_NUMBER_MKS_SENSOR = 5002
 PORT_NUMBER_ION_PUMP = 5004
 
+current_datetime = QDateTime.currentDateTime()
 
 ## Lista dos IPs das BBBs referente as eletrônicas de sensores (SENSOR) e fontes de bomba iônica (PUMP)
 
@@ -165,16 +167,13 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
-
         # Criando a janela
         self.setWindowTitle(" - Monitoramento do vácuo (sys) - ")
         self.setGeometry(200, 200, 600, 400)
 
-
         # Criando o QTextEdit
         self.log_window = QTextEdit(self)
         self.log_window.setGeometry(10, 10, 500, 300)
-        
 
         #  Criação dos botões
         self.start_button = QPushButton ('Start', self)
@@ -189,7 +188,6 @@ class MainWindow(QMainWindow):
         self.stop_button = QPushButton('Stop', self)
         self.stop_button.setGeometry(300, 330, 80, 60)
         self.stop_button.clicked.connect(self._stop_monitoring_)
-    
         self._sensors_nok = list()
 
     #  Função auxiliar para thread de leituras
@@ -200,7 +198,6 @@ class MainWindow(QMainWindow):
         self._thread.nok_signal.connect(self._set_nok_sensors)
         self.stopThread.connect(self._thread.stop_task)
         self._thread.start()
-
    
     #  Função auxiliar para status dos botões
     def _set_nok_sensors(self, sensors_list):
@@ -208,14 +205,15 @@ class MainWindow(QMainWindow):
         self.start_button.setEnabled(True)
         self.execute_button.setEnabled(True)
         self.log("Foram encontrados sensores com problemas.")
-
+        current_datetime = QDateTime.currentDateTime()
+        formatted_datetime = current_datetime.toString("yyyy-MM-dd - HH:mm:ss")
+        self.log(f'Data e hora atuais: {formatted_datetime} hrs')
     
     #  Função para execução do botão de STOP
     def _stop_monitoring_(self):
         self.stopThread.emit()
         self.start_button.setEnabled(True)
         self.log("Monitoramento parado")
-
 
     #  Função de ajustes de canais e tensões dos canais das fontes de BI
     def _fix_bi(self):
@@ -234,7 +232,7 @@ class MainWindow(QMainWindow):
             time.sleep(5)
             MainWindow._on_pv_set_(vlt_chnll, 5000)
             time.sleep(15)
-            if value <= 9e-8:
+            if value <= 5e-9:
                 time.sleep(5)
                 MainWindow._on_pv_set_(vlt_chnll, 3000)
                 time.sleep(5)
@@ -243,7 +241,6 @@ class MainWindow(QMainWindow):
         self._sensors_nok = list()
         self.log('Ajustes finalizados.')
         self.log('')    
-         
 
     ### Função para preencher o formulário            
     def initialize_log(self):
@@ -253,7 +250,7 @@ class MainWindow(QMainWindow):
         self.log('\n--- check MKS_SENSOR ---')
         check2 = MainWindow._check_ping_connection_all_sensors(IP_LIST_MKS_SENSOR)
         self.log(check2)
-            
+
     ### Adiciona uma mensagem ao log e atualiza a barra de status
     def log(self, message):
         self.log_window.append(message)
@@ -268,7 +265,6 @@ class MainWindow(QMainWindow):
         except subprocess.CalledProcessError:
             return False
 
-
     # #  Função para teste de conexão dos sensores por PING
     @staticmethod
     def _check_ping_connection_all_sensors(ip_list):
@@ -279,8 +275,7 @@ class MainWindow(QMainWindow):
             else:
                 status_messages.append('{} ok'.format(address))
         return '\n'.join(status_messages)
-    
-    
+
     ## Função para selecionar o canal da fonte
     @staticmethod
     def _cndc_fnt_sp_(fnt_chnll_indc, rfrc_chnll):
@@ -317,22 +312,21 @@ class MainWindow(QMainWindow):
             epics.caput(rfrc_chnll, 15)
         else:
             raise Exception('Wrong pv_name_vac')
-        
 
     ## Função para ajustar as tensões das fontes
     @staticmethod
     def _on_pv_set_(vlt_chnll, value):
         epics.caput(vlt_chnll, value)
 
-
     ## Função que retorna o modo (Mode) das fontes para Fixed
     @staticmethod
     def _on_pv_set_fx_rtrn_(rfrc_chnll, value):
             epics.caput(rfrc_chnll, value)
 
+
 #  Classe de leituras e preenchimento do GUI
 class MonitorThread(QThread):
-    SENSOR_THRESHOLD = 1e-08  # [mbar]
+    SENSOR_THRESHOLD = 8e-9  # [mbar]
     log_signal = pyqtSignal(str)
     nok_signal = pyqtSignal(list)
 
@@ -341,17 +335,14 @@ class MonitorThread(QThread):
     def __init__(self, parent=None):
         super().__init__(parent)
         self._stop = False
-    
 
     #  Função auxiliar do status stop, condição verdadeira
     def stop_task(self):
         self._stop = True
 
-
     #  Função auxiliar do status do loop de monitoramento (ON)
     def run(self):
         self.monitoring_loop()
-
 
     #  Função para execução do loop WHILE
     def monitoring_loop(self):
@@ -366,7 +357,6 @@ class MonitorThread(QThread):
             cont +=1
             print('contador', cont)
             time.sleep(2)
-
     
     ## Função para verificar as pressões e atuar nas fontes de bomba iônica
     def _on_pv_change_(self):
@@ -380,9 +370,10 @@ class MonitorThread(QThread):
             self.log_signal.emit('As pressões estão OK!')
             return True
         self.log_signal.emit('Deseja executar os ajustes? [botão execute]')
+
         return False
 
-   
+
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     main_window = MainWindow()
