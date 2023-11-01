@@ -21,7 +21,7 @@ def configure_acquisition_params(orbacq):
 
     params.nrpoints_before = 1_000
     params.nrpoints_after = 10_000
-    params._acq_repeat = 0
+    params.acq_repeat = False
     params.trigbpm_delay = 0
     params.trigbpm_nrpulses = 1
     params.do_pulse_evg = False
