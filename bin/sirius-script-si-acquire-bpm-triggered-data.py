@@ -84,7 +84,7 @@ if __name__ == "__main__":
         description="BPM triggered acquisition script. By default the script is configured to acquire injection perturbations during top-up.")
     parser.add_argument(
         '-f', '--filename', type=str, default='',
-        help='name of the file to save (Default: acqrate_%Y-%m-%d_%Hh%Mm%Ss)')
+        help='name of the file to save (Default: acqrate_YY-MM-DD_HHhMMmSSs)')
     parser.add_argument(
         '-s', '--signals2acq', type=str, default='XY',
         help='signals to acquire (Default: XY)')
