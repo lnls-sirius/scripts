@@ -4,7 +4,6 @@
 from siriuspy.devices import BunchbyBunch, SOFB, HLFOFB
 from apsuite.commisslib.meas_bpms_signals import AcqBPMsSignals
 from siriuspy.devices import BOPSRampStandbyHandler, BORFRampStandbyHandler
-import sys
 from datetime import datetime
 
 def configure_acquisition_params(orbacq, parse_args):
@@ -31,12 +30,16 @@ def configure_acquisition_params(orbacq, parse_args):
 
 def measure(orbacq):
     """."""
-    init_state_orbacq = orbacq.get_timing_state()
+    init_state = orbacq.get_timing_state()
     orbacq.prepare_timing()
     print('Waiting for next injection pulse')
     print('Take a look at Injection Control Log to check for next injection')
-    orbacq.acquire_data()
-    orbacq.recover_timing_state(init_state_orbacq)
+    try:
+        orbacq.acquire_data()
+    except Exception as e:
+        print(f"An error occurred during acquisition: {e}")
+    # Restore initial timing state, regardless acquisition status
+    orbacq.recover_timing_state(init_state)
     return orbacq.data is not None
 
 
