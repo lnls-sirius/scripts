@@ -200,6 +200,7 @@ class MachineShutdown(_DeviceSet, LogCallback):
     EBEAM_MAX_CURRENT = 1  # [mA]
 
     def __init__(self, log_callback=None):
+        """."""
         self._log_callback = log_callback
         self._abort = False
 
@@ -317,7 +318,7 @@ class MachineShutdown(_DeviceSet, LogCallback):
 
         ids = [
             'apu22_06SB', 'apu22_07SP', 'apu22_08SB', 'apu22_09SA',
-            'apu58_11SP', 'epu50_10SB', 'papu50_17SA',
+            'apu58_11SP', 'delta52_10SB', 'papu50_17SA',
         ]
         self.log('Sending park command for IDs...')
         threads = list()
