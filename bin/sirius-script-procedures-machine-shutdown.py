@@ -401,7 +401,8 @@ class MachineShutdown(_DeviceSet, LogCallback):
 
         llrf = self._devrefs['sillrf']
         cavmon = self._devrefs['sicavmon']
-        preamp = self._devrefs['sillrfpreamp']
+        preamp1 = self._devrefs['sillrfpreamp1']
+        preamp2 = self._devrefs['sillrfpreamp2']
         dcamp1 = self._devrefs['sirfdcamp1']
         dcamp2 = self._devrefs['sirfdcamp2']
         acamp1 = self._devrefs['sirfacamp1']
@@ -441,10 +442,10 @@ class MachineShutdown(_DeviceSet, LogCallback):
             return False
 
         self.log('...done. Disabling PinSw...')
-        if not preamp.cmd_disable_pinsw_1(wait_mon=True):
+        if not preamp1.cmd_disable_pinsw(wait_mon=True):
             self.log('ERR:Could not disable SSA1 PinSw.')
             return False
-        if not preamp.cmd_disable_pinsw_2(wait_mon=True):
+        if not preamp2.cmd_disable_pinsw(wait_mon=True):
             self.log('ERR:Could not disable SSA2 PinSw.')
             return False
         _time.sleep(1.0)  # is this necessary?
@@ -787,7 +788,8 @@ class MachineShutdown(_DeviceSet, LogCallback):
                 'SL:INP:AMP', 'SL:REF:AMP', 'mV:AL:REF-SP', 'mV:AL:REF-RB',
             ))
         devices['sicavmon'] = _SIRFCavMonitor()
-        devices['sillrfpreamp'] = _SILLRFPreAmp()
+        devices['sillrfpreamp1'] = _SILLRFPreAmp(_SILLRFPreAmp.DEVICES.SSA1)
+        devices['sillrfpreamp2'] = _SILLRFPreAmp(_SILLRFPreAmp.DEVICES.SSA2)
         devices['sirfdcamp1'] = _SIRFDCAmp(_SIRFDCAmp.DEVICES.SSA1)
         devices['sirfdcamp2'] = _SIRFDCAmp(_SIRFDCAmp.DEVICES.SSA2)
         devices['sirfacamp1'] = _SIRFACAmp(_SIRFACAmp.DEVICES.SSA1)
