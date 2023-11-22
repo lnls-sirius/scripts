@@ -2,8 +2,6 @@
 """Machine shutdown script."""
 
 
-import sys as _sys
-import select as _select
 import time as _time
 import logging as _log
 from threading import Thread as _Thread
@@ -15,7 +13,7 @@ from siriuspy.search import PSSearch as _PSSearch, \
 from siriuspy.pwrsupply.csdev import Const as _PSC
 from siriuspy.devices import DeviceSet as _DeviceSet, \
     ASMPSCtrl as _ASMPSCtrl, ASPPSCtrl as _ASPPSCtrl, \
-    APU as _APU, EPU as _EPU, PAPU as _PAPU, \
+    APU as _APU, EPU as _EPU, PAPU as _PAPU, DELTA as _DELTA, \
     MachShift as _MachShift, InjCtrl as _InjCtrl, \
     EVG as _EVG, EGTriggerPS as _EGTriggerPS, \
     EGFilament as _EGFilament, EGHVPS as _EGHVPS, \
@@ -75,6 +73,8 @@ class IDParking(_DeviceSet, LogCallback):
             device = _PAPU(devname)
         elif 'APU' in devname:
             device = _APU(devname)
+        elif 'DELTA' in devname:
+            device = _DELTA(devname)
         else:
             raise ValueError('Invalid ID device type')
         self._device = device
@@ -133,31 +133,15 @@ class IDParking(_DeviceSet, LogCallback):
             return False
 
         self.log(f'Setting {self.devname} speeds...')
-        value = self._device.phase_speed_max
-        if not self._device.set_phase_speed(value):
-            self.log(f'ERR:Failed to set {self.devname} phase speed.')
+        value = self._device.pparameter_speed_max
+        if not self._device.pparameter_speed_set(value):
+            self.log(f'ERR:Failed to set {self.devname} pparameter speed.')
             self._is_parking = False
             return False
         if isinstance(self._device, _EPU):
-            value = self._device.gap_speed_max
-            if not self._device.set_gap_speed(value):
-                self.log(f'ERR:Failed to set {self.devname} gap speed.')
-                self._is_parking = False
-                return False
-
-        if not self.continue_execution():
-            return False
-
-        self.log(f'Setting {self.devname} phase and gap for parking...')
-        value = self._device.phase_parked
-        if not self._device.set_phase(value):
-            self.log(f'ERR:Failed to set {self.devname} phase.')
-            self._is_parking = False
-            return False
-        if isinstance(self._device, _EPU):
-            value = self._device.gap_parked
-            if not self._device.set_gap(value):
-                self.log(f'ERR:Failed to set {self.devname} gap.')
+            value = self._device.kparameter_speed_max
+            if not self._device.kparameter_speed_set(value):
+                self.log(f'ERR:Failed to set {self.devname} kparameter speed.')
                 self._is_parking = False
                 return False
 
@@ -165,21 +149,10 @@ class IDParking(_DeviceSet, LogCallback):
             return False
 
         self.log(f'Moving {self.devname} to parking...')
-        if not self._device.cmd_move_start():
+        if not self._device.cmd_move_park():
             self.log(f'ERR:Failed to move {self.devname}.')
             self._is_parking = False
             return False
-        _time.sleep(2.0)  # wait 2s
-
-        self.log(f'Waiting end of {self.devname} movement...')
-        timeout, sleep = 70, 0.2  # [s]
-        _t0 = _time.time()
-        while self._device.is_moving:
-            if _time.time() - _t0 > timeout:
-                self.log(f'ERR:Timed out waiting for {self.devname}.')
-                self._is_parking = False
-                return False
-            _time.sleep(sleep)
 
         self.log(f'Successfully parked {self.devname}.')
         self._is_parking = False
@@ -317,7 +290,7 @@ class MachineShutdown(_DeviceSet, LogCallback):
 
         ids = [
             'apu22_06SB', 'apu22_07SP', 'apu22_08SB', 'apu22_09SA',
-            'apu58_11SP', 'epu50_10SB', 'papu50_17SA',
+            'apu58_11SP', 'delta52_10SB', 'papu50_17SA',
         ]
         self.log('Sending park command for IDs...')
         threads = list()
@@ -751,8 +724,8 @@ class MachineShutdown(_DeviceSet, LogCallback):
             _APU.DEVICES.APU22_09SA, log_callback=self._log_callback)
         devices['apu58_11SP'] = IDParking(
             _APU.DEVICES.APU58_11SP, log_callback=self._log_callback)
-        devices['epu50_10SB'] = IDParking(
-            _EPU.DEVICES.EPU50_10SB, log_callback=self._log_callback)
+        devices['delta52_10SB'] = IDParking(
+            _DELTA.DEVICES.DELTA52_10SB, log_callback=self._log_callback)
         devices['papu50_17SA'] = IDParking(
             _PAPU.DEVICES.PAPU50_17SA, log_callback=self._log_callback)
 
