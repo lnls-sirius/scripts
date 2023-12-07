@@ -11,9 +11,7 @@
 # Backup configuration
 
 Currently backup script runs in lnls451-linux and copy tar file
-to sirius@10.0.38.42:/storage/services/AutoBackup/FAC/
-- ziped tar: 67 Gb in 1h40m
-- unziped tar: 101 Gb in 0h24m
+to ximenes.resende@swc-server-ibm1:/mnt/nfs/ibira/lnls/labs/fac/data_by_day/
 
 # Example of crontab:
 
