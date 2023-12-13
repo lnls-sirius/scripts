@@ -191,7 +191,7 @@ class MachineShutdown(_DeviceSet, LogCallback):
             self._abort = False
             self.log('ERR:Abort received.')
             for idn in ['apu22_06SB', 'apu22_07SP', 'apu22_08SB', 'apu22_09SA',
-                        'apu58_11SP', 'epu50_10SB', 'papu50_17SA']:
+                        'apu58_11SP', 'delta52_10SB', 'papu50_17SA']:
                 if self._devrefs[idn].is_parking:
                     self._devrefs[idn].abort_execution()
             return False
@@ -715,19 +715,19 @@ class MachineShutdown(_DeviceSet, LogCallback):
 
         # IDs
         devices['apu22_06SB'] = IDParking(
-            _APU.DEVICES.APU22_06SB, log_callback=self._log_callback)
+            _ID.APU.APU22_06SB, log_callback=self._log_callback)
         devices['apu22_07SP'] = IDParking(
-            _APU.DEVICES.APU22_07SP, log_callback=self._log_callback)
+            _ID.APU.APU22_07SP, log_callback=self._log_callback)
         devices['apu22_08SB'] = IDParking(
-            _APU.DEVICES.APU22_08SB, log_callback=self._log_callback)
+            _ID.APU.APU22_08SB, log_callback=self._log_callback)
         devices['apu22_09SA'] = IDParking(
-            _APU.DEVICES.APU22_09SA, log_callback=self._log_callback)
+            _ID.APU.APU22_09SA, log_callback=self._log_callback)
         devices['apu58_11SP'] = IDParking(
-            _APU.DEVICES.APU58_11SP, log_callback=self._log_callback)
-        devices['epu50_10SB'] = IDParking(
-            _EPU.DEVICES.EPU50_10SB, log_callback=self._log_callback)
+            _ID.APU.APU58_11SP, log_callback=self._log_callback)
+        devices['delta52_10SB'] = IDParking(
+            _ID.DELTA.DELTA52_10SB, log_callback=self._log_callback)
         devices['papu50_17SA'] = IDParking(
-            _PAPU.DEVICES.PAPU50_17SA, log_callback=self._log_callback)
+            _ID.PAPU.PAPU50_17SA, log_callback=self._log_callback)
 
         # SOFB
         devices['fofb'] = _HLFOFB(
