@@ -2,8 +2,6 @@
 """Machine shutdown script."""
 
 
-import sys as _sys
-import select as _select
 import time as _time
 import logging as _log
 from threading import Thread as _Thread
@@ -15,8 +13,7 @@ from siriuspy.search import PSSearch as _PSSearch, \
 from siriuspy.pwrsupply.csdev import Const as _PSC
 from siriuspy.devices import DeviceSet as _DeviceSet, \
     ASMPSCtrl as _ASMPSCtrl, ASPPSCtrl as _ASPPSCtrl, \
-    APU as _APU, EPU as _EPU, PAPU as _PAPU, \
-    MachShift as _MachShift, InjCtrl as _InjCtrl, \
+    ID as _ID, MachShift as _MachShift, InjCtrl as _InjCtrl, \
     EVG as _EVG, EGTriggerPS as _EGTriggerPS, \
     EGFilament as _EGFilament, EGHVPS as _EGHVPS, \
     HLFOFB as _HLFOFB, SOFB as _SOFB, \
@@ -69,14 +66,7 @@ class IDParking(_DeviceSet, LogCallback):
         self._abort = False
         self._is_parking = False
 
-        if 'EPU' in devname:
-            device = _EPU(devname)
-        elif 'PAPU' in devname:
-            device = _PAPU(devname)
-        elif 'APU' in devname:
-            device = _APU(devname)
-        else:
-            raise ValueError('Invalid ID device type')
+        device = _ID(devname)
         self._device = device
 
         _DeviceSet.__init__(self, [device, ], devname=devname)
@@ -86,6 +76,11 @@ class IDParking(_DeviceSet, LogCallback):
     def is_parking(self):
         """Is running parking procedure."""
         return self._is_parking
+
+    @property
+    def device(self):
+        """Return ID device."""
+        return self._device
 
     def abort_execution(self):
         """Set abort execution flag."""
@@ -104,83 +99,59 @@ class IDParking(_DeviceSet, LogCallback):
         """Park ID."""
         self._is_parking = True
 
+        # connections checking
         self.log(f'Checking {self.devname} connections...')
-        if not self._device.wait_for_connection(
+        if not self.device.wait_for_connection(
                 timeout=IDParking.TIMEOUT_WAIT_FOR_CONNECTION):
             self.log(f'ERR:{self.devname} not connected.')
             self._is_parking = False
             return False
-
         if not self.continue_execution():
             return False
 
+        # beamline control
         self.log(f'Disabling {self.devname} beamline control...')
-        if not self._device.cmd_beamline_ctrl_disable():
+        if not self.device.cmd_beamline_ctrl_disable():
             self.log(f'ERR:Could not disable {self.devname} beamline control.')
             self._is_parking = False
             return False
-
         if not self.continue_execution():
             return False
 
+        # stopping previous movement
         self.log(f'Stopping {self.devname} movement...')
-        if not self._device.cmd_move_stop():
+        if not self.device.cmd_move_stop():
             self.log(f'ERR:Failed to stop {self.devname}.')
             self._is_parking = False
             return False
-
         if not self.continue_execution():
             return False
 
+        # setting speeds
         self.log(f'Setting {self.devname} speeds...')
-        value = self._device.phase_speed_max
-        if not self._device.set_phase_speed(value):
-            self.log(f'ERR:Failed to set {self.devname} phase speed.')
-            self._is_parking = False
-            return False
-        if isinstance(self._device, _EPU):
-            value = self._device.gap_speed_max
-            if not self._device.set_gap_speed(value):
-                self.log(f'ERR:Failed to set {self.devname} gap speed.')
+        value = self.device.pparameter_speed_max
+        if value is not None:
+            if not self.device.set_pparameter_speed(value):
+                self.log(f'ERR:Failed to set {self.devname} pparam speed.')
                 self._is_parking = False
                 return False
-
+        value = self._device.kparameter_speed_max
+        if value is not None:
+            if not self._device.set_kparameter_speed(value):
+                self.log(f'ERR:Failed to set {self.devname} kparam speed.')
+                self._is_parking = False
+                return False
         if not self.continue_execution():
             return False
 
-        self.log(f'Setting {self.devname} phase and gap for parking...')
-        value = self._device.phase_parked
-        if not self._device.set_phase(value):
-            self.log(f'ERR:Failed to set {self.devname} phase.')
+        # move to parked position
+        self.log(f'Sending {self.devname} to parked position...')
+        if not self.device.cmd_move_park():
+            self.log(f'ERR:Failed to move {self.devname} to parked position.')
             self._is_parking = False
             return False
-        if isinstance(self._device, _EPU):
-            value = self._device.gap_parked
-            if not self._device.set_gap(value):
-                self.log(f'ERR:Failed to set {self.devname} gap.')
-                self._is_parking = False
-                return False
 
-        if not self.continue_execution():
-            return False
-
-        self.log(f'Moving {self.devname} to parking...')
-        if not self._device.cmd_move_start():
-            self.log(f'ERR:Failed to move {self.devname}.')
-            self._is_parking = False
-            return False
-        _time.sleep(2.0)  # wait 2s
-
-        self.log(f'Waiting end of {self.devname} movement...')
-        timeout, sleep = 70, 0.2  # [s]
-        _t0 = _time.time()
-        while self._device.is_moving:
-            if _time.time() - _t0 > timeout:
-                self.log(f'ERR:Timed out waiting for {self.devname}.')
-                self._is_parking = False
-                return False
-            _time.sleep(sleep)
-
+        # success at this point
         self.log(f'Successfully parked {self.devname}.')
         self._is_parking = False
         return True
@@ -1183,6 +1154,7 @@ class MachineShutdown(_DeviceSet, LogCallback):
                 self.log(f'ERR:Verify {psn}.')
             return False
         return True
+
 
 
 if __name__ == '__main__':
