@@ -13,7 +13,8 @@ from siriuspy.search import PSSearch as _PSSearch, \
 from siriuspy.pwrsupply.csdev import Const as _PSC
 from siriuspy.devices import DeviceSet as _DeviceSet, \
     ASMPSCtrl as _ASMPSCtrl, ASPPSCtrl as _ASPPSCtrl, \
-    ID as _ID, MachShift as _MachShift, InjCtrl as _InjCtrl, \
+    IDBase as _IDBase, ID as _ID, \
+    MachShift as _MachShift, InjCtrl as _InjCtrl, \
     EVG as _EVG, EGTriggerPS as _EGTriggerPS, \
     EGFilament as _EGFilament, EGHVPS as _EGHVPS, \
     HLFOFB as _HLFOFB, SOFB as _SOFB, \
@@ -287,17 +288,13 @@ class MachineShutdown(_DeviceSet, LogCallback):
         """Park IDs."""
         self.log('Step 05: Parking IDs...')
 
-        ids = [
-            'apu22_06SB', 'apu22_07SP', 'apu22_08SB', 'apu22_09SA',
-            'apu58_11SP', 'delta52_10SB', 'papu50_17SA',
-        ]
         self.log('Sending park command for IDs...')
         threads = list()
-        for idref in ids:
-            dev = self._devrefs[idref]
-            thread = _Thread(target=dev.cmd_park_device, daemon=True)
-            thread.start()
-            threads.append(thread)
+        for dev in self._devrefs.values():
+            if isinstance(dev, _IDBase):
+                thread = _Thread(target=dev.cmd_park_device, daemon=True)
+                thread.start()
+                threads.append(thread)
         self.log('...waiting for parking...')
         for thread in threads:
             thread.join()
