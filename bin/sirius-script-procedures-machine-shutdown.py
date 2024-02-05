@@ -291,7 +291,7 @@ class MachineShutdown(_DeviceSet, LogCallback):
         self.log('Sending park command for IDs...')
         threads = list()
         for dev in self._devrefs.values():
-            if isinstance(dev, _IDBase):
+            if isinstance(dev, IDParking):
                 thread = _Thread(target=dev.cmd_park_device, daemon=True)
                 thread.start()
                 threads.append(thread)
@@ -712,19 +712,19 @@ class MachineShutdown(_DeviceSet, LogCallback):
 
         # IDs
         devices['apu22_06SB'] = IDParking(
-            _ID.APU.APU22_06SB, log_callback=self._log_callback)
+            _ID.DEVICES.APU.APU22_06SB, log_callback=self._log_callback)
         devices['apu22_07SP'] = IDParking(
-            _ID.APU.APU22_07SP, log_callback=self._log_callback)
+            _ID.DEVICES.APU.APU22_07SP, log_callback=self._log_callback)
         devices['apu22_08SB'] = IDParking(
-            _ID.APU.APU22_08SB, log_callback=self._log_callback)
+            _ID.DEVICES.APU.APU22_08SB, log_callback=self._log_callback)
         devices['apu22_09SA'] = IDParking(
-            _ID.APU.APU22_09SA, log_callback=self._log_callback)
+            _ID.DEVICES.APU.APU22_09SA, log_callback=self._log_callback)
         devices['apu58_11SP'] = IDParking(
-            _ID.APU.APU58_11SP, log_callback=self._log_callback)
+            _ID.DEVICES.APU.APU58_11SP, log_callback=self._log_callback)
         devices['delta52_10SB'] = IDParking(
-            _ID.DELTA.DELTA52_10SB, log_callback=self._log_callback)
+            _ID.DEVICES.DELTA.DELTA52_10SB, log_callback=self._log_callback)
         devices['papu50_17SA'] = IDParking(
-            _ID.PAPU.PAPU50_17SA, log_callback=self._log_callback)
+            _ID.DEVICES.PAPU.PAPU50_17SA, log_callback=self._log_callback)
 
         # SOFB
         devices['fofb'] = _HLFOFB(
