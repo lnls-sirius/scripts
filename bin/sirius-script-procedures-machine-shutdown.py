@@ -1153,7 +1153,6 @@ class MachineShutdown(_DeviceSet, LogCallback):
         return True
 
 
-
 if __name__ == '__main__':
     """."""
     ms = MachineShutdown()
