@@ -2,8 +2,6 @@
 """Machine shutdown script."""
 
 
-import sys as _sys
-import select as _select
 import time as _time
 import logging as _log
 from threading import Thread as _Thread
@@ -15,7 +13,7 @@ from siriuspy.search import PSSearch as _PSSearch, \
 from siriuspy.pwrsupply.csdev import Const as _PSC
 from siriuspy.devices import DeviceSet as _DeviceSet, \
     ASMPSCtrl as _ASMPSCtrl, ASPPSCtrl as _ASPPSCtrl, \
-    APU as _APU, EPU as _EPU, PAPU as _PAPU, \
+    IDBase as _IDBase, ID as _ID, \
     MachShift as _MachShift, InjCtrl as _InjCtrl, \
     EVG as _EVG, EGTriggerPS as _EGTriggerPS, \
     EGFilament as _EGFilament, EGHVPS as _EGHVPS, \
@@ -69,14 +67,7 @@ class IDParking(_DeviceSet, LogCallback):
         self._abort = False
         self._is_parking = False
 
-        if 'EPU' in devname:
-            device = _EPU(devname)
-        elif 'PAPU' in devname:
-            device = _PAPU(devname)
-        elif 'APU' in devname:
-            device = _APU(devname)
-        else:
-            raise ValueError('Invalid ID device type')
+        device = _ID(devname)
         self._device = device
 
         _DeviceSet.__init__(self, [device, ], devname=devname)
@@ -86,6 +77,11 @@ class IDParking(_DeviceSet, LogCallback):
     def is_parking(self):
         """Is running parking procedure."""
         return self._is_parking
+
+    @property
+    def device(self):
+        """Return ID device."""
+        return self._device
 
     def abort_execution(self):
         """Set abort execution flag."""
@@ -104,83 +100,59 @@ class IDParking(_DeviceSet, LogCallback):
         """Park ID."""
         self._is_parking = True
 
+        # connections checking
         self.log(f'Checking {self.devname} connections...')
-        if not self._device.wait_for_connection(
+        if not self.device.wait_for_connection(
                 timeout=IDParking.TIMEOUT_WAIT_FOR_CONNECTION):
             self.log(f'ERR:{self.devname} not connected.')
             self._is_parking = False
             return False
-
         if not self.continue_execution():
             return False
 
+        # beamline control
         self.log(f'Disabling {self.devname} beamline control...')
-        if not self._device.cmd_beamline_ctrl_disable():
+        if not self.device.cmd_beamline_ctrl_disable():
             self.log(f'ERR:Could not disable {self.devname} beamline control.')
             self._is_parking = False
             return False
-
         if not self.continue_execution():
             return False
 
+        # stopping previous movement
         self.log(f'Stopping {self.devname} movement...')
-        if not self._device.cmd_move_stop():
+        if not self.device.cmd_move_stop():
             self.log(f'ERR:Failed to stop {self.devname}.')
             self._is_parking = False
             return False
-
         if not self.continue_execution():
             return False
 
+        # setting speeds
         self.log(f'Setting {self.devname} speeds...')
-        value = self._device.phase_speed_max
-        if not self._device.set_phase_speed(value):
-            self.log(f'ERR:Failed to set {self.devname} phase speed.')
-            self._is_parking = False
-            return False
-        if isinstance(self._device, _EPU):
-            value = self._device.gap_speed_max
-            if not self._device.set_gap_speed(value):
-                self.log(f'ERR:Failed to set {self.devname} gap speed.')
+        value = self.device.pparameter_speed_max
+        if value is not None:
+            if not self.device.set_pparameter_speed(value):
+                self.log(f'ERR:Failed to set {self.devname} pparam speed.')
                 self._is_parking = False
                 return False
-
+        value = self._device.kparameter_speed_max
+        if value is not None:
+            if not self._device.set_kparameter_speed(value):
+                self.log(f'ERR:Failed to set {self.devname} kparam speed.')
+                self._is_parking = False
+                return False
         if not self.continue_execution():
             return False
 
-        self.log(f'Setting {self.devname} phase and gap for parking...')
-        value = self._device.phase_parked
-        if not self._device.set_phase(value):
-            self.log(f'ERR:Failed to set {self.devname} phase.')
+        # move to parked position
+        self.log(f'Sending {self.devname} to parked position...')
+        if not self.device.cmd_move_park():
+            self.log(f'ERR:Failed to move {self.devname} to parked position.')
             self._is_parking = False
             return False
-        if isinstance(self._device, _EPU):
-            value = self._device.gap_parked
-            if not self._device.set_gap(value):
-                self.log(f'ERR:Failed to set {self.devname} gap.')
-                self._is_parking = False
-                return False
 
-        if not self.continue_execution():
-            return False
-
-        self.log(f'Moving {self.devname} to parking...')
-        if not self._device.cmd_move_start():
-            self.log(f'ERR:Failed to move {self.devname}.')
-            self._is_parking = False
-            return False
-        _time.sleep(2.0)  # wait 2s
-
-        self.log(f'Waiting end of {self.devname} movement...')
-        timeout, sleep = 70, 0.2  # [s]
-        _t0 = _time.time()
-        while self._device.is_moving:
-            if _time.time() - _t0 > timeout:
-                self.log(f'ERR:Timed out waiting for {self.devname}.')
-                self._is_parking = False
-                return False
-            _time.sleep(sleep)
-
+        # success at this point
         self.log(f'Successfully parked {self.devname}.')
         self._is_parking = False
         return True
@@ -200,6 +172,7 @@ class MachineShutdown(_DeviceSet, LogCallback):
     EBEAM_MAX_CURRENT = 1  # [mA]
 
     def __init__(self, log_callback=None):
+        """."""
         self._log_callback = log_callback
         self._abort = False
 
@@ -219,7 +192,7 @@ class MachineShutdown(_DeviceSet, LogCallback):
             self._abort = False
             self.log('ERR:Abort received.')
             for idn in ['apu22_06SB', 'apu22_07SP', 'apu22_08SB', 'apu22_09SA',
-                        'apu58_11SP', 'epu50_10SB', 'papu50_17SA']:
+                        'apu58_11SP', 'delta52_10SB', 'papu50_17SA']:
                 if self._devrefs[idn].is_parking:
                     self._devrefs[idn].abort_execution()
             return False
@@ -315,17 +288,13 @@ class MachineShutdown(_DeviceSet, LogCallback):
         """Park IDs."""
         self.log('Step 05: Parking IDs...')
 
-        ids = [
-            'apu22_06SB', 'apu22_07SP', 'apu22_08SB', 'apu22_09SA',
-            'apu58_11SP', 'epu50_10SB', 'papu50_17SA',
-        ]
         self.log('Sending park command for IDs...')
         threads = list()
-        for idref in ids:
-            dev = self._devrefs[idref]
-            thread = _Thread(target=dev.cmd_park_device, daemon=True)
-            thread.start()
-            threads.append(thread)
+        for dev in self._devrefs.values():
+            if isinstance(dev, IDParking):
+                thread = _Thread(target=dev.cmd_park_device, daemon=True)
+                thread.start()
+                threads.append(thread)
         self.log('...waiting for parking...')
         for thread in threads:
             thread.join()
@@ -401,7 +370,8 @@ class MachineShutdown(_DeviceSet, LogCallback):
 
         llrf = self._devrefs['sillrf']
         cavmon = self._devrefs['sicavmon']
-        preamp = self._devrefs['sillrfpreamp']
+        preamp1 = self._devrefs['sillrfpreamp1']
+        preamp2 = self._devrefs['sillrfpreamp2']
         dcamp1 = self._devrefs['sirfdcamp1']
         dcamp2 = self._devrefs['sirfdcamp2']
         acamp1 = self._devrefs['sirfacamp1']
@@ -441,10 +411,10 @@ class MachineShutdown(_DeviceSet, LogCallback):
             return False
 
         self.log('...done. Disabling PinSw...')
-        if not preamp.cmd_disable_pinsw_1(wait_mon=True):
+        if not preamp1.cmd_disable_pinsw(wait_mon=True):
             self.log('ERR:Could not disable SSA1 PinSw.')
             return False
-        if not preamp.cmd_disable_pinsw_2(wait_mon=True):
+        if not preamp2.cmd_disable_pinsw(wait_mon=True):
             self.log('ERR:Could not disable SSA2 PinSw.')
             return False
         _time.sleep(1.0)  # is this necessary?
@@ -742,19 +712,19 @@ class MachineShutdown(_DeviceSet, LogCallback):
 
         # IDs
         devices['apu22_06SB'] = IDParking(
-            _APU.DEVICES.APU22_06SB, log_callback=self._log_callback)
+            _ID.DEVICES.APU.APU22_06SB, log_callback=self._log_callback)
         devices['apu22_07SP'] = IDParking(
-            _APU.DEVICES.APU22_07SP, log_callback=self._log_callback)
+            _ID.DEVICES.APU.APU22_07SP, log_callback=self._log_callback)
         devices['apu22_08SB'] = IDParking(
-            _APU.DEVICES.APU22_08SB, log_callback=self._log_callback)
+            _ID.DEVICES.APU.APU22_08SB, log_callback=self._log_callback)
         devices['apu22_09SA'] = IDParking(
-            _APU.DEVICES.APU22_09SA, log_callback=self._log_callback)
+            _ID.DEVICES.APU.APU22_09SA, log_callback=self._log_callback)
         devices['apu58_11SP'] = IDParking(
-            _APU.DEVICES.APU58_11SP, log_callback=self._log_callback)
-        devices['epu50_10SB'] = IDParking(
-            _EPU.DEVICES.EPU50_10SB, log_callback=self._log_callback)
+            _ID.DEVICES.APU.APU58_11SP, log_callback=self._log_callback)
+        devices['delta52_10SB'] = IDParking(
+            _ID.DEVICES.DELTA.DELTA52_10SB, log_callback=self._log_callback)
         devices['papu50_17SA'] = IDParking(
-            _PAPU.DEVICES.PAPU50_17SA, log_callback=self._log_callback)
+            _ID.DEVICES.PAPU.PAPU50_17SA, log_callback=self._log_callback)
 
         # SOFB
         devices['fofb'] = _HLFOFB(
@@ -787,7 +757,8 @@ class MachineShutdown(_DeviceSet, LogCallback):
                 'SL:INP:AMP', 'SL:REF:AMP', 'mV:AL:REF-SP', 'mV:AL:REF-RB',
             ))
         devices['sicavmon'] = _SIRFCavMonitor()
-        devices['sillrfpreamp'] = _SILLRFPreAmp()
+        devices['sillrfpreamp1'] = _SILLRFPreAmp(_SILLRFPreAmp.DEVICES.SSA1)
+        devices['sillrfpreamp2'] = _SILLRFPreAmp(_SILLRFPreAmp.DEVICES.SSA2)
         devices['sirfdcamp1'] = _SIRFDCAmp(_SIRFDCAmp.DEVICES.SSA1)
         devices['sirfdcamp2'] = _SIRFDCAmp(_SIRFDCAmp.DEVICES.SSA2)
         devices['sirfacamp1'] = _SIRFACAmp(_SIRFACAmp.DEVICES.SSA1)
