@@ -13,7 +13,8 @@ GENERALSCRIPTS = \
 		sirius-script-li-egun-ramp.py \
 		sirius-script-ps-wfmupdateauto-off.py \
 		sirius-script-clientarch-checkpv.py \
-		sirius-script-si-acquire-bpm-triggered-data.py
+		sirius-script-si-acquire-bpm-triggered-data.py \
+		sirius-script-clientconfigdb-compare-configs.py
 
 REPOSSCRIPTS = \
 		sirius-script-repos-install-pristine.bash \
