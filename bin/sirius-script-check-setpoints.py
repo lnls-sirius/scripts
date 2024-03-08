@@ -59,7 +59,7 @@ def categorize_pvnames(all_pvnames):
     return pvnames_sp, pvnames_rb, pvnames_others
 
 
-def check_pvs_set(conn, pvnames, time_start, time_stop, nrpvs, offset):
+def check_pvs_set(conn, pvnames, time_start, time_stop, nrpvs, offset, only_pvnames):
     """."""
     # get dataset 1
     pvds1 = PVDataSet(pvnames, connector=conn)
@@ -97,8 +97,11 @@ def check_pvs_set(conn, pvnames, time_start, time_stop, nrpvs, offset):
             # print('no change!')
             continue
         else:
-            print(f'{offset:06d}/{nrpvs:06d} - {pvname} - ', end='', flush=True)
-            print(f'{len(stamp):04d}')
+            if only_pvnames:
+                print(pvname)
+            else:
+                print(f'{offset:06d}/{nrpvs:06d} - {pvname} - ', end='', flush=True)
+                print(f'changed {len(stamp)-1:04d}')
 
     return offset
 
@@ -108,16 +111,18 @@ filter = 'BO*PS*'
 time_start = Time(2024,2,5,8,0,0)
 time_stop = Time(2024,2,6,8,1,0)
 nrchk = 50
+only_pvnames = False
 
 # list PV in categories
 conn = create_connector()
 all_pvnames = conn.getAllPVs(filter)
-print(f'filter        : {filter}')
-print(f'number of pvs : {len(all_pvnames)}')
 pvnames_sp, pvnames_rb, pvnames_others = categorize_pvnames(all_pvnames)
-print(f'nr sp pvs     : {len(pvnames_sp)}')
-print(f'nr rb pvs     : {len(pvnames_rb)}')
-print(f'nr other pvs  : {len(pvnames_others)}')
+if not only_pvnames:
+    print(f'filter        : {filter}')
+    print(f'number of pvs : {len(all_pvnames)}')
+    print(f'nr sp pvs     : {len(pvnames_sp)}')
+    print(f'nr rb pvs     : {len(pvnames_rb)}')
+    print(f'nr other pvs  : {len(pvnames_others)}')
 
 # run analysis
 offset = 0
@@ -125,4 +130,4 @@ nrpvs = len(pvnames_sp)
 for i in range(1 + nrpvs // nrchk):
     i1, i2 = min(nrchk*i, nrpvs), min(nrchk*(i+1), nrpvs)
     pvnames = pvnames_sp[i1:i2]
-    offset = check_pvs_set(conn, pvnames, time_start, time_stop, nrpvs, offset)
+    offset = check_pvs_set(conn, pvnames, time_start, time_stop, nrpvs, offset, only_pvnames)
