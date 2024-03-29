@@ -340,7 +340,8 @@ printf_yellow "Install some mamba packages in sirius environment.\n"
 COMM="mamba install --freeze-installed -y"
 
 printf_yellow_clear "- First some system packages:\n"
-$COMM gxx make binutils swig build gsl libblas wmctrl fftw
+$COMM "gxx<13" make binutils "swig<4.2" build gsl libblas wmctrl fftw
+cp /usr/include/crypt.h /opt/mamba_files/mamba/envs/sirius/include
 
 printf_yellow_clear "- Now some generic python packages:\n"
 $COMM pyparsing bottleneck aiohttp==3.7.4 scipy matplotlib pytest mpmath \
@@ -370,6 +371,20 @@ printf_yellow_clear "- Install and configure jupyter notebook\n"
 $COMM jupyter notebook
 mamba update jupyter_client
 $COMM jupyter_contrib_nbextensions
+
+printf_yellow_clear "- Install Python-Julia packages\n"
+$COMM pyjuliacall pyjuliapkg
+
+printf_yellow_clear "create link for julia inside the enviroment: "
+cd $CONDA_PREFIX/bin
+if ! [ -f julia ]
+then
+    python3 -c "from juliacall import Main"
+    ln -s /opt/mamba_files/mamba/envs/sirius/julia_env/pyjuliapkg/install/bin/julia julia
+    printf_green "done!\n"
+else
+    printf_blue "link alreay exists. Skipping...\n"
+fi
 
 ### Clone and install our repositories
 if [ "$CLONE" == "yes" ]
@@ -412,6 +427,8 @@ then
     clone_or_find pyaccel lnls-fac && make $TARGET
     clone_or_find pymodels lnls-fac && make $TARGET
     clone_or_find apsuite lnls-fac && make $TARGET
+    clone_or_find Track.jl && make $TARGET
+    clone_or_find SiriusModels.jl && make $TARGET
 fi
 if [ "$INST_COL" == "yes" ]
 then
