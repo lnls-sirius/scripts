@@ -13,6 +13,7 @@ function help
     [ -n | --no-clone-repos ] Instead of cloning, find repos in system.
     [ -d | --develop ] Install sirius packages in develop mode.
     [ --no-sim ] Do not install simulation packages.
+    [ --no-pyjulia ] Do not install simulation (python-julia) packages.
     [ --no-ioc ] Do not install IOC related packages.
     [ --no-ima ] Do not install magnets simulation packages.
     [ --no-colleff ] Do not install collective effects packages.
@@ -33,8 +34,8 @@ function help
 }
 
 SHORT=ndh
-LONG+=no-clone-repos,develop,no-sim,no-ioc,no-ima,no-colleff,root-lnls-fac:,
-LONG+=root-lnls-sirius:,root-lnls-ima:,branches:,help
+LONG+=no-clone-repos,develop,no-sim,no-pyjulia,no-ioc,no-ima,no-colleff,
+LONG+=root-lnls-fac:,root-lnls-sirius:,root-lnls-ima:,branches:,help
 OPTS=$(getopt -a -n sirius-script-mamba-env-create.bash \
     --options $SHORT --longoptions $LONG -- "$@")
 
@@ -53,6 +54,7 @@ INST_SIM="yes"
 INST_IOC="yes"
 INST_IMA="yes"
 INST_COL="yes"
+INST_PYJ="yes"
 ROOT_SIR="/"
 ROOT_FAC="/"
 ROOT_IMA="/"
@@ -82,6 +84,10 @@ while true; do
             ;;
         --no-colleff)
             INST_COL="no"
+            shift
+            ;;
+        --no-pyjulia)
+            INST_PYJ="no"
             shift
             ;;
         --root-lnls-fac)
@@ -340,14 +346,14 @@ printf_yellow "Install some mamba packages in sirius environment.\n"
 COMM="mamba install --freeze-installed -y"
 
 printf_yellow_clear "- First some system packages:\n"
-$COMM gxx make binutils swig build gsl libblas wmctrl fftw
+$COMM "gxx=12.3" make binutils "swig<4.2" build gsl libblas wmctrl fftw
+cp /usr/include/crypt.h /opt/mamba_files/mamba/envs/sirius/include
 
 printf_yellow_clear "- Now some generic python packages:\n"
 $COMM pyparsing bottleneck aiohttp==3.7.4 scipy matplotlib pytest mpmath \
     entrypoints requests pyqt=5.12.3 pandas pyqtgraph=0.11.0 QtAwesome=0.7.2 \
     numexpr tk sh pywavelets scikit-image scikit-learn pydocstyle pycodestyle \
     pylama openpyxl gpy gpyopt fpdf sympy h5py
-
 
 printf_yellow_clear "- Install EPICS Base:\n"
 $COMM -c conda-forge/label/cf202003 epics-base=3.15.6
@@ -370,6 +376,27 @@ printf_yellow_clear "- Install and configure jupyter notebook\n"
 $COMM jupyter notebook
 mamba update jupyter_client
 $COMM jupyter_contrib_nbextensions
+
+if [ "$INST_PYJ" == "yes" ]
+then
+    printf_yellow_clear "- Install Julia and python-julia packages\n"
+    $COMM pyjuliacall pyjuliapkg
+
+    cd $CONDA_PREFIX/bin
+    python3 -c "from juliacall import Main"
+    ln -s /opt/mamba_files/mamba/envs/sirius/julia_env/pyjuliapkg/install/bin/julia julia
+    export JULIA_PROJECT="/opt/mamba_files/mamba/envs/sirius/julia_env"
+    printf_green "done!\n"
+
+    printf_yellow_clear "create link for julia-sirius inside the enviroment: "
+    if ! [ -f julia-sirius ]
+    then
+        ln -s julia julia-sirius
+        printf_green "done!\n"
+    else
+        printf_blue "julia-sirius link alreay exists. Skipping...\n"
+    fi
+fi
 
 ### Clone and install our repositories
 if [ "$CLONE" == "yes" ]
@@ -413,6 +440,12 @@ then
     clone_or_find pymodels lnls-fac && make $TARGET
     clone_or_find apsuite lnls-fac && make $TARGET
 fi
+if [ "$INST_PYJ" == "yes" ]
+then
+    printf_yellow_clear "Installing accelerators simulation (Julia) packages.\n"
+    clone_or_find Track.jl lnls-fac && make $TARGET
+    clone_or_find SiriusModels.jl lnls-fac && make $TARGET
+fi
 if [ "$INST_COL" == "yes" ]
 then
     printf_yellow_clear "Installing collective effects simulation packages.\n"
@@ -450,6 +483,8 @@ function defvar ()
     fi
     export $1="${2}"
 }
+# Julia default project
+defvar "JULIA_PROJECT" "/opt/mamba_files/mamba/envs/sirius/julia_env"
 # EPICS
 # =====
 defvar "EPICS_BASE" "${CONDA_PREFIX}/epics"
@@ -500,6 +535,8 @@ function undefvar ()
         unset "${old}"
     fi
 }
+# Julia default project
+undefvar "JULIA_PROJECT"
 # EPICS
 # =====
 undefvar "EPICS_BASE"
@@ -550,6 +587,12 @@ sudo chmod -R g+w /opt/mamba_files/mamba/pkgs/cache/*.json
 printf_yellow "Create scripts to access apps in conda environment\n"
 
 cd /usr/local/bin
+printf_yellow_clear " - python-mamba-sirius \n"
+sudo tee python-mamba-sirius >/dev/null <<'EOM'
+#!/bin/bash
+bash -c "source /opt/mamba_files/mamba/etc/profile.d/conda.sh && conda activate sirius && python"
+EOM
+
 printf_yellow_clear " - jupyter-mamba-sirius \n"
 sudo tee jupyter-mamba-sirius >/dev/null <<'EOM'
 #!/bin/bash
@@ -560,6 +603,12 @@ printf_yellow_clear " - ipython-mamba-sirius \n"
 sudo tee ipython-mamba-sirius >/dev/null <<'EOM'
 #!/bin/bash
 bash -c "source /opt/mamba_files/mamba/etc/profile.d/conda.sh && conda activate sirius && ipython"
+EOM
+
+printf_yellow_clear " - julia-mamba-sirius \n"
+sudo tee julia-mamba-sirius >/dev/null <<'EOM'
+#!/bin/bash
+bash -c "source /opt/mamba_files/mamba/etc/profile.d/conda.sh && conda activate sirius && julia"
 EOM
 
 printf_yellow_clear " - designer-mamba-sirius \n"
@@ -575,4 +624,4 @@ bash -c "source /opt/mamba_files/mamba/etc/profile.d/conda.sh && conda activate 
 EOM
 
 sudo chmod +x jupyter-mamba-sirius ipython-mamba-sirius designer-mamba-sirius \
-    sirius-hla-as-ap-launcher-mamba-sirius
+    sirius-hla-as-ap-launcher-mamba-sirius python-mamba-sirius julia-mamba-sirius
