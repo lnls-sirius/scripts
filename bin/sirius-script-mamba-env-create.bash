@@ -285,7 +285,7 @@ fi
 printf_yellow_clear "Fix some folder permissions.\n"
 sudo chgrp -R mamba /opt/mamba_files/mamba
 sudo chmod 774 -R /opt/mamba_files/mamba
-sudo chown -R $USER.mamba ~/.conda
+sudo chown -R $USER:mamba ~/.conda
 
 printf_yellow_clear "Adding mamba and conda to path\n"
 source /opt/mamba_files/mamba/etc/profile.d/conda.sh
