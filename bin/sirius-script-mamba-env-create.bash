@@ -229,7 +229,7 @@ sudo apt-get update
 # libgl1-mesa-glx is needed for pyqt to work properly.
 # See discussion in:
 #    https://github.com/conda-forge/pygridgen-feedstock/issues/10
-sudo apt-get install -y wget git libgl1-mesa-glx
+sudo apt-get install -y wget git libgl1-mesa-glx wmctrl
 
 ##############################################################################
 printf_yellow "Configure system for mamba installation\n"
