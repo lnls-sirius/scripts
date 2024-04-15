@@ -369,7 +369,6 @@ fi
 printf_yellow_clear "- Install and configure jupyter notebook\n"
 $COMM jupyter notebook
 mamba update jupyter_client
-$COMM jupyter_contrib_nbextensions
 
 ### Clone and install our repositories
 if [ "$CLONE" == "yes" ]
