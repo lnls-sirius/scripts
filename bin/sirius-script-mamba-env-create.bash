@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Exit if any command fails
-# set -e
+set -e
 
 ##############################################################################
 # Parse arguments.
@@ -339,15 +339,12 @@ fi
 printf_yellow "Install some mamba packages in sirius environment.\n"
 COMM="mamba install --freeze-installed -y"
 
-printf_yellow_clear "- First some system packages:\n"
-$COMM gxx make binutils swig=4.2.0 libxcrypt build gsl libblas wmctrl fftw
-
 printf_yellow_clear "- Now some generic python packages:\n"
-$COMM pyparsing bottleneck aiohttp==3.7.4 numpy=1.20 scipy matplotlib pytest mpmath \
+$COMM gxx make binutils swig=4.2.0 libxcrypt build gsl libblas wmctrl fftw \
+    pyparsing bottleneck aiohttp==3.7.4 numpy=1.23 scipy matplotlib pytest mpmath \
     entrypoints requests pyqt=5.12.3 pandas pyqtgraph=0.11.0 qtpy=2.3.1 QtAwesome=0.7.2 \
     numexpr tk sh pywavelets scikit-image scikit-learn pydocstyle pycodestyle \
     pylama openpyxl gpy gpyopt fpdf sympy h5py
-
 
 printf_yellow_clear "- Install EPICS Base:\n"
 $COMM -c conda-forge/label/cf202003 epics-base=3.15.6
