@@ -340,7 +340,7 @@ printf_yellow "Install some mamba packages in sirius environment.\n"
 COMM="mamba install --freeze-installed -y"
 
 printf_yellow_clear "- First some system packages:\n"
-$COMM gxx make binutils swig=4.2.0 build gsl libblas wmctrl fftw
+$COMM gxx make binutils swig=4.2.0 libxcrypt build gsl libblas wmctrl fftw
 
 printf_yellow_clear "- Now some generic python packages:\n"
 $COMM pyparsing bottleneck aiohttp==3.7.4 numpy=1.20 scipy matplotlib pytest mpmath \
