@@ -221,6 +221,7 @@ function clone_or_find
         printf_yellow_clear "Checking out to branch $BRAN.\n"
         git checkout $BRAN
     fi
+    # wont be nice to fetch and pull the latest updates of the branch? Instead of only "checkouting" it.
 }
 
 ##############################################################################
