@@ -91,20 +91,26 @@ fi
 export LC_NUMERIC="en_US.UTF-8"
 export EPICS_CA_AUTO_ADDR_LIST=YES
 export EPICS_CA_MAX_ARRAY_BYTES=21000000
+# export EPICS_CA_ADDR_LIST="\
+# $IP_IOCS_LI\
+# $IP_DI_BPM\
+# $IP_DI_SCRN_TB\
+# $IP_DI_IOCSERVERS\
+# $IP_BBB_TB\
+# $IP_BBB_BO_CORR\
+# $IP_BBB_BO_BEND\
+# $IP_BBB_BO_QUADSSEXTS\
+# $IP_BBB_TB_TS_FBP_DCLINKS\
+# $IP_BBB_BO_SI_FBP_DCLINKS\
+# $IP_BBB_PULSED\
+# $IP_BROADCAST_CROOM_NET\
+# "
 export EPICS_CA_ADDR_LIST="\
-$IP_IOCS_LI\
-$IP_DI_BPM\
-$IP_DI_SCRN_TB\
-$IP_DI_IOCSERVERS\
-$IP_BBB_TB\
-$IP_BBB_BO_CORR\
-$IP_BBB_BO_BEND\
-$IP_BBB_BO_QUADSSEXTS\
-$IP_BBB_TB_TS_FBP_DCLINKS\
-$IP_BBB_BO_SI_FBP_DCLINKS\
-$IP_BBB_PULSED\
-$IP_BROADCAST_CROOM_NET\
+10.0.38.46:62000 \
+10.0.38.59:62000
 "
+# de-23rabpm-co-iocsrv
+# "
 
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$EPICS_BASE/lib/$EPICS_HOST_ARCH
 export PVDATABASE=$EV4_BASE/pvDatabaseCPP
@@ -141,10 +147,11 @@ export SIRIUS_URL_RBAC=https://rbac:8445
 export SIRIUS_URL_NS=http://naming-service-wildfly:8089
 export SIRIUS_URL_CCDB=http://ccdb:8083
 export SIRIUS_URL_CABLES=http://cable:8086
-export SIRIUS_URL_CONSTS=http://10.128.255.4/control-system-constants
-export SIRIUS_URL_CONSTS_2=http://10.128.255.3/control-system-constants
-export SIRIUS_URL_CONFIGDB=http://10.128.255.4/config-db
-export SIRIUS_URL_CONFIGDB_2=http://10.128.255.3/config-db
+# export SIRIUS_URL_CONSTS=http://10.0.38.59/control-system-constants
+export SIRIUS_URL_CONSTS=http://localhost
+export SIRIUS_URL_CONSTS_2=http://10.0.38.46/control-system-constants
+export SIRIUS_URL_CONFIGDB=http://10.0.38.59/config-db
+export SIRIUS_URL_CONFIGDB_2=http://10.0.38.46/config-db
 export SIRIUS_URL_LOGBOOK=http://sirius-logbook.lnls.br/Olog
 
 
@@ -232,7 +239,7 @@ alias g-repos='cd $LNLS_SIRIUS/repos'
 alias g-ansible='cd $LNLS_SIRIUS/repos/lnls-ansible'
 alias g-nfs-shared='cd /home/nfs-shared'
 alias g-csconstants-sirius-lnls='cd $LNLS_SIRIUS/repos/control-system-constants'
-alias g-mathphys-sirius-lnls='cd $LNLS_SIRIUS/repos/mathphys'
+alias g-mathphys-sirius-lnls='cd $LNLS_FAC/repos/mathphys'
 alias g-dev-packages-sirius-lnls='cd $LNLS_SIRIUS/repos/dev-packages/siriuspy'
 alias g-machine-applications-sirius-lnls='cd $LNLS_SIRIUS/repos/machine-applications'
 alias g-docker-machine-applications-sirius-lnls='cd $LNLS_SIRIUS/repos/docker-machine-applications'
