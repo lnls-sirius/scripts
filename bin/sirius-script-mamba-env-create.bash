@@ -406,7 +406,7 @@ then
     printf_yellow_clear "Installing accelerators simulation packages.\n"
     clone_or_find lnls lnls-fac && make $TARGET
     clone_or_find trackcpp lnls-fac && make clean && \
-        make install-cpp 2>/dev/null && make $TARGET-py 2>/dev/null
+        make install-cpp 2>/dev/null && make install-py 2>/dev/null
     clone_or_find pyaccel lnls-fac && make $TARGET
     clone_or_find pymodels lnls-fac && make $TARGET
     clone_or_find apsuite lnls-fac && make $TARGET
