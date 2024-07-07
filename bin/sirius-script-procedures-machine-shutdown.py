@@ -663,8 +663,7 @@ class MachineShutdown(_DeviceSet, LogCallback):
         )
         for i, step in enumerate(steps):
             if not step():
-                self.log(f'ERR:Could not complete, failed in step {i:02}.')
-                return False
+                self.log(f'ERR:Could not complete step {i:02}.')
             if not self.continue_execution():
                 self.log('ERR:Could not complete, abort received.')
                 return False
