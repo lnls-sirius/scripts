@@ -2,44 +2,43 @@
 """Machine shutdown script."""
 
 
-import time as _time
 import logging as _log
+import sys as _sys
+import time as _time
 from threading import Thread as _Thread
 
 from siriuspy.callbacks import Callback as _Callback
-from siriuspy.namesys import SiriusPVName as _PVName
-from siriuspy.search import PSSearch as _PSSearch, \
-    HLTimeSearch as _HLTimeSearch
-from siriuspy.pwrsupply.csdev import Const as _PSC
-from siriuspy.devices import DeviceSet as _DeviceSet, \
-    ASMPSCtrl as _ASMPSCtrl, ASPPSCtrl as _ASPPSCtrl, \
-    IDBase as _IDBase, ID as _ID, \
-    MachShift as _MachShift, InjCtrl as _InjCtrl, \
-    EVG as _EVG, EGTriggerPS as _EGTriggerPS, \
+from siriuspy.devices import ASLLRF as _ASLLRF, ASMPSCtrl as _ASMPSCtrl, \
+    ASPPSCtrl as _ASPPSCtrl, BOLLRFPreAmp as _BOLLRFPreAmp, \
+    BORF300VDCAmp as _BORF300VDCAmp, BORFCavMonitor as _BORFCavMonitor, \
+    BORFDCAmp as _BORFDCAmp, DCCT as _DCCT, DeviceSet as _DeviceSet, \
     EGFilament as _EGFilament, EGHVPS as _EGHVPS, \
-    HLFOFB as _HLFOFB, SOFB as _SOFB, \
-    ASLLRF as _ASLLRF, \
-    SIRFCavMonitor as _SIRFCavMonitor, BORFCavMonitor as _BORFCavMonitor, \
-    SILLRFPreAmp as _SILLRFPreAmp, BOLLRFPreAmp as _BOLLRFPreAmp, \
-    SIRFDCAmp as _SIRFDCAmp, BORFDCAmp as _BORFDCAmp, \
-    SIRFACAmp as _SIRFACAmp, BORF300VDCAmp as _BORF300VDCAmp, \
-    DCCT as _DCCT, LIModltr as _LIModltr
-from siriuspy.devices.pstesters import \
-    Triggers as _PSTriggers, PSTesterFactory as _PSTesterFactory
-from siriuspy.devices.bbb import Feedback as _BbBFB, \
-    BunchbyBunch as _BbB
-
+    EGTriggerPS as _EGTriggerPS, EVG as _EVG, HLFOFB as _HLFOFB, ID as _ID, \
+    InjCtrl as _InjCtrl, LIModltr as _LIModltr, MachShift as _MachShift, \
+    SILLRFPreAmp as _SILLRFPreAmp, SIRFACAmp as _SIRFACAmp, \
+    SIRFCavMonitor as _SIRFCavMonitor, SIRFDCAmp as _SIRFDCAmp, \
+    SOFB as _SOFB
+from siriuspy.devices.bbb import BunchbyBunch as _BbB, Feedback as _BbBFB
+from siriuspy.devices.pstesters import PSTesterFactory as _PSTesterFactory, \
+    Triggers as _PSTriggers
+from siriuspy.namesys import SiriusPVName as _PVName
+from siriuspy.pwrsupply.csdev import Const as _PSC  # noqa: N814
+from siriuspy.search import HLTimeSearch as _HLTimeSearch, \
+    PSSearch as _PSSearch
 
 # Configure Logging
 _log.basicConfig(
     format='%(levelname)7s | %(asctime)s ::: %(message)s',
-    datefmt='%F %T', level=_log.INFO, filemode='a')
+    datefmt='%F %T', level=_log.INFO,
+    handlers=[_log.StreamHandler(_sys.stdout, flush=True)],
+    filemode='a')
 
 
 class LogCallback(_Callback):
     """Base class for logging using callbacks."""
 
     def __init__(self, log_callback=None):
+        """."""
         super().__init__(log_callback)
 
     def log(self, message):
@@ -55,6 +54,27 @@ class LogCallback(_Callback):
             _log.warning(message[5:])
         else:
             _log.info(message)
+
+
+class ThreadWithReturnValue(_Thread):
+    """."""
+
+    def __init__(self, group=None, target=None, name=None,
+                 args=(), kwargs=None):
+        """."""
+        kwargs = {} if not kwargs else kwargs
+        _Thread.__init__(self, group, target, name, args, kwargs)
+        self._return = None
+
+    def run(self):
+        """."""
+        if self._target is not None:
+            self._return = self._target(*self._args, **self._kwargs)
+
+    def join(self, *args):
+        """."""
+        _Thread.join(self, *args)
+        return self._return
 
 
 class IDParking(_DeviceSet, LogCallback):
@@ -101,6 +121,33 @@ class IDParking(_DeviceSet, LogCallback):
         self._is_parking = True
 
         # connections checking
+        if not self._connections_checking():
+            return False
+
+        # beamline control
+        if not self._disable_beamline_ctrl():
+            return False
+
+        # stopping previous movement
+        if not self._stop_movements():
+            return False
+
+        # setting speeds
+        if not self._set_speeds():
+            return False
+
+        # move to parked position
+        if not self._move_to_parked():
+            return False
+
+        # success at this point
+        self.log(f'Successfully parked {self.devname}.')
+        self._is_parking = False
+        return True
+
+    # --- private methods ---
+
+    def _connections_checking(self):
         self.log(f'Checking {self.devname} connections...')
         if not self.device.wait_for_connection(
                 timeout=IDParking.TIMEOUT_WAIT_FOR_CONNECTION):
@@ -109,17 +156,9 @@ class IDParking(_DeviceSet, LogCallback):
             return False
         if not self.continue_execution():
             return False
+        return True
 
-        # beamline control
-        self.log(f'Disabling {self.devname} beamline control...')
-        if not self.device.cmd_beamline_ctrl_disable():
-            self.log(f'ERR:Could not disable {self.devname} beamline control.')
-            self._is_parking = False
-            return False
-        if not self.continue_execution():
-            return False
-
-        # stopping previous movement
+    def _disable_beamline_ctrl(self):
         self.log(f'Stopping {self.devname} movement...')
         if not self.device.cmd_move_stop():
             self.log(f'ERR:Failed to stop {self.devname}.')
@@ -127,8 +166,9 @@ class IDParking(_DeviceSet, LogCallback):
             return False
         if not self.continue_execution():
             return False
+        return True
 
-        # setting speeds
+    def _stop_movements(self):
         self.log(f'Setting {self.devname} speeds...')
         value = self.device.pparameter_speed_max
         if value is not None:
@@ -144,17 +184,32 @@ class IDParking(_DeviceSet, LogCallback):
                 return False
         if not self.continue_execution():
             return False
+        return True
 
-        # move to parked position
+    def _set_speeds(self):
+        self.log(f'Setting {self.devname} speeds...')
+        value = self.device.pparameter_speed_max
+        if value is not None:
+            if not self.device.set_pparameter_speed(value):
+                self.log(f'ERR:Failed to set {self.devname} pparam speed.')
+                self._is_parking = False
+                return False
+        value = self._device.kparameter_speed_max
+        if value is not None:
+            if not self._device.set_kparameter_speed(value):
+                self.log(f'ERR:Failed to set {self.devname} kparam speed.')
+                self._is_parking = False
+                return False
+        if not self.continue_execution():
+            return False
+        return True
+
+    def _move_to_parked(self):
         self.log(f'Sending {self.devname} to parked position...')
         if not self.device.cmd_move_park():
             self.log(f'ERR:Failed to move {self.devname} to parked position.')
             self._is_parking = False
             return False
-
-        # success at this point
-        self.log(f'Successfully parked {self.devname}.')
-        self._is_parking = False
         return True
 
 
@@ -207,11 +262,9 @@ class MachineShutdown(_DeviceSet, LogCallback):
         if not is_ok:
             self.log('WARN:Could not close gamma shutter.')
             self.log('WARN:Continuing anyway...')
-        else:
-            self.log('Gamma Shutter closed.')
-        # NOTE: we will return True here once this is not
-        # impeditive to dump the beam and proceed with the
-        # machine shutdown.
+            return False
+
+        self.log('Gamma Shutter closed.')
         return True
 
     def s02_macshift_update(self):
@@ -227,11 +280,9 @@ class MachineShutdown(_DeviceSet, LogCallback):
         if not is_ok:
             self.log('WARN:Could not change MachShift to Shutdown.')
             self.log('WARN:Continuing anyway...')
-        else:
-            self.log('Machine Shift updated.')
-        # NOTE: we will return True here once this is not
-        # impeditive to dump the beam and proceed with the
-        # machine shutdown.
+            return False
+
+        self.log('Machine Shift updated.')
         return True
 
     def s03_injmode_update(self):
@@ -292,17 +343,20 @@ class MachineShutdown(_DeviceSet, LogCallback):
         threads = list()
         for dev in self._devrefs.values():
             if isinstance(dev, IDParking):
-                thread = _Thread(target=dev.cmd_park_device, daemon=True)
+                thread = ThreadWithReturnValue(
+                    target=dev.cmd_park_device, daemon=True)
                 thread.start()
                 threads.append(thread)
         self.log('...waiting for parking...')
+        all_ret = True
         for thread in threads:
-            thread.join()
+            all_ret &= thread.join()
         self.log('...finished ID Parking routine.')
+        if not all_ret:
+            self.log('ERR:Could not park all IDs')
+            return False
 
-        # NOTE: once we do not want this step block the machine shutdown
-        # script in case of problems, we do not need to return False in
-        # case of any False return.
+        self.log('All IDs parked.')
         return True
 
     def s06_sofb_fofb_turnoff(self):
@@ -613,7 +667,7 @@ class MachineShutdown(_DeviceSet, LogCallback):
                 # countdown is running!
                 break
             if _time.time() - time0 > timeout:
-                self.log(f'ERR:PPS Timer has not started countdown.')
+                self.log('ERR:PPS Timer has not started countdown.')
                 return False
 
         self.log('...done.')
@@ -641,28 +695,33 @@ class MachineShutdown(_DeviceSet, LogCallback):
 
     def execute_procedure(self):
         """Execute machine shutdown procedure."""
+        # NOTE: true_needed=True for procedures whose fails
+        # are impeditive to proceed with the machine shutdown.
         steps = (
-            self.s01_close_gamma_shutter,
-            self.s02_macshift_update,
-            self.s03_injmode_update,
-            self.s04_injcontrol_disable,
-            self.s05_ids_parking,
-            self.s06_sofb_fofb_turnoff,
-            self.s07_bbb_turnoff,
-            self.s08_sirf_turnoff,
-            self.s09_borf_turnoff,
-            self.s10_modulators_turnoff,
-            self.s11_adjust_egun_bias,
-            self.s12_adjust_egun_filament,
-            self.s13_disable_egun_highvoltage,
-            self.s14_start_counter,
-            self.s15_disable_ps_triggers,
-            self.s16_run_ps_turn_off_procedure,
-            self.s17_disable_pu_triggers,
-            self.s18_run_pu_turn_off_procedure,
+            # procedure method name, true_needed
+            (self.s01_close_gamma_shutter, False),
+            (self.s02_macshift_update, False),
+            (self.s03_injmode_update, False),
+            (self.s04_injcontrol_disable, True),
+            (self.s05_ids_parking, False),
+            (self.s06_sofb_fofb_turnoff, True),
+            (self.s07_bbb_turnoff, True),
+            (self.s08_sirf_turnoff, True),
+            (self.s09_borf_turnoff, True),
+            (self.s10_modulators_turnoff, True),
+            (self.s11_adjust_egun_bias, True),
+            (self.s12_adjust_egun_filament, True),
+            (self.s13_disable_egun_highvoltage, True),
+            (self.s14_start_counter, True),
+            (self.s15_disable_ps_triggers, True),
+            (self.s16_run_ps_turn_off_procedure, False),
+            (self.s17_disable_pu_triggers, False),
+            (self.s18_run_pu_turn_off_procedure, False),
         )
         for i, step in enumerate(steps):
-            if not step():
+            cmd, needs_true = step
+            state = cmd()
+            if needs_true and state is not True:
                 self.log(f'ERR:Could not complete, failed in step {i:02}.')
                 return False
             if not self.continue_execution():
