@@ -418,18 +418,11 @@ class MachineShutdown(_DeviceSet, LogCallback):
             self.log('...done.')
         return True
 
-    def s08_sirf_turnoff(self):
-        """Turn off SI RF."""
+    def s08_sirf_lower_voltage(self):
+        """Lower SI RF voltage."""
         self.log('Step 08: Turning off SI RF...')
 
         llrf = self._devrefs['sillrf']
-        cavmon = self._devrefs['sicavmon']
-        preamp1 = self._devrefs['sillrfpreamp1']
-        preamp2 = self._devrefs['sillrfpreamp2']
-        dcamp1 = self._devrefs['sirfdcamp1']
-        dcamp2 = self._devrefs['sirfdcamp2']
-        acamp1 = self._devrefs['sirfacamp1']
-        acamp2 = self._devrefs['sirfacamp2']
 
         self.log('Changing voltage increase rate to 2mV/s...')
         incrate = llrf.VoltIncRates.vel_2p0
@@ -442,7 +435,13 @@ class MachineShutdown(_DeviceSet, LogCallback):
 
         ref = self.SIRF_SLREF_STDBY
         self.log(f'...done. Changing loop reference to {ref}mV...')
-        if not llrf.set_voltage(ref, timeout=180, wait_mon=False):
+        llrf.voltage = ref
+        t0, timeout_flag = _time.time(), False
+        while llrf.voltage_mon > ref:
+            if _time.time() - t0 > 180:
+                timeout_flag = True
+            _time.sleep(0.1)
+        if timeout_flag:
             self.log(f'ERR:Could not set loop reference to {ref}mV.')
             return False
 
@@ -454,6 +453,37 @@ class MachineShutdown(_DeviceSet, LogCallback):
 
         if not self.continue_execution():
             return False
+
+        self.log('...done.')
+        return True
+
+    def s09_sidcct_check_beam_current(self):
+        """Check bema current in SI."""
+
+        self.log('Step 09: Check if stored beam was dumped...')
+        dcct = self._devrefs['dcct']
+        if dcct.current > MachineShutdown.EBEAM_MAX_CURRENT:
+            self.log('ERR:DCCT is indicating stored beam.')
+            return False
+
+        if not self.continue_execution():
+            return False
+
+        self.log('...done.')
+        return True
+
+    def s10_sirf_turnoff(self):
+        """Turn off SI RF."""
+        self.log('Step 10: Turning off SI RF...')
+
+        llrf = self._devrefs['sillrf']
+        cavmon = self._devrefs['sicavmon']
+        preamp1 = self._devrefs['sillrfpreamp1']
+        preamp2 = self._devrefs['sillrfpreamp2']
+        dcamp1 = self._devrefs['sirfdcamp1']
+        dcamp2 = self._devrefs['sirfdcamp2']
+        acamp1 = self._devrefs['sirfacamp1']
+        acamp2 = self._devrefs['sirfacamp2']
 
         self.log('...done. Disabling slow loop control...')
         if not llrf.set_slow_loop_state(0):
@@ -506,9 +536,9 @@ class MachineShutdown(_DeviceSet, LogCallback):
         self.log('...done.')
         return True
 
-    def s09_borf_turnoff(self):
+    def s11_borf_turnoff(self):
         """Turn off BO RF."""
-        self.log('Step 09: Turning off BO RF...')
+        self.log('Step 11: Turning off BO RF...')
 
         llrf = self._devrefs['bollrf']
         cavmon = self._devrefs['bocavmon']
@@ -572,9 +602,9 @@ class MachineShutdown(_DeviceSet, LogCallback):
         self.log('...done.')
         return True
 
-    def s10_modulators_turnoff(self):
+    def s12_modulators_turnoff(self):
         """Turn off modulators."""
-        self.log('Step 10: Turning off modulators...')
+        self.log('Step 12: Turning off modulators...')
 
         devs = (self._devrefs['limod1'], self._devrefs['limod2'])
 
@@ -595,9 +625,9 @@ class MachineShutdown(_DeviceSet, LogCallback):
         self.log('...done.')
         return True
 
-    def s11_adjust_egun_bias(self):
+    def s13_adjust_egun_bias(self):
         """Adjust Bias Voltage to standby value."""
-        self.log('Step 11: Adjusting EGun bias voltage...')
+        self.log('Step 13: Adjusting EGun bias voltage...')
 
         injctrl = self._devrefs['injctrl']
 
@@ -610,9 +640,9 @@ class MachineShutdown(_DeviceSet, LogCallback):
         injctrl.wait_bias_volt_cmd_finish(timeout=10)
         return True
 
-    def s12_adjust_egun_filament(self):
+    def s14_adjust_egun_filament(self):
         """Adjust EGun Bias Filament current to standby value."""
-        self.log('Step 12: Adjusting EGun Bias Filament current...')
+        self.log('Step 14: Adjusting EGun Bias Filament current...')
 
         injctrl = self._devrefs['injctrl']
         egfila = self._devrefs['egfila']
@@ -628,9 +658,9 @@ class MachineShutdown(_DeviceSet, LogCallback):
             self.log('...done.')
         return True
 
-    def s13_disable_egun_highvoltage(self):
+    def s15_disable_egun_highvoltage(self):
         """Disable egun high voltage."""
-        self.log('Step 13: Disabling EGun high voltage...')
+        self.log('Step 15: Disabling EGun high voltage...')
 
         injctrl = self._devrefs['injctrl']
         eghv = self._devrefs['eghvolt']
@@ -653,9 +683,9 @@ class MachineShutdown(_DeviceSet, LogCallback):
         self.log('...done.')
         return True
 
-    def s14_start_counter(self):
+    def s16_start_counter(self):
         """Check whether the countdown to tunnel access has started."""
-        self.log('Step 14: Checking tunnel access countdown...')
+        self.log('Step 16: Checking tunnel access countdown...')
 
         timeout = 5  # [s]
         dev = self._devrefs['asppsctrl']
@@ -673,24 +703,24 @@ class MachineShutdown(_DeviceSet, LogCallback):
         self.log('...done.')
         return True
 
-    def s15_disable_ps_triggers(self):
+    def s17_disable_ps_triggers(self):
         """Disable PS triggers."""
-        self.log('Step 15: Disabling PS triggers...')
+        self.log('Step 17: Disabling PS triggers...')
         return self._disable_ps_triggers('PS')
 
-    def s16_run_ps_turn_off_procedure(self):
+    def s18_run_ps_turn_off_procedure(self):
         """Do turn off PS procedure."""
-        self.log('Step 16: Executing Turn Off PS...')
+        self.log('Step 18: Executing Turn Off PS...')
         return self._exec_ps_turnoff('PS')
 
-    def s17_disable_pu_triggers(self):
+    def s19_disable_pu_triggers(self):
         """Disable PU triggers."""
-        self.log('Step 17: Disabling PU triggers...')
+        self.log('Step 19: Disabling PU triggers...')
         return self._disable_ps_triggers('PU')
 
-    def s18_run_pu_turn_off_procedure(self):
+    def s20_run_pu_turn_off_procedure(self):
         """Do turn off PU procedure."""
-        self.log('Step 18: Executing Turn Off PU...')
+        self.log('Step 20: Executing Turn Off PU...')
         return self._exec_ps_turnoff('PU')
 
     def execute_procedure(self):
@@ -706,17 +736,19 @@ class MachineShutdown(_DeviceSet, LogCallback):
             (self.s05_ids_parking, False),
             (self.s06_sofb_fofb_turnoff, True),
             (self.s07_bbb_turnoff, True),
-            (self.s08_sirf_turnoff, True),
-            (self.s09_borf_turnoff, True),
-            (self.s10_modulators_turnoff, True),
-            (self.s11_adjust_egun_bias, True),
-            # (self.s12_adjust_egun_filament, True),  # EPP instruction
-            (self.s13_disable_egun_highvoltage, True),
-            (self.s14_start_counter, True),
-            (self.s15_disable_ps_triggers, True),
-            (self.s16_run_ps_turn_off_procedure, False),
-            (self.s17_disable_pu_triggers, False),
-            (self.s18_run_pu_turn_off_procedure, False),
+            (self.s08_sirf_lower_voltage, False)
+            (self.s09_sidcct_check_beam_current, True),
+            (self.s10_sirf_turnoff, True),
+            (self.s11_borf_turnoff, True),
+            (self.s12_modulators_turnoff, True),
+            (self.s13_adjust_egun_bias, True),
+            # (self.s14_adjust_egun_filament, True),  # EPP demand
+            (self.s15_disable_egun_highvoltage, True),
+            (self.s16_start_counter, True),
+            (self.s17_disable_ps_triggers, True),
+            (self.s18_run_ps_turn_off_procedure, False),
+            (self.s19_disable_pu_triggers, False),
+            (self.s20_run_pu_turn_off_procedure, False),
         )
         for i, step in enumerate(steps):
             cmd, needs_true = step
