@@ -710,7 +710,7 @@ class MachineShutdown(_DeviceSet, LogCallback):
             (self.s09_borf_turnoff, True),
             (self.s10_modulators_turnoff, True),
             (self.s11_adjust_egun_bias, True),
-            (self.s12_adjust_egun_filament, True),
+            # (self.s12_adjust_egun_filament, True),  # EPP instruction
             (self.s13_disable_egun_highvoltage, True),
             (self.s14_start_counter, True),
             (self.s15_disable_ps_triggers, True),
