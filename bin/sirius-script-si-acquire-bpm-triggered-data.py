@@ -37,7 +37,7 @@ def measure(orbacq):
     event_mode = orbacq.params.event_mode
     if event_mode.lower() == 'external':
         print((
-            'Please check BPM Acquistion Status, or wait a few seconds, '
+            'Please check BPM acquisition status, or wait a few seconds, '
             ' before triggering event!'))
     else:
         print('Waiting for next injection pulse')
