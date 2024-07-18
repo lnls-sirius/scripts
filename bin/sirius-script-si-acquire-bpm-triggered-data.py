@@ -1,10 +1,12 @@
 #!/usr/bin/env python-sirius
 """."""
 
-from siriuspy.devices import BunchbyBunch, SOFB, HLFOFB
-from apsuite.commisslib.meas_bpms_signals import AcqBPMsSignals
-from siriuspy.devices import BOPSRampStandbyHandler, BORFRampStandbyHandler
 from datetime import datetime
+
+from apsuite.commisslib.meas_bpms_signals import AcqBPMsSignals
+from siriuspy.devices import BOPSRampStandbyHandler, BORFRampStandbyHandler, \
+    BunchbyBunch, HLFOFB, SOFB
+
 
 def configure_acquisition_params(orbacq, parse_args):
     """."""
@@ -32,8 +34,16 @@ def measure(orbacq):
     """."""
     init_state = orbacq.get_timing_state()
     orbacq.prepare_timing()
-    print('Waiting for next injection pulse')
-    print('Take a look at Injection Control Log to check for next injection')
+    event_mode = orbacq.params.event_mode
+    if event_mode.lower() == 'external':
+        print((
+            'Please check BPM Acquistion Status, or wait a few seconds, '
+            ' before triggering event!'))
+    else:
+        print('Waiting for next injection pulse')
+        print((
+            'Take a look at Injection Control Log to check for next '
+            'injection'))
     try:
         orbacq.acquire_data()
     except Exception as e:
@@ -81,7 +91,10 @@ if __name__ == "__main__":
     import argparse as _argparse
 
     parser = _argparse.ArgumentParser(
-        description="BPM triggered acquisition script. By default the script is configured to acquire injection perturbations during top-up.")
+        description=(
+            "BPM triggered acquisition script. "
+            "By default the script is configured to acquire injection "
+            "perturbations during top-up."))
     parser.add_argument(
         '-f', '--filename', type=str, default='',
         help='name of the file to save (Default: acqrate_YY-MM-DD_HHhMMmSSs)')
