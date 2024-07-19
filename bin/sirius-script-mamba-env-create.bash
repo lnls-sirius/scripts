@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Exit if any command fails
-# set -e
+set -e
 
 ##############################################################################
 # Parse arguments.
@@ -221,6 +221,7 @@ function clone_or_find
         printf_yellow_clear "Checking out to branch $BRAN.\n"
         git checkout $BRAN
     fi
+    # wont be nice to fetch and pull the latest updates of the branch? Instead of only "checkouting" it.
 }
 
 ##############################################################################
@@ -229,7 +230,7 @@ sudo apt-get update
 # libgl1-mesa-glx is needed for pyqt to work properly.
 # See discussion in:
 #    https://github.com/conda-forge/pygridgen-feedstock/issues/10
-sudo apt-get install -y wget git libgl1-mesa-glx
+sudo apt-get install -y wget git libgl1-mesa-glx wmctrl
 
 ##############################################################################
 printf_yellow "Configure system for mamba installation\n"
@@ -285,7 +286,7 @@ fi
 printf_yellow_clear "Fix some folder permissions.\n"
 sudo chgrp -R mamba /opt/mamba_files/mamba
 sudo chmod 774 -R /opt/mamba_files/mamba
-sudo chown -R $USER.mamba ~/.conda
+sudo chown -R $USER:mamba ~/.conda
 
 printf_yellow_clear "Adding mamba and conda to path\n"
 source /opt/mamba_files/mamba/etc/profile.d/conda.sh
@@ -333,21 +334,19 @@ then
     ln -s python3 python-sirius
     printf_green "done!\n"
 else
-    printf_blue "link alreay exists. Skipping...\n"
+    printf_blue "link already exists. Skipping...\n"
 fi
 
 printf_yellow "Install some mamba packages in sirius environment.\n"
 COMM="mamba install --freeze-installed -y"
 
-printf_yellow_clear "- First some system packages:\n"
-$COMM gxx make binutils swig build gsl libblas wmctrl fftw
-
-printf_yellow_clear "- Now some generic python packages:\n"
-$COMM pyparsing bottleneck aiohttp==3.7.4 scipy matplotlib pytest mpmath \
-    entrypoints requests pyqt=5.12.3 pandas pyqtgraph=0.11.0 QtAwesome=0.7.2 \
-    numexpr tk sh pywavelets scikit-image scikit-learn pydocstyle pycodestyle \
-    pylama openpyxl gpy gpyopt fpdf sympy h5py
-
+printf_yellow_clear "- System and generic python packages:\n"
+$COMM gxx make binutils swig=4.2.0 libxcrypt build gsl libblas wmctrl fftw \
+    pyparsing bottleneck aiohttp==3.7.4 numpy=1.23 scipy matplotlib \
+    pytest mpmath entrypoints requests pyqt=5.12.3 pandas pyqtgraph=0.11.0 \
+    qtpy=2.3.1 QtAwesome=0.7.2 numexpr tk sh pywavelets scikit-image \
+    scikit-learn pydocstyle pycodestyle pylama openpyxl gpy gpyopt fpdf sympy \
+    h5py scienceplots
 
 printf_yellow_clear "- Install EPICS Base:\n"
 $COMM -c conda-forge/label/cf202003 epics-base=3.15.6
@@ -369,7 +368,6 @@ fi
 printf_yellow_clear "- Install and configure jupyter notebook\n"
 $COMM jupyter notebook
 mamba update jupyter_client
-$COMM jupyter_contrib_nbextensions
 
 ### Clone and install our repositories
 if [ "$CLONE" == "yes" ]
@@ -408,7 +406,7 @@ then
     printf_yellow_clear "Installing accelerators simulation packages.\n"
     clone_or_find lnls lnls-fac && make $TARGET
     clone_or_find trackcpp lnls-fac && make clean && \
-        make install-cpp 2>/dev/null && make $TARGET-py 2>/dev/null
+        make install-cpp && make install-py
     clone_or_find pyaccel lnls-fac && make $TARGET
     clone_or_find pymodels lnls-fac && make $TARGET
     clone_or_find apsuite lnls-fac && make $TARGET
