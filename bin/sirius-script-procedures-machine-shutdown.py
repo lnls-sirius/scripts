@@ -30,7 +30,7 @@ from siriuspy.search import HLTimeSearch as _HLTimeSearch, \
 _log.basicConfig(
     format='%(levelname)7s | %(asctime)s ::: %(message)s',
     datefmt='%F %T', level=_log.INFO,
-    handlers=[_log.StreamHandler(_sys.stdout, flush=True)],
+    # handlers=[_log.StreamHandler(_sys.stdout, flush=True)],
     filemode='a')
 
 
@@ -60,10 +60,10 @@ class ThreadWithReturnValue(_Thread):
     """."""
 
     def __init__(self, group=None, target=None, name=None,
-                 args=(), kwargs=None):
+                 *args, **kwargs):
         """."""
         kwargs = {} if not kwargs else kwargs
-        _Thread.__init__(self, group, target, name, args, kwargs)
+        _Thread.__init__(self, group, target, name, *args, **kwargs)
         self._return = None
 
     def run(self):
