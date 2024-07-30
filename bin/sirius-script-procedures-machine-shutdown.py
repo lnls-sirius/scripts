@@ -222,7 +222,7 @@ class MachineShutdown(_DeviceSet, LogCallback):
 
     EG_FILA_CURR_STDBY = 1.1  # [A]
     EG_BIAS_VOLT_STDBY = -100  # [V]
-    BORF_SLREF_STDBY = 62  # [mV]
+    BORF_SLREF_STDBY = 35  # [mV]
     SIRF_SLREF_STDBY = 60  # [mV]
     EBEAM_MAX_CURRENT = 1  # [mA]
 
