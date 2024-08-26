@@ -69,7 +69,7 @@ if __name__ == "__main__":
     for dev in lampacq.ctrldevs.values():
         dev.cmd_ctrl(0)  # start
     print('...done...')
-    _time.sleep(2)
+    _time.sleep(5)
 
     # trigger acquisition
     print('...sending trigger...')
@@ -77,7 +77,7 @@ if __name__ == "__main__":
 
     # sleep waiting for data
     print('...waiting for data...')
-    _time.sleep(30)
+    _time.sleep(40)
     print('...done...')
 
     # create devices to complement data
