@@ -422,22 +422,29 @@ class MachineShutdown(_DeviceSet, LogCallback):
         """Lower SI RF voltage."""
         self.log('Step 08: Turning off SI RF...')
 
-        llrf = self._devrefs['sillrf']
+        llrfs = self._devrefs['sillrfs']
 
         self.log('Changing voltage increase rate to 2mV/s...')
-        incrate = llrf.VoltIncRates.vel_2p0
-        if not llrf.set_voltage_incrate(incrate, timeout=5):
-            self.log('ERR:Could not set voltage increase rate to 2mV/s.')
-            return False
+        for llrf in llrfs:
+            incrate = llrf.VoltIncRates.vel_2p0
+            if not llrf.set_voltage_incrate(incrate, timeout=5):
+                name = llrf.system_nickname
+                self.log(
+                    f'ERR:Could not set voltage increase rate to 2mV/s
+                    for LLRF-{name}.')
+                return False
 
         if not self.continue_execution():
             return False
 
         ref = self.SIRF_SLREF_STDBY
         self.log(f'...done. Changing loop reference to {ref}mV...')
-        llrf.voltage = ref
+
+        # first set reference voltage for all LLRFs then wait
+        for llrf in llrfs:
+            llrf.voltage = ref
         t0, timeout_flag = _time.time(), False
-        while llrf.voltage_mon > ref:
+        while any([llrf.voltage_mon > ref for llrf in llrfs]):
             if _time.time() - t0 > 180:
                 timeout_flag = True
             _time.sleep(0.1)
@@ -476,62 +483,60 @@ class MachineShutdown(_DeviceSet, LogCallback):
         """Turn off SI RF."""
         self.log('Step 10: Turning off SI RF...')
 
-        llrf = self._devrefs['sillrf']
-        cavmon = self._devrefs['sicavmon']
-        preamp1 = self._devrefs['sillrfpreamp1']
-        preamp2 = self._devrefs['sillrfpreamp2']
-        dcamp1 = self._devrefs['sirfdcamp1']
-        dcamp2 = self._devrefs['sirfdcamp2']
-        acamp1 = self._devrefs['sirfacamp1']
-        acamp2 = self._devrefs['sirfacamp2']
+        llrfs = self._devrefs['sillrfs']
+        cavmons = self._devrefs['sicavmons']
+        preamps = self._devrefs['sillrfpreamps']
+        dcamps = self._devrefs['sirfdcamps']
+        acamps = self._devrefs['sirfacamps']
 
         self.log('...done. Disabling slow loop control...')
-        if not llrf.set_slow_loop_state(0):
-            self.log('ERR:Could not disable LLRF slow loop.')
-            return False
+
+        for llrf in llrfs:
+            if not llrf.set_slow_loop_state(0):
+                name = llrf.system_nickname
+                self.log(f'ERR:Could not disable LLRF-{name} slow loop.')
+                return False
+
         _time.sleep(1.0)  # is this necessary?
 
         if not self.continue_execution():
             return False
 
         self.log('...done. Disabling PinSw...')
-        if not preamp1.cmd_disable_pinsw(wait_mon=True):
-            self.log('ERR:Could not disable SSA1 PinSw.')
-            return False
-        if not preamp2.cmd_disable_pinsw(wait_mon=True):
-            self.log('ERR:Could not disable SSA2 PinSw.')
-            return False
+        for idx, preamp in enumerate(preamps):
+            if not preamp.cmd_disable_pinsw(wait_mon=True):
+                self.log(f'ERR:Could not disable SSA{idx+1:d} PinSw.')
+                return False
         _time.sleep(1.0)  # is this necessary?
 
         if not self.continue_execution():
             return False
 
         self.log('...done. Disabling DC/TDK amplifiers...')
-        if not dcamp1.cmd_disable(wait_mon=True):
-            self.log('ERR:Could not disable SSA1 DC/TDK.')
-            return False
-        if not dcamp2.cmd_disable(wait_mon=True):
-            self.log('ERR:Could not disable SSA2 DC/TDK.')
-            return False
+        for idx, dcamp in enumerate(dcamps):
+            if not dcamp.cmd_disable(wait_mon=True):
+                self.log(f'ERR:Could not disable SSA{idx+1:d} DC/TDK.')
+                return False
         _time.sleep(1.0)  # is this necessary?
 
         if not self.continue_execution():
             return False
 
         self.log('...done. Disabling AC/TDK amplifiers...')
-        if not acamp1.cmd_disable(wait_mon=True):
-            self.log('ERR:Could not disable SSA1 AC/TDK.')
-            return False
-        if not acamp2.cmd_disable(wait_mon=True):
-            self.log('ERR:Could not disable SSA2 AC/TDK.')
-            return False
+        for idx, acamp in enumerate(acamps):
+            if not acamp.cmd_disable(wait_mon=True):
+                self.log(f'ERR:Could not disable SSA{idx+1:d} AC/TDK.')
+                return False
         _time.sleep(1.0)  # is this necessary?
 
         self.log('...done. Checking if power forward is less than 1W...')
-        if not self._wait_devices_propty(
-                cavmon, 'PwrFwd-Mon', 1, comp='lt', timeout=10):
-            self.log('ERR:Power forward is greater than 1W.')
-            return False
+        for cavmon in cavmons:
+            if not self._wait_devices_propty(
+                    cavmon, 'FwdPwrW-Mon', 1, comp='lt', timeout=10):
+                name = cavmon.system_nickname
+                self.log(
+                    f'ERR:Power forward is greater than 1W in SICav{name}.')
+                return False
 
         self.log('...done.')
         return True
@@ -595,7 +600,7 @@ class MachineShutdown(_DeviceSet, LogCallback):
 
         self.log('...done. Checking if power forward is less than 1W...')
         if not self._wait_devices_propty(
-                cavmon, 'PwrFwd-Mon', 1, comp='lt', timeout=10):
+                cavmon, 'FwdPwrW-Mon', 1, comp='lt', timeout=10):
             self.log('ERR:Power forward is greater than 1W.')
             return False
 
@@ -841,27 +846,27 @@ class MachineShutdown(_DeviceSet, LogCallback):
             _BbB.DEVICES.L, props2init=('FBCTRL', ))
 
         # RF
-        devices['sillrf'] = _ASLLRF(
-            _ASLLRF.DEVICES.SI,
-            props2init=(
-                'AMPREF:INCRATE:S', 'AMPREF:INCRATE', 'SL', 'SL:S',
-                'SL:INP:AMP', 'SL:REF:AMP', 'mV:AL:REF-SP', 'mV:AL:REF-RB',
-            ))
-        devices['sicavmon'] = _SIRFCavMonitor()
-        devices['sillrfpreamp1'] = _SILLRFPreAmp(_SILLRFPreAmp.DEVICES.SSA1)
-        devices['sillrfpreamp2'] = _SILLRFPreAmp(_SILLRFPreAmp.DEVICES.SSA2)
-        devices['sirfdcamp1'] = _SIRFDCAmp(_SIRFDCAmp.DEVICES.SSA1)
-        devices['sirfdcamp2'] = _SIRFDCAmp(_SIRFDCAmp.DEVICES.SSA2)
-        devices['sirfacamp1'] = _SIRFACAmp(_SIRFACAmp.DEVICES.SSA1)
-        devices['sirfacamp2'] = _SIRFACAmp(_SIRFACAmp.DEVICES.SSA2)
+        devs = _ASLLRF.DEVICES
+        devnames = [devs.SIA, devs.SIB]
+        devices['sillrfs'] = [_ASLLRF(dvnm) for dvnm in devnames]
 
-        devices['bollrf'] = _ASLLRF(
-            _ASLLRF.DEVICES.BO,
-            props2init=(
-                'RmpEnbl-Sel', 'RmpEnbl-Sts', 'RmpReady-Mon', 'SL', 'SL:S',
-                'SL:INP:AMP', 'SL:REF:AMP', 'mV:AL:REF-SP', 'mV:AL:REF-RB',
+        devs = _SIRFCavMonitor.DEVICES
+        devnames = [devs.SIA, devs.SIB]
+        devices['sicavmons'] = [_SIRFCavMonitor(dvnm) for dvnm in devnames]
 
-            ))
+        devs = _SILLRFPreAmp.DEVICES
+        devnames = [devs.SSA1, devs.SSA2, devs.SSA3, devs.SSA4]
+        devices['sillrfpreamps'] = [_SILLRFPreAmp(dvnm) for dvnm in devnames]
+
+        devs = _SIRFDCAmp.DEVICES
+        devnames = [devs.SSA1, devs.SSA2, devs.SSA3, devs.SSA4]
+        devices['sirfdcamps'] = [_SIRFDCAmp(dvnm) for dvnm in devnames]
+
+        devs = _SIRFACAmp.DEVICES
+        devnames = [devs.SSA1, devs.SSA2, devs.SSA3, devs.SSA4]
+        devices['sirfacamps'] = [_SIRFACAmp(dvnm) for dvnm in devnames]
+
+        devices['bollrf'] = _ASLLRF(_ASLLRF.DEVICES.BO)
         devices['bocavmon'] = _BORFCavMonitor()
         devices['bollrfpreamp'] = _BOLLRFPreAmp()
         devices['borfdcamp'] = _BORFDCAmp()
