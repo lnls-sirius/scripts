@@ -14,7 +14,8 @@ GENERALSCRIPTS = \
 		sirius-script-ps-wfmupdateauto-off.py \
 		sirius-script-clientarch-checkpv.py \
 		sirius-script-si-acquire-bpm-triggered-data.py \
-		sirius-script-clientconfigdb-compare-configs.py
+		sirius-script-clientconfigdb-compare-configs.py \
+		sirius-script-install-openocd.sh
 
 REPOSSCRIPTS = \
 		sirius-script-repos-install-pristine.bash \
