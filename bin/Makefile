@@ -15,7 +15,8 @@ GENERALSCRIPTS = \
 		sirius-script-clientarch-checkpv.py \
 		sirius-script-si-acquire-bpm-triggered-data.py \
 		sirius-script-clientconfigdb-compare-configs.py \
-		sirius-script-install-openocd.sh
+		sirius-script-install-openocd.sh \
+		sirius-script-rabpm-mngr.py
 
 REPOSSCRIPTS = \
 		sirius-script-repos-install-pristine.bash \
