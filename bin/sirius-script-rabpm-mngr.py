@@ -53,7 +53,7 @@ def main():
                                      description="BPM Rack Management Utility")
 
     subparsers = parser.add_subparsers(dest="command",
-                                       help="Available commands", required=True)
+                                       help="Available commands")
 
     parser_list = subparsers.add_parser("afc-list",
                                         help="List active PCIe physical slots (AMC cards)")
