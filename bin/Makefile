@@ -16,6 +16,7 @@ GENERALSCRIPTS = \
 		sirius-script-si-acquire-bpm-triggered-data.py \
 		sirius-script-clientconfigdb-compare-configs.py \
 		sirius-script-install-openocd.sh \
+		sirius-script-afc-boot-from-flash.sh \
 		sirius-script-rabpm-mngr.py
 
 REPOSSCRIPTS = \
