@@ -43,6 +43,13 @@ def run_rffe_reset(rack, virtual_slot):
     execute_ssh(hostname, "rffe-reset", virtual_slot)
 
 
+def run_boot_from_flash(rack, slot):
+    hostname = get_hostname(rack)
+    board = "afcv4-sfp" if slot == 2 else "afcv3"
+    subprocess.run(
+        ["sirius-script-afc-boot-from-flash.sh", board, hostname, str(slot)])
+
+
 def add_rack_arg(command):
     command.add_argument("-r", "--rack", required=True,
                          help="Rack number {01..20} or 21 for transport line")
@@ -84,6 +91,12 @@ def main():
                               "(2*physical_slot-1) or (2*physical_slot))")
     add_rack_arg(parser_reset)
 
+    parser_boot_from_flash = subparsers.add_parser(
+        "afc-reset", help="Boot the AFC from flash memory")
+    parser_boot_from_flash.add_argument("-s", "--slot", required=True,
+                                        help="Slot number")
+    add_rack_arg(parser_boot_from_flash)
+
     args = parser.parse_args()
     if args.command == "afc-list":
         run_pcie_list(args.rack)
@@ -95,6 +108,8 @@ def main():
         run_ioc_restart(args.rack, args.ioc, args.slot)
     elif args.command == "rffe-reset":
         run_rffe_reset(args.rack, args.vslot)
+    elif args.command == "afc-reset":
+        run_boot_from_flash(args.rack, args.slot)
 
 
 if __name__ == "__main__":
