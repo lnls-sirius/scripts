@@ -98,10 +98,10 @@ RUNTEST 200000 TCK;
 STATE RESET;
 ' > "$svf_boot"
 
-if [ "$board" == "afcv3" ]; then
+if [ "$board" = "afcv3" ]; then
 	scansta_cmd="svf ${svf_scansta} -quiet"
 	sfp_jtag=""
-elif [ "$board" == "afcv4-sfp" ]; then
+elif [ "$board" = "afcv4-sfp" ]; then
 	scansta_cmd=""
 	sfp_jtag="jtag newtap fmc_4sfp tap -irlen 8 -ignore-version -expected-id 0x16d4a093"
 else
