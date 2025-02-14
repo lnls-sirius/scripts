@@ -9,42 +9,52 @@ def execute_ssh(hostname, *command):
                    f"lnls-bpm@{hostname}", *command])
 
 
-def get_hostname(rack):
+def get_hostname_with_suffix(rack, suffix):
     if rack == "21":
-        return "ia-20rabpmtl-co-iocsrv"
+        prefix = "ia-20rabpmtl-co-"
     elif rack.isdigit() and 1 <= int(rack) <= 20:
-        return f"ia-{rack.zfill(2)}rabpm-co-iocsrv"
+        prefix f"ia-{rack.zfill(2)}rabpm-co-"
     else:
         raise ValueError("Invalid rack number")
 
+    return prefix + suffix
+
+
+def get_cpu_hostname(rack):
+    return get_hostname_with_suffix(rack, "iocsrv")
+
+
+def get_mch_hostname(rack):
+    return get_hostname_with_suffix(rack, "cratectrl")
+
 
 def run_pcie_list(rack):
-    hostname = get_hostname(rack)
+    hostname = get_cpu_hostname(rack)
     execute_ssh(hostname, "pcie-list-slots")
 
 
 def run_pcie_rescan(rack):
-    hostname = get_hostname(rack)
+    hostname = get_cpu_hostname(rack)
     execute_ssh(hostname, "pcie-rescan")
 
 
 def run_pcie_remove(rack, slot):
-    hostname = get_hostname(rack)
+    hostname = get_cpu_hostname(rack)
     execute_ssh(hostname, "pcie-remove", slot)
 
 
 def run_ioc_restart(rack, ioc, slot):
-    hostname = get_hostname(rack)
+    hostname = get_cpu_hostname(rack)
     execute_ssh(hostname, "ioc-restart", ioc, slot)
 
 
 def run_rffe_reset(rack, virtual_slot):
-    hostname = get_hostname(rack)
+    hostname = get_cpu_hostname(rack)
     execute_ssh(hostname, "rffe-reset", virtual_slot)
 
 
 def run_boot_from_flash(rack, slot):
-    hostname = get_hostname(rack)
+    hostname = get_mch_hostname(rack)
     board = "afcv4-sfp" if slot == 2 else "afcv3"
     subprocess.run(
         ["sirius-script-afc-boot-from-flash.sh", board, hostname, str(slot)])
