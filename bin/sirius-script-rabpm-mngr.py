@@ -13,7 +13,7 @@ def get_hostname_with_suffix(rack, suffix):
     if rack == "21":
         prefix = "ia-20rabpmtl-co-"
     elif rack.isdigit() and 1 <= int(rack) <= 20:
-        prefix f"ia-{rack.zfill(2)}rabpm-co-"
+        prefix = f"ia-{rack.zfill(2)}rabpm-co-"
     else:
         raise ValueError("Invalid rack number")
 
