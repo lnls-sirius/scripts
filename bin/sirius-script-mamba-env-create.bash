@@ -333,11 +333,11 @@ fi
 printf_yellow_clear "Activate $ENV_NAME enviroment\n"
 mamba activate $ENV_NAME
 
-printf_yellow_clear "create link for python-${ENV_NAME} inside the enviroment: "
+printf_yellow_clear "create link for python-sirius inside the enviroment: "
 cd $CONDA_PREFIX/bin
-if ! [ -f python-$ENV_NAME ]
+if ! [ -f python-sirius ]
 then
-    ln -s python3 python-${ENV_NAME}
+    ln -s python3 python-sirius
     printf_green "done!\n"
 else
     printf_blue "link already exists. Skipping...\n"
