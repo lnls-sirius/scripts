@@ -1,20 +1,13 @@
 #!/usr/bin/env python-sirius
 
-import numpy as np
-import matplotlib.pyplot as plt
-from siriuspy.clientarch import PVData, PVDataSet, Time
-from siriushla.sirius_application import SiriusApplication
 from siriushla.widgets import SiriusMainWindow
 import subprocess
-import datetime
-import socket
-import os
+
 import sys, time
 from pickle import TRUE
-from datetime import datetime, timedelta, date
-from optparse import Values
+
 from random import randint
-# from datetime import date
+
 from turtle import right
 import epics
 from PyQt5.QtWidgets import * 
