@@ -113,7 +113,7 @@ def apply_normal_quad_trims(folder):
     mag_sel = "quadrupoles"
     set_trims = SISetTrimStrengths(model=None)
     _, init_strengths = set_trims.get_strengths(magname_filter=mag_sel)
-    deltas = np.loadtxt(folder + "quad_trims_deltakl_no_average__.txt")
+    deltas = np.loadtxt(folder + "quad_trims_deltakl_zero_average.txt")
     goal_stren = init_strengths - deltas
     mean = np.mean(deltas)
     print(f"Mean close to zero? {np.isclose(mean, 0)}. Mean: {mean}")
@@ -138,7 +138,7 @@ def apply_skew_quad_trims(folder):
     mag_sel = "skew_quadrupole"
     set_trims = SISetTrimStrengths(model=None)
     _, init_strengths = set_trims.get_strengths(magname_filter=mag_sel)
-    deltas = np.loadtxt(folder + "skewquad_deltaksl__.txt")
+    deltas = np.loadtxt(folder + "skewquad_deltaksl.txt")
     goal_stren = init_strengths - deltas
 
     def _apply_strengths(apply=True):
