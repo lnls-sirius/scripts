@@ -297,22 +297,21 @@ sudo chown -R $USER:mamba ~/.conda
 
 printf_yellow_clear "Adding mamba and conda to path\n"
 source /opt/mamba_files/mamba/etc/profile.d/conda.sh
-source /opt/mamba_files/mamba/etc/profile.d/mamba.sh
+export MAMBA_ROOT_PREFIX='/opt/mamba_files/mamba'
+eval "$(mamba shell hook --shell bash)"
 
 printf_yellow_clear "Adding mamba and conda paths to .bashrc: "
 cd ~/
-if ! grep -q "MAMBA_ADD" .bashrc;
+if ! grep -q "CONDA_ADD" .bashrc;
 then
     cat >> ~/.bashrc <<'EOM'
 # add conda and mamba to path
-MAMBA_ADD=/opt/mamba_files/mamba/etc/profile.d/mamba.sh
-if [ -f "$MAMBA_ADD" ] ; then
-    source "$MAMBA_ADD"
-fi
 CONDA_ADD=/opt/mamba_files/mamba/etc/profile.d/conda.sh
 if [ -f "$CONDA_ADD" ] ; then
     source "$CONDA_ADD"
 fi
+export MAMBA_ROOT_PREFIX='/opt/mamba_files/mamba'
+eval "$(mamba shell hook --shell bash)"
 EOM
     printf_green "done!\n"
 else
