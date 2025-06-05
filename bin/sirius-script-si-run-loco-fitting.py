@@ -5,7 +5,6 @@ import os
 import shutil
 import sys
 import time
-from dataclasses import dataclass
 
 from mathphys.functions import save, load
 import numpy as np
@@ -40,22 +39,6 @@ JACOBIAN_KL_QUAD_FNAME = "6d_KL_quadrupoles_trims"
 JACOBIAN_KSL_SKEWQUAD_FNAME = "6d_KsL_skew_quadrupoles"
 
 
-@dataclass
-class LocoData:
-    """."""
-    fit_model: any
-    config: any
-    gain_bpm: any
-    gain_corr: any
-    roll_bpm: any
-    energy_shift: any
-    chi_history: any
-    res_history: any
-    girder_shift: any
-    kldelta_history: any
-    ksldelta_history: any
-
-
 def _get_user_input(prompt, default_value=None, type_func=str):
     """Helper function to get user input with error handling and type conversion."""
     try:
@@ -75,24 +58,6 @@ def ask_yes_no(prompt):
     """Prompt user for yes/no input. Default to yes."""
     response = _get_user_input(f"{prompt} [Y/N]: ", default_value="y").lower()
     return response in ("y", "yes")
-
-
-def save_data(fname, loco_data: LocoData):
-    """Saves LOCO data to a file."""
-    data = dict(
-        fit_model=loco_data.fit_model,
-        config=loco_data.config,
-        gain_bpm=loco_data.gain_bpm,
-        gain_corr=loco_data.gain_corr,
-        roll_bpm=loco_data.roll_bpm,
-        energy_shift=loco_data.energy_shift,
-        chi_history=loco_data.chi_history,
-        res_history=loco_data.res_history,
-        girder_shift=loco_data.girder_shift,
-        kldelta_history=loco_data.kldelta_history,
-        ksldelta_history=loco_data.ksldelta_history,
-    )
-    save(data, fname)
 
 
 def load_data(fname):
@@ -155,7 +120,7 @@ def _configure_constraints(config):
     config.constraint_deltakl_step = True
     config.constraint_deltakl_total = False
     deltakl_weight = _get_user_input(
-        "Insert DeltaKL constraint weight (Default: 0.1)",
+        "Insert DeltaKL constraint weight (Default: 0.1) ->",
         default_value=0.1,
         type_func=float,
     )
@@ -169,7 +134,7 @@ def _configure_inversion_and_minimization(config):
     config.inv_method = LOCOConfigSI.INVERSION.Transpose
     config.min_method = LOCOConfigSI.MINIMIZATION.LevenbergMarquardt
     lambda_lm = _get_user_input(
-        "Insert Lambda LevenbergMarquardt (Default: 0.001)",
+        "Insert Lambda LevenbergMarquardt (Default: 0.001) ->",
         default_value=0.001,
         type_func=float,
     )
@@ -333,7 +298,7 @@ def run_and_save(
 
     nriters = prompt_nriters()
     loco.run_fit(niter=nriters)
-    loco_data = LocoData(
+    loco_data = dict(
         fit_model=loco.fitmodel,
         config=loco.config,
         gain_bpm=loco.bpm_gain,
@@ -346,7 +311,7 @@ def run_and_save(
         kldelta_history=loco.kldelta_history,
         ksldelta_history=loco.ksldelta_history,
     )
-    save_data(fname=file_name, loco_data=loco_data)
+    save(loco_data, file_name)
     dt = time.time() - t0
     print("running time: {:.1f} minutes".format(dt / 60))
 
@@ -466,14 +431,14 @@ def main():
         folder_jacobian=folder_jac,
     )
 
-    if folder_created:
-        shutil.move(fname_setup, folder)
-        print(f"{fname_setup} moved to directory {os.path.join(folder)}")
-
     report = LOCOReport()
     report.create_report(
         folder=folder, fname_fit=fname_fit, fname_setup=fname_setup
     )
+
+    if folder_created:
+        shutil.move(fname_setup, folder)
+        print(f"{fname_setup} moved to directory {os.path.join(folder)}")
 
     if prompt_cleanup():
         cleanup_png_files(folder)
