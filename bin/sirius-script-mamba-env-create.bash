@@ -281,9 +281,10 @@ printf_yellow_clear "Install mamba in path /opt/mamba_files/mamba: "
 cd /opt/mamba_files
 if ! [ -d mamba ]
 then
-    wget https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-Linux-x86_64.sh
-    sh Mambaforge-Linux-x86_64.sh -b -p /opt/mamba_files/mamba
-    rm Mambaforge-Linux-x86_64.sh
+    fname="Miniforge3-Linux-x86_64.sh"
+    wget https://github.com/conda-forge/miniforge/releases/latest/download/$fname
+    sh $fname -b -p /opt/mamba_files/mamba
+    rm $fname
     printf_green "done!\n"
 else
     printf_blue "there already is a mamba installation. Skipping...\n"
