@@ -69,10 +69,14 @@ def load_data(fname):
 
 def move_tunes(model, loco_setup):
     """."""
-    tunex_goal = 49 + loco_setup["tunex"]
-    tuney_goal = 14 + loco_setup["tuney"]
 
-    print("--- correcting si tunes...")
+    tunex = prompt_tune("x", loco_setup["tunex"])
+    tuney = prompt_tune("y", loco_setup["tuney"])
+
+    tunex_goal = 49 + tunex
+    tuney_goal = 14 + tuney
+
+    print("--- changing si tunes...")
     tunecorr = TuneCorr(
         model, "SI", method="Proportional", grouping="TwoKnobs"
     )
@@ -377,6 +381,60 @@ def cleanup_png_files(folder):
             pass  # silently ignore missing files
 
 
+def prompt_folder():
+    try:
+        value = input(
+            "Path to the folder for output files. "
+            "(Default is the current directory) -> "
+        )
+        return os.getcwd() if not value else value
+    except KeyboardInterrupt:
+        print("\nAborted.")
+        sys.exit(1)
+
+
+def prompt_jacobian_folder():
+    try:
+        value = input(
+            "Optional path to a folder containing a precomputed Jacobian. "
+            "(Default is to compute Jacobian) -> ",
+        )
+        return "" if not value else value
+    except KeyboardInterrupt:
+        print("\nAborted.")
+        sys.exit(1)
+
+
+def prompt_nriters():
+    try:
+        value = input("Nr of iterations. (Default is 20) -> ")
+        return 20 if not value else int(value)
+    except KeyboardInterrupt:
+        print("\nAborted.")
+        sys.exit(1)
+
+
+def prompt_tune(name, default):
+    try:
+        value = input(
+            f"Initial frac. tune {name} "
+            f"(Default: measured value {default:.4f}) -> "
+        )
+        return default if not value else float(value)
+    except KeyboardInterrupt:
+        print("\nAborted.")
+        sys.exit(1)
+
+
+def prompt_cleanup():
+    try:
+        value = input("Cleanup .png plot files? [y/n]. (Default is yes) -> ")
+        return value.strip().lower() in ("", "y")
+    except KeyboardInterrupt:
+        print("\nAborted.")
+        sys.exit(1)
+
+
 def main():
     """."""
     import argparse as _argparse
@@ -387,53 +445,31 @@ def main():
     parser.add_argument(
         "filename", type=str, help="Name of the LOCO setup file (.pickle)"
     )
-    parser.add_argument(
-        "-f",
-        "--folder",
-        type=str,
-        default=os.getcwd(),
-        help="Path to the folder for output files. "
-        "Default is the current directory.",
-    )
-    parser.add_argument(
-        "-j",
-        "--jacobianfolder",
-        type=str,
-        default="",
-        help="Optional path to a folder containing a precomputed Jacobian. "
-        "Default is to compute Jacobian.",
-    )
-    parser.add_argument(
-        "-n",
-        "--nriters",
-        type=int,
-        default=20,
-        help="Nr of iterations. Default is 20.",
-    )
-
     args = parser.parse_args()
 
-    folder = args.folder
+    folder = prompt_folder()
+    fname_setup = args.filename
+    folder_jac = prompt_jacobian_folder()
+    load_jac = True if folder_jac else False
+    save_jac = False if load_jac else True
+    nriters = prompt_nriters()
+
     if not os.path.exists(folder):
         os.makedirs(folder)
     if not folder.endswith("/"):
         folder += "/"
-
-    fname_setup = args.filename
-    shutil.move(fname_setup, folder)
+    if os.path.isfile(fname_setup):
+        shutil.move(fname_setup, folder)
     fname_fit = "fitting_" + fname_setup.split(".")[0]
-
-    load_jac = True if args.jacobianfolder else False
-    save_jac = False if load_jac else True
 
     run_and_save(
         setup_name=folder + fname_setup,
         file_name=folder + fname_fit,
-        niter=args.nriters,
+        niter=nriters,
         change_tunes=True,
         load_jacobian=load_jac,
         save_jacobian=save_jac,
-        folder_jacobian=args.jacobianfolder,
+        folder_jacobian=folder_jac,
     )
 
     report = LOCOReport()
@@ -441,7 +477,8 @@ def main():
         folder=folder, fname_fit=fname_fit, fname_setup=fname_setup
     )
 
-    cleanup_png_files(folder)
+    if prompt_cleanup():
+        cleanup_png_files(folder)
 
 
 if __name__ == "__main__":
