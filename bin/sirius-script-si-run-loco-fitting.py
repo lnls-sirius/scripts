@@ -394,7 +394,7 @@ def main():
         "-r",
         "--report",
         action="store_true",
-        help="Create report. Default: False, set to True if flag is given).",
+        help="Create report. Default: False, set to True if flag is given.",
     )
 
     parser.add_argument(
@@ -402,7 +402,7 @@ def main():
         "--cleanup",
         action="store_true",
         help="Cleanup .png files. "
-        "Default: False, set to True if flag is given).",
+        "Default: False, set to True if flag is given.",
     )
 
     args = parser.parse_args()
