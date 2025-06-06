@@ -2,7 +2,6 @@
 """Script for running LOCO algorithm."""
 
 import os
-import shutil
 import sys
 import time
 
@@ -38,26 +37,9 @@ SVD_SELECTION_VALUE = -1
 JACOBIAN_KL_QUAD_FNAME = "6d_KL_quadrupoles_trims"
 JACOBIAN_KSL_SKEWQUAD_FNAME = "6d_KsL_skew_quadrupoles"
 
-
-def _get_user_input(prompt, default_value=None, type_func=str):
-    """Helper function to get user input with error handling and type conversion."""
-    try:
-        print(f"{prompt} ", end="", flush=True)
-        response = input().strip()
-        if not response and default_value is not None:
-            return default_value
-        return type_func(response)
-    except ValueError:
-        print("Invalid input. Please try again.")
-    except KeyboardInterrupt:
-        print("\nAborted.")
-        sys.exit(1)
-
-
-def ask_yes_no(prompt):
-    """Prompt user for yes/no input. Default to yes."""
-    response = _get_user_input(f"{prompt} [Y/N]: ", default_value="y").lower()
-    return response in ("y", "yes")
+DEFAULT_NRITERS = 20
+DEFAULT_DELTAKL_WEIGHT = 0.1
+DEFAULT_LAMBDA_LM = 0.001
 
 
 def load_data(fname):
@@ -115,29 +97,19 @@ def _configure_fitting_families(config):
     config.use_dip_families = False
 
 
-def _configure_constraints(config):
+def _configure_constraints(config, deltakl_weight):
     """Configures constraints for LOCO fitting."""
     config.constraint_deltakl_step = True
     config.constraint_deltakl_total = False
-    deltakl_weight = _get_user_input(
-        "Insert DeltaKL constraint weight (Default: 0.1) ->",
-        default_value=0.1,
-        type_func=float,
-    )
     config.deltakl_normalization = deltakl_weight
     config.tolerance_delta = 1e-6
     config.tolerance_overfit = 1e-6
 
 
-def _configure_inversion_and_minimization(config):
+def _configure_inversion_and_minimization(config, lambda_lm):
     """Configures Jacobian inversion and minimization methods."""
     config.inv_method = LOCOConfigSI.INVERSION.Transpose
     config.min_method = LOCOConfigSI.MINIMIZATION.LevenbergMarquardt
-    lambda_lm = _get_user_input(
-        "Insert Lambda LevenbergMarquardt (Default: 0.001) ->",
-        default_value=0.001,
-        type_func=float,
-    )
     config.lambda_lm = lambda_lm
     config.fixed_lambda = False
 
@@ -204,15 +176,20 @@ def _configure_svd(config):
     config.parallel = True
 
 
-def create_loco_config(loco_setup):
+def create_loco_config(
+    loco_setup,
+    goal_tunes=None,
+    deltakl_weight=DEFAULT_DELTAKL_WEIGHT,
+    lambda_lm=DEFAULT_LAMBDA_LM,
+):
     """Creates and configures the LOCO object."""
     config = _initialize_config_and_model()
 
     _configure_cavity_and_radiation(config)
     _configure_jacobian_elements(config)
     _configure_fitting_families(config)
-    _configure_constraints(config)
-    _configure_inversion_and_minimization(config)
+    _configure_constraints(config, deltakl_weight)
+    _configure_inversion_and_minimization(config, lambda_lm)
     _configure_elements_to_fit(config)
     _configure_coupling_and_gains(config)
     _configure_measurement_kicks(config)
@@ -220,9 +197,13 @@ def create_loco_config(loco_setup):
     _configure_weights(config)
     _configure_svd(config)
 
-    tunex_goal, tuney_goal = prompt_tune(loco_setup)
-    move_tunes(config.model, tunex_goal, tuney_goal)
-
+    if goal_tunes is None:
+        tunex_goal, tuney_goal = loco_setup["tunex"], loco_setup["tuney"]
+    else:
+        tunex_goal, tuney_goal = goal_tunes
+    move_tunes(
+        config.model, TUNE_X_INTEGER + tunex_goal, TUNE_Y_INTEGER + tuney_goal
+    )
     config.update()
     return config
 
@@ -232,9 +213,17 @@ def create_loco(
     load_jacobian=False,
     save_jacobian=False,
     folder_jacobian="",
+    goal_tunes=None,
+    deltakl_weight=DEFAULT_DELTAKL_WEIGHT,
+    lambda_lm=DEFAULT_LAMBDA_LM,
 ):
     """Creates a LOCO object with the given setup."""
-    config = create_loco_config(loco_setup)
+    config = create_loco_config(
+        loco_setup,
+        goal_tunes=goal_tunes,
+        deltakl_weight=deltakl_weight,
+        lambda_lm=lambda_lm,
+    )
 
     if "orbmat_name" in loco_setup:
         client = servconf.ConfigDBClient(config_type="si_orbcorr_respm")
@@ -282,6 +271,10 @@ def run_and_save(
     load_jacobian=False,
     save_jacobian=False,
     folder_jacobian=None,
+    nriters=DEFAULT_NRITERS,
+    deltakl_weight=DEFAULT_DELTAKL_WEIGHT,
+    lambda_lm=DEFAULT_LAMBDA_LM,
+    goal_tunes=None,
 ):
     """Runs the LOCO fitting and saves the results."""
     setup = load_data(setup_name)
@@ -294,9 +287,11 @@ def run_and_save(
         load_jacobian=load_jacobian,
         save_jacobian=save_jacobian,
         folder_jacobian=folder_jacobian,
+        goal_tunes=goal_tunes,
+        deltakl_weight=deltakl_weight,
+        lambda_lm=lambda_lm,
     )
 
-    nriters = prompt_nriters()
     loco.run_fit(niter=nriters)
     loco_data = dict(
         fit_model=loco.fitmodel,
@@ -312,6 +307,7 @@ def run_and_save(
         ksldelta_history=loco.ksldelta_history,
     )
     save(loco_data, file_name)
+    print(f'{file_name} saved!')
     dt = time.time() - t0
     print("running time: {:.1f} minutes".format(dt / 60))
 
@@ -335,60 +331,6 @@ def cleanup_png_files(folder):
             pass  # silently ignore missing files
 
 
-def prompt_folder():
-    """."""
-    return _get_user_input(
-        "Path to the folder for output files. "
-        "(Default is the current directory) -> ",
-        default_value=os.getcwd(),
-    )
-
-
-def prompt_jacobian_folder():
-    """."""
-    return _get_user_input(
-        "Optional path to a folder containing a precomputed Jacobian. "
-        "(Default is to compute Jacobian) -> ",
-        default_value="",
-    )
-
-
-def prompt_nriters():
-    """."""
-    return _get_user_input(
-        "Nr of iterations. (Default is 20) -> ",
-        default_value=20,
-        type_func=int,
-    )
-
-
-def prompt_tune(loco_setup):
-    """."""
-    meas_tunex = loco_setup["tunex"]
-    tunex = _get_user_input(
-        f"Initial frac. tune x. "
-        f"(Default: measured value {meas_tunex:.4f}) -> ",
-        default_value=meas_tunex,
-        type_func=float,
-    )
-    meas_tuney = loco_setup["tuney"]
-    tuney = _get_user_input(
-        f"Initial frac. tune y. "
-        f"(Default: measured value {meas_tuney:.4f}) -> ",
-        default_value=meas_tuney,
-        type_func=float,
-    )
-
-    tunex_goal = TUNE_X_INTEGER + tunex
-    tuney_goal = TUNE_Y_INTEGER + tuney
-    return tunex_goal, tuney_goal
-
-
-def prompt_cleanup():
-    """."""
-    return ask_yes_no("Cleanup .png plot files? (Default is yes)")
-
-
 def main():
     """Main function to run the LOCO algorithm."""
     import argparse as _argparse
@@ -397,29 +339,90 @@ def main():
         description="Run LOCO fitting and save files in the specified folder."
     )
     parser.add_argument(
-        "filename", type=str, help="Name of the LOCO setup file (.pickle)"
+        "filename_setup",
+        type=str,
+        help="Name of the LOCO setup file (.pickle)",
     )
+    parser.add_argument(
+        "-f",
+        "--folder",
+        type=str,
+        default=os.getcwd(),
+        help="Path to the folder for output files. "
+        "Default is the current directory.",
+    )
+    parser.add_argument(
+        "-j",
+        "--jacobianfolder",
+        type=str,
+        default=None,
+        help="Optional path to a folder containing precomputed Jacobians. "
+        "Default is to compute and save in current directory.",
+    )
+    parser.add_argument(
+        "-t",
+        "--tunes",
+        nargs=2,
+        type=float,
+        metavar=("NUX", "NUY"),
+        default=None,
+        help="Optional fractional tunes (nux nuy). "
+        "Example: --tunes 0.16 0.22. Default is the measured ones.",
+    )
+    parser.add_argument(
+        "-n",
+        "--nriters",
+        type=int,
+        default=DEFAULT_NRITERS,
+        help="Option of Nr. of Iters. Default is 20.",
+    )
+    parser.add_argument(
+        "-w",
+        "--deltakl_weight",
+        type=float,
+        default=DEFAULT_DELTAKL_WEIGHT,
+        help="Weight for DeltaKL variation constraint. Default is 0.1.",
+    )
+    parser.add_argument(
+        "-l",
+        "--lambda_lm",
+        type=float,
+        default=DEFAULT_LAMBDA_LM,
+        help="Lambda parameter for LevenbergMarquardt. Default is 0.001",
+    )
+    parser.add_argument(
+        "-r",
+        "--report",
+        action="store_true",
+        help="Create report. Default: False, set to True if flag is given).",
+    )
+
+    parser.add_argument(
+        "-c",
+        "--cleanup",
+        action="store_true",
+        help="Cleanup .png files. "
+        "Default: False, set to True if flag is given).",
+    )
+
     args = parser.parse_args()
 
-    fname_setup = args.filename
+    fname_setup = args.filename_setup
     if not os.path.isfile(fname_setup):
         raise ValueError(f"LOCO setup {fname_setup} not in current directory!")
 
-    folder = prompt_folder()
-    folder_jac = prompt_jacobian_folder()
+    folder = args.folder
+    folder_jac = args.jacobianfolder
     load_jac = True if folder_jac else False
     save_jac = False if load_jac else True
 
-    folder_created = False
     if not os.path.exists(folder):
+        print(f"Creating {folder} directory to put files...")
         os.makedirs(folder)
-        folder_created = True
 
     if not folder.endswith("/"):
         folder += "/"
 
-    # Use os.path.join for robust path manipulation
-    # fname_setup_path = os.path.join(folder, fname_setup)
     fname_fit = "fitting_" + os.path.splitext(fname_setup)[0]
     fname_fit_path = os.path.join(folder, fname_fit)
 
@@ -429,19 +432,23 @@ def main():
         load_jacobian=load_jac,
         save_jacobian=save_jac,
         folder_jacobian=folder_jac,
+        nriters=args.nriters,
+        goal_tunes=args.tunes,
+        deltakl_weight=args.deltakl_weight,
+        lambda_lm=args.lambda_lm,
     )
 
-    report = LOCOReport()
-    report.create_report(
-        folder=folder, fname_fit=fname_fit, fname_setup=fname_setup
-    )
+    if args.report:
+        print('Creating report...')
+        report = LOCOReport()
+        report.create_report(
+            folder=folder, fname_fit=fname_fit, fname_setup=fname_setup
+        )
+        print(f'{folder}report.pdf created!')
 
-    if folder_created:
-        shutil.move(fname_setup, folder)
-        print(f"{fname_setup} moved to directory {os.path.join(folder)}")
-
-    if prompt_cleanup():
-        cleanup_png_files(folder)
+        if args.cleanup:
+            cleanup_png_files(folder)
+            print('All .png files deleted!')
 
 
 if __name__ == "__main__":
