@@ -187,30 +187,24 @@ def control_coupling():
     prompt_apply_then_check(_apply_strengths)
 
 
-def print_help():
-    """."""
-    print("""
-    Usage: script.py [FOLDER]
-
-    Arguments:
-    FOLDER     Optional. Path to the folder containing the pickle and txt
-               files. If not provided, the current working directory is used.
-
-    This script applies average corrections and trims for quadrupoles,
-    skew quadrupoles, and corrects transverse coupling using files found in
-    the specified folder.
-
-    You will be prompted to confirm before any changes are applied.
-    """)
-
-
 def main():
     """."""
-    if "-h" in sys.argv or "--help" in sys.argv:
-        print_help()
-        sys.exit(0)
+    import argparse as _argparse
+    parser = _argparse.ArgumentParser(
+        description=("Applies LOCO-fitted strengths to the machine.")
+    )
 
-    folder = sys.argv[1] if len(sys.argv) > 1 else os.getcwd()
+    parser.add_argument(
+        "-f",
+        "--folder",
+        type=str,
+        default=os.getcwd(),
+        help="Path to folder containing fitted-strengths files. "
+        "Defaults to current working directory."
+    )
+
+    args = parser.parse_args()
+    folder = args.folder
     if not folder.endswith("/"):
         folder += "/"
 
