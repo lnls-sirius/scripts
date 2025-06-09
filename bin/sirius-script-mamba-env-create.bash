@@ -359,7 +359,7 @@ printf_yellow_clear "- Install EPICS Base:\n"
 $COMM -c conda-forge/label/cf202003 epics-base=3.15.6
 
 printf_yellow_clear "- And some other EPICS packages:\n"
-$COMM pyepics=3.5.0 pcaspy==0.7.3 pydm=1.10.3 timechart=1.2.3
+$COMM pyepics=3.5.7 pcaspy==0.7.3 pydm=1.10.3 timechart=1.2.3
 # remove the activate and deactivate files created by pyepics and pydm:
 cd $CONDA_PREFIX/etc/conda/activate.d
 if [ -f "pydm.bat" ]
