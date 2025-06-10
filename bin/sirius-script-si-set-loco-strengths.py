@@ -60,6 +60,8 @@ ACHROM_QS_ADJ = 1e-4 * np.array(
         -2.18259391,
     ]
 )
+TIMEOUT = 10
+WAIT_MON = False
 
 
 def ask_yes_no(prompt):
@@ -73,14 +75,15 @@ def ask_yes_no(prompt):
     return response in ("", "y", "yes")
 
 
-def prompt_apply_then_check(apply_func):
+def prompt_apply_reapply(apply_func):
     """Prompt to accept changes and apply, then prompt to reapply if needed."""
     if not ask_yes_no("Accept changes?"):
         sys.exit(0)
-    apply_func()
-    if ask_yes_no("Check if applied?"):
-        print("Reapplying...")
-        apply_func()
+    ok = apply_func()
+    while not ok:
+        if ask_yes_no("Application failed. Try again?"):
+            print("Reapplying...")
+            ok = apply_func()
 
 
 def apply_family_average(folder):
@@ -94,17 +97,20 @@ def apply_family_average(folder):
     goal_stren = init_strengths - delta_avg
 
     def _apply_strengths(apply=True):
-        set_optics.apply_strengths(
+        ok = set_optics.apply_strengths(
             strengths=goal_stren,
             magname_filter=mag_sel,
             percentage=100,
             apply=apply,
             print_change=True,
+            timeout=TIMEOUT,
+            wait_mon=WAIT_MON
         )
+        return ok
 
     _apply_strengths(apply=False)
 
-    prompt_apply_then_check(_apply_strengths)
+    prompt_apply_reapply(_apply_strengths)
 
 
 def apply_normal_quad_trims(folder):
@@ -125,11 +131,13 @@ def apply_normal_quad_trims(folder):
             percentage=100,
             apply=apply,
             print_change=True,
+            timeout=TIMEOUT,
+            wait_mon=WAIT_MON,
         )
 
     _apply_strengths(apply=False)
 
-    prompt_apply_then_check(_apply_strengths)
+    prompt_apply_reapply(_apply_strengths)
 
 
 def apply_skew_quad_trims(folder):
@@ -148,11 +156,13 @@ def apply_skew_quad_trims(folder):
             percentage=100,
             apply=apply,
             print_change=True,
+            timeout=TIMEOUT,
+            wait_mon=WAIT_MON
         )
 
     _apply_strengths(apply=False)
 
-    prompt_apply_then_check(_apply_strengths)
+    prompt_apply_reapply(_apply_strengths)
 
 
 def control_coupling():
@@ -180,18 +190,20 @@ def control_coupling():
             percentage=100,
             apply=apply,
             print_change=True,
+            timeout=TIMEOUT,
+            wait_mon=WAIT_MON
         )
 
     _apply_strengths(apply=False)
 
-    prompt_apply_then_check(_apply_strengths)
+    prompt_apply_reapply(_apply_strengths)
 
 
 def main():
     """."""
     import argparse as _argparse
     parser = _argparse.ArgumentParser(
-        description=("Applies LOCO-fitted strengths to the machine.")
+        description="Applies LOCO-fitted strengths to the machine."
     )
 
     parser.add_argument(
