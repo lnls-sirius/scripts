@@ -38,7 +38,7 @@ JACOBIAN_KL_QUAD_FNAME = "6d_KL_quadrupoles_trims"
 JACOBIAN_KSL_SKEWQUAD_FNAME = "6d_KsL_skew_quadrupoles"
 
 DEFAULT_NRITERS = 20
-DEFAULT_DELTAKL_WEIGHT = 0.1
+DEFAULT_DELTAKL_WEIGHT = 10
 DEFAULT_LAMBDA_LM = 0.001
 
 
@@ -50,7 +50,6 @@ def load_data(fname):
 
 def move_tunes(model, tunex_goal, tuney_goal):
     """Adjusts the tunes of the model to match measured values."""
-    print("--- changing initial tunes...")
     tunecorr = TuneCorr(
         model, "SI", method="Proportional", grouping="TwoKnobs"
     )
@@ -101,7 +100,7 @@ def _configure_constraints(config, deltakl_weight):
     """Configures constraints for LOCO fitting."""
     config.constraint_deltakl_step = True
     config.constraint_deltakl_total = False
-    config.deltakl_normalization = deltakl_weight
+    config.deltakl_normalization = 1 / deltakl_weight
     config.tolerance_delta = 1e-6
     config.tolerance_overfit = 1e-6
 
@@ -177,8 +176,7 @@ def _configure_svd(config):
 
 
 def create_loco_config(
-    loco_setup,
-    goal_tunes=None,
+    goal_tunes,
     deltakl_weight=DEFAULT_DELTAKL_WEIGHT,
     lambda_lm=DEFAULT_LAMBDA_LM,
 ):
@@ -197,12 +195,11 @@ def create_loco_config(
     _configure_weights(config)
     _configure_svd(config)
 
-    if goal_tunes is None:
-        tunex_goal, tuney_goal = loco_setup["tunex"], loco_setup["tuney"]
-    else:
-        tunex_goal, tuney_goal = goal_tunes
+    print("--- changing tunes for nominal model...")
     move_tunes(
-        config.model, TUNE_X_INTEGER + tunex_goal, TUNE_Y_INTEGER + tuney_goal
+        config.model,
+        TUNE_X_INTEGER + goal_tunes[0],
+        TUNE_Y_INTEGER + goal_tunes[1],
     )
     config.update()
     return config
@@ -219,7 +216,6 @@ def create_loco(
 ):
     """Creates a LOCO object with the given setup."""
     config = create_loco_config(
-        loco_setup,
         goal_tunes=goal_tunes,
         deltakl_weight=deltakl_weight,
         lambda_lm=lambda_lm,
@@ -275,6 +271,7 @@ def run_and_save(
     deltakl_weight=DEFAULT_DELTAKL_WEIGHT,
     lambda_lm=DEFAULT_LAMBDA_LM,
     goal_tunes=None,
+    force_tunes=False,
 ):
     """Runs the LOCO fitting and saves the results."""
     setup = load_data(setup_name)
@@ -282,17 +279,29 @@ def run_and_save(
         setup = setup["data"]
 
     t0 = time.time()
+    if goal_tunes is None:
+        tunex_goal, tuney_goal = setup["tunex"], setup["tuney"]
+    else:
+        tunex_goal, tuney_goal = goal_tunes
+
     loco = create_loco(
         setup,
         load_jacobian=load_jacobian,
         save_jacobian=save_jacobian,
         folder_jacobian=folder_jacobian,
-        goal_tunes=goal_tunes,
+        goal_tunes=[tunex_goal, tuney_goal],
         deltakl_weight=deltakl_weight,
         lambda_lm=lambda_lm,
     )
-
     loco.run_fit(niter=nriters)
+    if force_tunes:
+        print("--- changing tunes for fitted model...")
+        move_tunes(
+            loco.fitmodel,
+            TUNE_X_INTEGER + tunex_goal,
+            TUNE_Y_INTEGER + tuney_goal,
+        )
+
     loco_data = dict(
         fit_model=loco.fitmodel,
         config=loco.config,
@@ -307,7 +316,7 @@ def run_and_save(
         ksldelta_history=loco.ksldelta_history,
     )
     save(loco_data, file_name)
-    print(f'{file_name} saved!')
+    print(f"{file_name} saved!")
     dt = time.time() - t0
     print("running time: {:.1f} minutes".format(dt / 60))
 
@@ -370,6 +379,13 @@ def main():
         "Example: --tunes 0.16 0.22. Default is the measured ones.",
     )
     parser.add_argument(
+        "-ft",
+        "--forcetunes",
+        action="store_true",
+        help="Force fitted model to have the initial tunes. "
+        "Default: False, set to True if flag is given.",
+    )
+    parser.add_argument(
         "-n",
         "--nriters",
         type=int,
@@ -396,7 +412,6 @@ def main():
         action="store_true",
         help="Create report. Default: False, set to True if flag is given.",
     )
-
     parser.add_argument(
         "-c",
         "--cleanup",
@@ -436,19 +451,20 @@ def main():
         goal_tunes=args.tunes,
         deltakl_weight=args.deltakl_weight,
         lambda_lm=args.lambda_lm,
+        force_tunes=args.forcetunes,
     )
 
     if args.report:
-        print('Creating report...')
+        print("Creating report...")
         report = LOCOReport()
         report.create_report(
             folder=folder, fname_fit=fname_fit, fname_setup=fname_setup
         )
-        print(f'{folder}report.pdf created!')
+        print(f"{folder}report.pdf created!")
 
         if args.cleanup:
             cleanup_png_files(folder)
-            print('All .png files deleted!')
+            print("All .png files deleted!")
 
 
 if __name__ == "__main__":
