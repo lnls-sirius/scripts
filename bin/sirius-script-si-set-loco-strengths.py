@@ -78,7 +78,7 @@ def ask_yes_no(prompt):
 def prompt_apply_reapply(apply_func):
     """Prompt to accept changes and apply, then prompt to reapply if needed."""
     if not ask_yes_no("Accept changes?"):
-        sys.exit(0)
+        return
     ok = apply_func()
     while not ok:
         if ask_yes_no("Application failed. Try again?"):
@@ -88,7 +88,7 @@ def prompt_apply_reapply(apply_func):
 
 def apply_family_average(folder):
     """Apply quadrupoles average strengths."""
-    print("Applying families average...")
+    print("\nApplying families average...")
     mag_sel = "quadrupoles"
     set_optics = SetOpticsMode(acc="SI", optics_mode=None)
     mags, init_strengths = set_optics.get_strengths(magname_filter=mag_sel)
@@ -97,7 +97,7 @@ def apply_family_average(folder):
     goal_stren = init_strengths - delta_avg
 
     def _apply_strengths(apply=True):
-        ok = set_optics.apply_strengths(
+        return set_optics.apply_strengths(
             strengths=goal_stren,
             magname_filter=mag_sel,
             percentage=100,
@@ -106,7 +106,6 @@ def apply_family_average(folder):
             timeout=TIMEOUT,
             wait_mon=WAIT_MON
         )
-        return ok
 
     _apply_strengths(apply=False)
 
@@ -115,7 +114,7 @@ def apply_family_average(folder):
 
 def apply_normal_quad_trims(folder):
     """Apply normal quads trims strengths."""
-    print("Applying normal quads trims...")
+    print("\nApplying normal quads trims...")
     mag_sel = "quadrupoles"
     set_trims = SISetTrimStrengths(model=None)
     _, init_strengths = set_trims.get_strengths(magname_filter=mag_sel)
@@ -125,7 +124,7 @@ def apply_normal_quad_trims(folder):
     print(f"Mean close to zero? {np.isclose(mean, 0)}. Mean: {mean}")
 
     def _apply_strengths(apply=True):
-        set_trims.apply_strengths(
+        return set_trims.apply_strengths(
             strengths=goal_stren,
             magname_filter=mag_sel,
             percentage=100,
@@ -142,7 +141,7 @@ def apply_normal_quad_trims(folder):
 
 def apply_skew_quad_trims(folder):
     """Apply skew quads trims strengths."""
-    print("Applying skew quads trims...")
+    print("\nApplying skew quads trims...")
     mag_sel = "skew_quadrupole"
     set_trims = SISetTrimStrengths(model=None)
     _, init_strengths = set_trims.get_strengths(magname_filter=mag_sel)
@@ -150,7 +149,7 @@ def apply_skew_quad_trims(folder):
     goal_stren = init_strengths - deltas
 
     def _apply_strengths(apply=True):
-        set_trims.apply_strengths(
+        return set_trims.apply_strengths(
             strengths=goal_stren,
             magname_filter=mag_sel,
             percentage=100,
@@ -167,9 +166,8 @@ def apply_skew_quad_trims(folder):
 
 def control_coupling():
     """Control coupling variation [%]."""
-    print("Insert desired coupling variation in [%]", end="", flush=True)
     try:
-        coupling = float(input())
+        coupling = float(input("Insert desired coupling variation in [%] = "))
     except KeyboardInterrupt:
         print("\nAborted.")
         sys.exit(1)
@@ -184,7 +182,7 @@ def control_coupling():
     goal_stren = init_strengths + delta_stren
 
     def _apply_strengths(apply=True):
-        set_trims.apply_strengths(
+        return set_trims.apply_strengths(
             strengths=goal_stren,
             magname_filter=mag_sel,
             percentage=100,
