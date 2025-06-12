@@ -86,25 +86,24 @@ def prompt_apply_reapply(apply_func):
             ok = apply_func()
 
 
-def apply_family_average(folder):
+def apply_family_average(folder, set_fams_avg):
     """Apply quadrupoles average strengths."""
     print("\nApplying families average...")
     mag_sel = "quadrupoles"
-    set_optics = SetOpticsMode(acc="SI", optics_mode=None)
-    mags, init_strengths = set_optics.get_strengths(magname_filter=mag_sel)
+    mags, init_strengths = set_fams_avg.get_strengths(magname_filter=mag_sel)
     fam_avg = load_pickle(folder + "quad_family_average.pickle")
     delta_avg = np.array([fam_avg[mag.dev] for mag in mags])
     goal_stren = init_strengths - delta_avg
 
     def _apply_strengths(apply=True):
-        return set_optics.apply_strengths(
+        return set_fams_avg.apply_strengths(
             strengths=goal_stren,
             magname_filter=mag_sel,
             percentage=100,
             apply=apply,
             print_change=True,
             timeout=TIMEOUT,
-            wait_mon=WAIT_MON
+            wait_mon=WAIT_MON,
         )
 
     _apply_strengths(apply=False)
@@ -112,11 +111,10 @@ def apply_family_average(folder):
     prompt_apply_reapply(_apply_strengths)
 
 
-def apply_normal_quad_trims(folder):
+def apply_normal_quad_trims(folder, set_trims):
     """Apply normal quads trims strengths."""
     print("\nApplying normal quads trims...")
     mag_sel = "quadrupoles"
-    set_trims = SISetTrimStrengths(model=None)
     _, init_strengths = set_trims.get_strengths(magname_filter=mag_sel)
     deltas = np.loadtxt(folder + "quad_trims_deltakl_zero_average.txt")
     goal_stren = init_strengths - deltas
@@ -139,11 +137,10 @@ def apply_normal_quad_trims(folder):
     prompt_apply_reapply(_apply_strengths)
 
 
-def apply_skew_quad_trims(folder):
+def apply_skew_quad_trims(folder, set_trims):
     """Apply skew quads trims strengths."""
     print("\nApplying skew quads trims...")
     mag_sel = "skew_quadrupole"
-    set_trims = SISetTrimStrengths(model=None)
     _, init_strengths = set_trims.get_strengths(magname_filter=mag_sel)
     deltas = np.loadtxt(folder + "skewquad_deltaksl.txt")
     goal_stren = init_strengths - deltas
@@ -156,7 +153,7 @@ def apply_skew_quad_trims(folder):
             apply=apply,
             print_change=True,
             timeout=TIMEOUT,
-            wait_mon=WAIT_MON
+            wait_mon=WAIT_MON,
         )
 
     _apply_strengths(apply=False)
@@ -164,7 +161,7 @@ def apply_skew_quad_trims(folder):
     prompt_apply_reapply(_apply_strengths)
 
 
-def control_coupling():
+def control_coupling(set_trims):
     """Control coupling variation [%]."""
     try:
         coupling = float(input("Insert desired coupling variation in [%] = "))
@@ -175,7 +172,6 @@ def control_coupling():
         return
     print(f"Applying {coupling:.2f}% of coupling variation...")
     mag_sel = ".*M1:PS-QS.*|.*M2:PS-QS.*"
-    set_trims = SISetTrimStrengths(model=None)
     _, init_strengths = set_trims.get_strengths(magname_filter=mag_sel)
     # 1.2 is a heuristic factor to get a 1:1 relation to coupling variation
     delta_stren = -ACHROM_QS_ADJ * 1.2 * coupling
@@ -189,7 +185,7 @@ def control_coupling():
             apply=apply,
             print_change=True,
             timeout=TIMEOUT,
-            wait_mon=WAIT_MON
+            wait_mon=WAIT_MON,
         )
 
     _apply_strengths(apply=False)
@@ -200,6 +196,7 @@ def control_coupling():
 def main():
     """."""
     import argparse as _argparse
+
     parser = _argparse.ArgumentParser(
         description="Applies LOCO-fitted strengths to the machine."
     )
@@ -210,7 +207,7 @@ def main():
         type=str,
         default=os.getcwd(),
         help="Path to folder containing fitted-strengths files. "
-        "Defaults to current working directory."
+        "Defaults to current working directory.",
     )
 
     args = parser.parse_args()
@@ -218,10 +215,13 @@ def main():
     if not folder.endswith("/"):
         folder += "/"
 
-    apply_family_average(folder)
-    apply_normal_quad_trims(folder)
-    apply_skew_quad_trims(folder)
-    control_coupling()
+    set_fams_avg = SetOpticsMode(acc="SI", optics_mode=None)
+    set_trims = SISetTrimStrengths(model=None)
+
+    apply_family_average(folder, set_fams_avg)
+    apply_normal_quad_trims(folder, set_trims)
+    apply_skew_quad_trims(folder, set_trims)
+    control_coupling(set_trims)
 
 
 if __name__ == "__main__":
