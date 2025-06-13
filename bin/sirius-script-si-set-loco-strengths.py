@@ -94,21 +94,54 @@ def apply_family_average(folder, set_fams_avg):
     fam_avg = load_pickle(folder + "quad_family_average.pickle")
     delta_avg = np.array([fam_avg[mag.dev] for mag in mags])
     goal_stren = init_strengths - delta_avg
+    pct = 0
 
-    def _apply_strengths(apply=True):
+    def _apply_strengths(
+        apply=True, percentage=100, ref_strengths=None
+    ):
         return set_fams_avg.apply_strengths(
             strengths=goal_stren,
             magname_filter=mag_sel,
-            percentage=100,
+            ref_strengths=ref_strengths,
+            percentage=percentage,
             apply=apply,
             print_change=True,
             timeout=TIMEOUT,
             wait_mon=WAIT_MON,
         )
 
-    _apply_strengths(apply=False)
+    while pct < 100:
+        print("\nCurrent status\n:")
+        _apply_strengths(apply=False, percentage=100)
+        # no init. ref. 100% percentage, show current status.
 
-    prompt_apply_reapply(_apply_strengths)
+        try:
+            usr_input = input(
+                "Enter percentage to apply (or 'q' to quit)."
+            )
+            if usr_input.strip().lower() == "q":
+                print("Aborted by user.")
+                break
+            pct = float(usr_input)
+        except ValueError:
+            print("Invalid input. Enter a number or 'q'.")
+            continue
+        except KeyboardInterrupt:
+            print("Interrupted by user.")
+            break
+
+        if pct < 0 or pct > 100:
+            print("Invalid percentage. Must be >= 0 and <= 100.")
+            continue
+
+        _apply_strengths(
+            apply=True, percentage=pct, ref_strengths=init_strengths
+        )
+
+    if pct >= 100:
+        print("\nGoal families average strengths fully applied.")
+    else:
+        print(f"\nPercentage applied: {pct}%")
 
 
 def apply_normal_quad_trims(folder, set_trims):
