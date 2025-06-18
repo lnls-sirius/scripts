@@ -441,9 +441,12 @@ then
     clone_or_find insertion-devices lnls-ima && make $TARGET
 fi
 
+printf_yellow_clear "Deactivate conda enviroment\n"
+mamba deactivate
+
 printf_yellow "Add enviroment variables to conda environment\n"
 
-#### Cria arquivo para configurar ativação do ambiente
+#### Create file to configure environment activation
 cat > $CONDA_PREFIX/etc/conda/activate.d/sirius_env.sh <<'EOM'
 # Define function to set variable and save previous state
 function defvar ()
@@ -541,9 +544,6 @@ undefvar "PYQTDESIGNERPATH"
 unalias g-conda
 unalias g-conda-repos
 EOM
-
-printf_yellow_clear "Deactivate conda enviroment\n"
-mamba deactivate
 
 ##############################################################################
 printf_yellow "Fix permissions of some files\n"
