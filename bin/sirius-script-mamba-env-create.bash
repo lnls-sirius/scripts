@@ -354,7 +354,7 @@ mamba install -y gxx make binutils swig=4.2.0 libxcrypt gsl libblas wmctrl fftw 
     pytest mpmath entrypoints requests pyqt=5.12.3 pandas pyqtgraph=0.11.0 \
     qtpy=2.3.1 QtAwesome=0.7.2 numexpr tk sh pywavelets scikit-image \
     scikit-learn pydocstyle pycodestyle pylama openpyxl gpy gpyopt fpdf sympy \
-    h5py scienceplots
+    h5py scienceplots seaborn
 
 printf_yellow_clear "- Install EPICS Base:\n"
 $COMM -c conda-forge/label/cf202003 epics-base=3.15.6
