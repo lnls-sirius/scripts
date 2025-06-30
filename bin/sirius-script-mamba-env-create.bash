@@ -559,25 +559,25 @@ printf_yellow "Create scripts to access apps in conda environment\n"
 
 cd /usr/local/bin
 printf_yellow_clear " - jupyter-mamba-${ENV_NAME} \n"
-sudo tee jupyter-mamba-${ENV_NAME} >/dev/null <<'EOM'
+sudo tee jupyter-mamba-${ENV_NAME} >/dev/null <<EOM
 #!/bin/bash
 bash -c "source /opt/mamba_files/mamba/etc/profile.d/conda.sh && conda activate ${ENV_NAME} && jupyter notebook"
 EOM
 
 printf_yellow_clear " - ipython-mamba-${ENV_NAME} \n"
-sudo tee ipython-mamba-${ENV_NAME} >/dev/null <<'EOM'
+sudo tee ipython-mamba-${ENV_NAME} >/dev/null <<EOM
 #!/bin/bash
 bash -c "source /opt/mamba_files/mamba/etc/profile.d/conda.sh && conda activate ${ENV_NAME} && ipython"
 EOM
 
 printf_yellow_clear " - designer-mamba-${ENV_NAME} \n"
-sudo tee designer-mamba-${ENV_NAME} >/dev/null <<'EOM'
+sudo tee designer-mamba-${ENV_NAME} >/dev/null <<EOM
 #!/bin/bash
 bash -c "source /opt/mamba_files/mamba/etc/profile.d/conda.sh && conda activate ${ENV_NAME} && designer"
 EOM
 
 printf_yellow_clear " - sirius-hla-as-ap-launcher-mamba-${ENV_NAME} \n"
-sudo tee sirius-hla-as-ap-launcher-mamba-${ENV_NAME} >/dev/null <<'EOM'
+sudo tee sirius-hla-as-ap-launcher-mamba-${ENV_NAME} >/dev/null <<EOM
 #!/bin/bash
 bash -c "source /opt/mamba_files/mamba/etc/profile.d/conda.sh && conda activate ${ENV_NAME} && sirius-hla-as-ap-launcher.py"
 EOM
