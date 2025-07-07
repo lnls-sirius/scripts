@@ -11,6 +11,7 @@ help()
 {
     echo "Usage: sirius-script-mamba-env-create.bash
     [ -c | --clone-repos ] Instead of finding repos in system, clone them inside environment folder.
+    [ -f | --clone-folder ] If repos will be cloned, clone them in this folder. Default: ~/repos.
     [ -d | --develop ] Install sirius packages in develop mode.
     [ --no-sim ] Do not install simulation packages.
     [ --no-ioc ] Do not install IOC related packages.
@@ -31,8 +32,8 @@ help()
     [ -h | --help  ] Print help and exit."
 }
 
-SHORT="cdr:b:e:h"
-LONG+="clone-repos,develop,no-sim,no-ioc,no-ima,no-colleff,"
+SHORT="cf:dr:b:e:h"
+LONG+="clone-repos,clone-folder:,develop,no-sim,no-ioc,no-ima,no-colleff,"
 LONG+="root-lnls-repos:,branches:,env-name:,help"
 OPTS=$(getopt -a -n sirius-script-mamba-env-create.bash \
     --options $SHORT --longoptions $LONG -- "$@")
@@ -47,6 +48,7 @@ fi
 eval set -- "$OPTS"
 
 CLONE="no"
+CLONE_FOL="~/repos"
 DEVELOP="no"
 INST_SIM="yes"
 INST_IOC="yes"
@@ -61,6 +63,10 @@ while true; do
         -c|--clone-repos)
             CLONE="yes"
             shift
+            ;;
+        -f|--clone-folder)
+            CLONE_FOL="$2"
+            shift 2
             ;;
         -d|--develop)
             DEVELOP="yes"
@@ -180,8 +186,8 @@ clone_or_find()
     printf_yellow " - $1\n"
     if [ "$CLONE" == "yes" ]
     then
-        printf_yellow_clear "Cloning repo $1 in $CONDA_PREFIX/repos: \n"
-        cd $CONDA_PREFIX/repos
+        printf_yellow_clear "Cloning repo $1 in $CLONE_FOL: \n"
+        cd $CLONE_FOL
         if ! [ -d "$1" ]
         then
             git clone https://github.com/$2/$1.git
@@ -382,10 +388,10 @@ mamba update jupyter_client
 if [ "$CLONE" == "yes" ]
 then
     printf_yellow "Clone and install our applications.\n"
-    printf_yellow_clear "Creating folder $CONDA_PREFIX/repos: "
-    if ! [ -d $CONDA_PREFIX/repos ]
+    printf_yellow_clear "Creating folder $CLONE_FOL: "
+    if ! [ -d $CLONE_FOL ]
     then
-        mkdir $CONDA_PREFIX/repos
+        mkdir $CLONE_FOL
         printf_green "done!\n"
     else
         printf_blue "already exists. Skipping...\n"
