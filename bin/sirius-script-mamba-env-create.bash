@@ -151,6 +151,23 @@ function get_branch
     done
 }
 
+# This function extracts the organization and repo name from a
+# remote.origin.url of a given repository.
+# It was done by Microsoft Windows Copilot and works for urls such as:
+#    - git@github.com:org/repo.git
+#    - https://gitlab.com/org/repo.git
+#    - git@bitbucket.org:org/repo.git
+#    - lnls-sirius/scripts.git
+extract_info_git()
+{
+    local url="$1"
+    local path=$(echo "$url" | sed -E 's|.*[:/]([^/]+/[^/]+)$|\1|')
+    path=${path%.git}
+    local org=$(echo "$path" | cut -d'/' -f1)
+    local repo=$(echo "$path" | cut -d'/' -f2)
+    echo "$org" "$repo"
+}
+
 # takes three input variables: repo name, organization, and repo tag/branch
 function clone_or_find
 {
@@ -177,11 +194,11 @@ function clone_or_find
             cd $V
             if git rev-parse --is-inside-work-tree 1>/dev/null 2>&1
             then
-                PH=`git rev-parse --show-toplevel`
-                NAME="$(basename $PH)"
-                if [ "$NAME" == "$1" ]
+                local NAME=$(git config --get remote.origin.url)
+                NAME=$(extract_info_git "$NAME")
+                if [ "$NAME" == "$2 $1" ]
                 then
-                    PTH="$PH"
+                    PTH=$(git rev-parse --show-toplevel)
                     break
                 fi
             fi
