@@ -492,7 +492,6 @@ defvar "PYQTDESIGNERPATH" "$CONDA_PREFIX/repos/hla/pyqt-apps"
 # Aliases
 # ======="
 alias g-conda="cd $CONDA_PREFIX"
-alias g-conda-repos="cd $CONDA_PREFIX/repos"
 EOM
 
 #### Cria arquivo para configurar desativação do ambiente
@@ -543,7 +542,6 @@ undefvar "PYQTDESIGNERPATH"
 # Aliases
 # =======
 unalias g-conda
-unalias g-conda-repos
 EOM
 
 ##############################################################################
