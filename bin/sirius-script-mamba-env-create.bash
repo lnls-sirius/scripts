@@ -439,7 +439,7 @@ then
     clone_or_find fieldmaptrack lnls-fac && make $TARGET
     clone_or_find Radia lnls-sirius && make install 2>/dev/null
     clone_or_find idanalysis lnls-fac && make $TARGET
-    clone_or_find insertion-devices lnls-ima && make $TARGET
+    clone_or_find insertion-devices lnls-ids && make $TARGET
 fi
 
 printf_yellow_clear "Deactivate conda enviroment\n"
