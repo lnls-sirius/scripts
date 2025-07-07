@@ -53,7 +53,7 @@ INST_IOC="yes"
 INST_IMA="yes"
 INST_COL="yes"
 ROOT_REP="/"
-BRANCHES="Radia:lnls-sirius"
+BRANCHES=""
 ENV_NAME="sirius"
 # now enjoy the options in order and nicely split until we see --
 while true; do
