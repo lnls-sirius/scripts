@@ -16,9 +16,7 @@ function help
     [ --no-ioc ] Do not install IOC related packages.
     [ --no-ima ] Do not install magnets simulation packages.
     [ --no-colleff ] Do not install collective effects packages.
-    [ --root-lnls-fac ] Root folder for lnls-fac repos. Default: \"/\".
-    [ --root-lnls-sirius ] Root folder for lnls-sirius repos. Default: \"/\".
-    [ --root-lnls-ima ] Root folder for lnls-imas repos. Default: \"/\".
+    [ -r | --root-lnls-repos ] Root folder for lnls repos. Default: \"/\".
     [ -b | --branches ] Branches to install. For each package you want to force a branch you must provide:
             <package1>:<branch1>,<package2>:<branch2>,...,<packagen>:<branchn>
         Please note there is no spaces in the string.
@@ -33,9 +31,9 @@ function help
     [ -h | --help  ] Print help and exit."
 }
 
-SHORT="cdb:e:h"
-LONG+="clone-repos,develop,no-sim,no-ioc,no-ima,no-colleff,root-lnls-fac:,"
-LONG+="root-lnls-sirius:,root-lnls-ima:,branches:,env-name:,help"
+SHORT="cdr:b:e:h"
+LONG+="clone-repos,develop,no-sim,no-ioc,no-ima,no-colleff,"
+LONG+="root-lnls-repos:,branches:,env-name:,help"
 OPTS=$(getopt -a -n sirius-script-mamba-env-create.bash \
     --options $SHORT --longoptions $LONG -- "$@")
 
@@ -54,9 +52,7 @@ INST_SIM="yes"
 INST_IOC="yes"
 INST_IMA="yes"
 INST_COL="yes"
-ROOT_SIR="/"
-ROOT_FAC="/"
-ROOT_IMA="/"
+ROOT_REP="/"
 BRANCHES="Radia:lnls-sirius"
 ENV_NAME="sirius"
 # now enjoy the options in order and nicely split until we see --
@@ -86,16 +82,8 @@ while true; do
             INST_COL="no"
             shift
             ;;
-        --root-lnls-fac)
-            ROOT_FAC="$2"
-            shift 2
-            ;;
-        --root-lnls-sirius)
-            ROOT_SIR="$2"
-            shift 2
-            ;;
-        --root-lnls-ima)
-            ROOT_IMA="$2"
+        -r|--root-lnls-repos)
+            ROOT_REP="$2"
             shift 2
             ;;
         -b|--branches)
@@ -180,19 +168,10 @@ function clone_or_find
         fi
         cd $1
     else
-        ROO=$ROOT_SIR
-        if [ $2 == "lnls-fac" ]
-        then
-            ROO=$ROOT_FAC
-        elif [ $2 == "lnls-ima" ]
-        then
-            ROO=$ROOT_IMA
-        fi
-
-        printf_yellow_clear "Searching repo $1 in $ROO: "
-        VAR="$(find $ROO -path */$1 2>/dev/null)"
+        printf_yellow_clear "Searching repo $1 in $ROOT_REP: "
+        local PTH=
+        local VAR="$(find "$ROOT_REP" -path */$1 2>/dev/null)"
         VAR=($VAR)
-        PTH=
         for V in "${VAR[@]}"
         do
             cd $V
