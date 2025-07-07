@@ -10,7 +10,7 @@ set -e
 function help
 {
     echo "Usage: sirius-script-mamba-env-create.bash
-    [ -n | --no-clone-repos ] Instead of cloning, find repos in system.
+    [ -c | --clone-repos ] Instead of finding repos in system, clone them inside environment folder.
     [ -d | --develop ] Install sirius packages in develop mode.
     [ --no-sim ] Do not install simulation packages.
     [ --no-ioc ] Do not install IOC related packages.
@@ -33,8 +33,8 @@ function help
     [ -h | --help  ] Print help and exit."
 }
 
-SHORT="ndb:e:h"
-LONG+="no-clone-repos,develop,no-sim,no-ioc,no-ima,no-colleff,root-lnls-fac:,"
+SHORT="cdb:e:h"
+LONG+="clone-repos,develop,no-sim,no-ioc,no-ima,no-colleff,root-lnls-fac:,"
 LONG+="root-lnls-sirius:,root-lnls-ima:,branches:,env-name:,help"
 OPTS=$(getopt -a -n sirius-script-mamba-env-create.bash \
     --options $SHORT --longoptions $LONG -- "$@")
@@ -48,7 +48,7 @@ fi
 
 eval set -- "$OPTS"
 
-CLONE="yes"
+CLONE="no"
 DEVELOP="no"
 INST_SIM="yes"
 INST_IOC="yes"
@@ -62,8 +62,8 @@ ENV_NAME="sirius"
 # now enjoy the options in order and nicely split until we see --
 while true; do
     case "$1" in
-        -n|--no-clone-repos)
-            CLONE="no"
+        -c|--clone-repos)
+            CLONE="yes"
             shift
             ;;
         -d|--develop)
