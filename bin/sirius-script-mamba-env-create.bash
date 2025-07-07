@@ -7,7 +7,7 @@ set -e
 # Parse arguments.
 # Adapted from: https://stackabuse.com/how-to-parse-command-line-arguments-in-bash/
 
-function help
+help()
 {
     echo "Usage: sirius-script-mamba-env-create.bash
     [ -c | --clone-repos ] Instead of finding repos in system, clone them inside environment folder.
@@ -115,22 +115,28 @@ done
 
 ##############################################################################
 # Define some useful functions
-function printf_yellow {
+printf_yellow()
+{
   printf "\e[1;33m$1\e[0m"
 }
-function printf_yellow_clear {
+printf_yellow_clear()
+{
   printf "\e[0;33m$1\e[0m"
 }
-function printf_blue {
+printf_blue()
+{
   printf "\e[1;34m$1\e[0m"
 }
-function printf_green {
+printf_green()
+{
   printf "\e[1;32m$1\e[0m"
 }
-function printf_red {
+printf_red()
+{
   printf "\e[1;31m$1\e[0m"
 }
-function _abort {
+_abort()
+{
   printf_red "SIGINT received. Aborting...\n"
   exit
 }
@@ -138,11 +144,11 @@ function _abort {
 # Trap SIG INT to abort exectution:
 trap _abort SIGINT;
 
-function get_branch
+get_branch()
 {
     for BRAN in "${BRANCHES[@]}"
     do
-        BR=(${BRAN//:/ })  # split string in array in delimiter ":"
+        local BR=(${BRAN//:/ })  # split string in array in delimiter ":"
         if [ "${BR[0]}" == "$1" ]
         then
             echo ${BR[1]}
@@ -169,7 +175,7 @@ extract_info_git()
 }
 
 # takes three input variables: repo name, organization, and repo tag/branch
-function clone_or_find
+clone_or_find()
 {
     printf_yellow " - $1\n"
     if [ "$CLONE" == "yes" ]
@@ -213,7 +219,7 @@ function clone_or_find
             return 1
         fi
     fi
-    BRAN="$(get_branch $1)"
+    local BRAN="$(get_branch $1)"
     if ! [ "$BRAN" ]
     then
         BRAN="$(get_branch all)"
@@ -446,7 +452,7 @@ printf_yellow "Add enviroment variables to conda environment\n"
 #### Create file to configure environment activation
 cat > $CONDA_PREFIX/etc/conda/activate.d/sirius_env.sh <<'EOM'
 # Define function to set variable and save previous state
-function defvar ()
+defvar()
 {
     tmp="${1}"
     if ! [ -z "${!tmp+x}" ]
@@ -493,7 +499,7 @@ EOM
 #### Cria arquivo para configurar desativação do ambiente
 cat > $CONDA_PREFIX/etc/conda/deactivate.d/sirius_env.sh <<'EOM'
 # Define function to unset variable with previous state
-function undefvar ()
+undefvar()
 {
     tmp="${1}"
     old="${tmp}_OLD"
