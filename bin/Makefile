@@ -14,6 +14,7 @@ GENERALSCRIPTS = \
 		sirius-script-ps-wfmupdateauto-off.py \
 		sirius-script-clientarch-checkpv.py \
 		sirius-script-si-acquire-bpm-triggered-data.py \
+		sirius-script-si-measure-bba.py \
 		sirius-script-clientconfigdb-compare-configs.py \
 		sirius-script-install-openocd.sh \
 		sirius-script-afc-boot-from-flash.sh \
