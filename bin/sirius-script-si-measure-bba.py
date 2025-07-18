@@ -98,11 +98,16 @@ def process_bpms2dobba(bpms2dobba, dobba=None):
 
 def load_previous_progress(fname):
     """."""
-    if not os.path.isfile(fname + ".pickle"):
+    try:
+        last_bba = load(fname)
+    except Exception as e:
+        print(
+            "No previous progress found or failed to load " +
+            f"previous measurement file: {e}"
+        )
         return None
 
     print("Previous BBA measurement w/ same filename found!")
-    last_bba = load(fname)
     bpms2dobba = last_bba["data"]["bpms2dobba"]
     measured_bpms = list(last_bba["data"]["measure"].keys())
     # TODO: verify if previous measurements finished ok using
