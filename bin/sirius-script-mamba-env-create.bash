@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Exit if any command fails
-# set -e
+set -e
 
 ##############################################################################
 # Parse arguments.
@@ -29,12 +29,13 @@ function help
             <packagei>:<branchi>,all:<def_branch>
         If nothing is passed or if some package is missing in this definition,
         the current branch will be installed.
+    [ -e | --env-name ] Mamba env name. Default: \"sirius\".
     [ -h | --help  ] Print help and exit."
 }
 
-SHORT=ndh
-LONG+=no-clone-repos,develop,no-sim,no-ioc,no-ima,no-colleff,root-lnls-fac:,
-LONG+=root-lnls-sirius:,root-lnls-ima:,branches:,help
+SHORT="ndb:e:h"
+LONG+="no-clone-repos,develop,no-sim,no-ioc,no-ima,no-colleff,root-lnls-fac:,"
+LONG+="root-lnls-sirius:,root-lnls-ima:,branches:,env-name:,help"
 OPTS=$(getopt -a -n sirius-script-mamba-env-create.bash \
     --options $SHORT --longoptions $LONG -- "$@")
 
@@ -57,6 +58,7 @@ ROOT_SIR="/"
 ROOT_FAC="/"
 ROOT_IMA="/"
 BRANCHES="Radia:lnls-sirius"
+ENV_NAME="sirius"
 # now enjoy the options in order and nicely split until we see --
 while true; do
     case "$1" in
@@ -100,6 +102,10 @@ while true; do
             BRANCHES="$2,$BRANCHES"
             # split string in array at delimiter ",":
             BRANCHES=(${BRANCHES//,/ })
+            shift 2
+            ;;
+        -e|--env-name)
+            ENV_NAME="$2"
             shift 2
             ;;
         -h|--help)
@@ -221,6 +227,7 @@ function clone_or_find
         printf_yellow_clear "Checking out to branch $BRAN.\n"
         git checkout $BRAN
     fi
+    # wont be nice to fetch and pull the latest updates of the branch? Instead of only "checkouting" it.
 }
 
 ##############################################################################
@@ -229,7 +236,7 @@ sudo apt-get update
 # libgl1-mesa-glx is needed for pyqt to work properly.
 # See discussion in:
 #    https://github.com/conda-forge/pygridgen-feedstock/issues/10
-sudo apt-get install -y wget git libgl1-mesa-glx
+sudo apt-get install -y wget git libgl1-mesa-glx wmctrl
 
 ##############################################################################
 printf_yellow "Configure system for mamba installation\n"
@@ -285,7 +292,7 @@ fi
 printf_yellow_clear "Fix some folder permissions.\n"
 sudo chgrp -R mamba /opt/mamba_files/mamba
 sudo chmod 774 -R /opt/mamba_files/mamba
-sudo chown -R $USER.mamba ~/.conda
+sudo chown -R $USER:mamba ~/.conda
 
 printf_yellow_clear "Adding mamba and conda to path\n"
 source /opt/mamba_files/mamba/etc/profile.d/conda.sh
@@ -313,18 +320,18 @@ fi
 
 ##############################################################################
 printf_yellow "Create and prepare mamba enviroment\n"
-printf_yellow_clear "Create new mamba python environment named sirius: "
-if ! mamba env list | grep -q sirius
+printf_yellow_clear "Create new mamba python environment named $ENV_NAME: "
+if ! mamba env list | grep -q $ENV_NAME
 then
-    mamba create --name sirius python=3.9.2 -y
+    mamba create --name $ENV_NAME python=3.9.2 -y
     printf_green "done!\n"
 else
     printf_blue "environment already exists. Skipping...\n"
 fi
 
 ### Activate Environment and do stuff
-printf_yellow_clear "Activate sirius enviroment\n"
-mamba activate sirius
+printf_yellow_clear "Activate $ENV_NAME enviroment\n"
+mamba activate $ENV_NAME
 
 printf_yellow_clear "create link for python-sirius inside the enviroment: "
 cd $CONDA_PREFIX/bin
@@ -333,21 +340,19 @@ then
     ln -s python3 python-sirius
     printf_green "done!\n"
 else
-    printf_blue "link alreay exists. Skipping...\n"
+    printf_blue "link already exists. Skipping...\n"
 fi
 
-printf_yellow "Install some mamba packages in sirius environment.\n"
+printf_yellow "Install some mamba packages in $ENV_NAME environment.\n"
 COMM="mamba install --freeze-installed -y"
 
-printf_yellow_clear "- First some system packages:\n"
-$COMM gxx make binutils swig build gsl libblas wmctrl fftw
-
-printf_yellow_clear "- Now some generic python packages:\n"
-$COMM pyparsing bottleneck aiohttp==3.7.4 scipy matplotlib pytest mpmath \
-    entrypoints requests pyqt=5.12.3 pandas pyqtgraph=0.11.0 QtAwesome=0.7.2 \
-    numexpr tk sh pywavelets scikit-image scikit-learn pydocstyle pycodestyle \
-    pylama openpyxl gpy gpyopt fpdf sympy h5py
-
+printf_yellow_clear "- System and generic python packages:\n"
+$COMM gxx make binutils swig=4.2.0 libxcrypt build gsl libblas wmctrl fftw \
+    pyparsing bottleneck aiohttp==3.7.4 numpy=1.23 scipy matplotlib \
+    pytest mpmath entrypoints requests pyqt=5.12.3 pandas pyqtgraph=0.11.0 \
+    qtpy=2.3.1 QtAwesome=0.7.2 numexpr tk sh pywavelets scikit-image \
+    scikit-learn pydocstyle pycodestyle pylama openpyxl gpy gpyopt fpdf sympy \
+    h5py scienceplots
 
 printf_yellow_clear "- Install EPICS Base:\n"
 $COMM -c conda-forge/label/cf202003 epics-base=3.15.6
@@ -369,7 +374,6 @@ fi
 printf_yellow_clear "- Install and configure jupyter notebook\n"
 $COMM jupyter notebook
 mamba update jupyter_client
-$COMM jupyter_contrib_nbextensions
 
 ### Clone and install our repositories
 if [ "$CLONE" == "yes" ]
@@ -408,7 +412,7 @@ then
     printf_yellow_clear "Installing accelerators simulation packages.\n"
     clone_or_find lnls lnls-fac && make $TARGET
     clone_or_find trackcpp lnls-fac && make clean && \
-        make install-cpp 2>/dev/null && make $TARGET-py 2>/dev/null
+        make install-cpp && make install-py
     clone_or_find pyaccel lnls-fac && make $TARGET
     clone_or_find pymodels lnls-fac && make $TARGET
     clone_or_find apsuite lnls-fac && make $TARGET
@@ -454,8 +458,8 @@ function defvar ()
 # =====
 defvar "EPICS_BASE" "${CONDA_PREFIX}/epics"
 defvar "EPICS_HOST_ARCH" 'linux-x86_64'
-defvar "EPICS_CA_ADDR_LIST" "10.0.38.59:62000"
-defvar "EPICS_PVA_ADDR_LIST" "10.0.38.59:62000"
+defvar "EPICS_CA_ADDR_LIST" "10.0.38.59:62000 10.30.13.22 10.30.14.19"
+defvar "EPICS_PVA_ADDR_LIST" "10.0.38.59:62000 10.30.13.22 10.30.14.19"
 defvar "SIRIUS_URL_RBAC_AUTH" "https://sirius-rbac-auth.lnls.br"
 defvar "SIRIUS_URL_RBAC" "https://rbac:8445"
 defvar "SIRIUS_URL_NS" "http://naming-service-wildfly:8089"
@@ -466,7 +470,8 @@ defvar "SIRIUS_URL_CONSTS_2" "http://10.0.38.46/control-system-constants"
 defvar "SIRIUS_URL_CONFIGDB" "http://10.0.38.59/config-db"
 defvar "SIRIUS_URL_CONFIGDB_2" "http://10.0.38.46/config-db"
 defvar "SIRIUS_URL_LOGBOOK" "http://sirius-logbook.lnls.br/Olog"
-defvar "SIRIUS_URL_ARCHIVER" "https://10.0.38.42"
+defvar "SIRIUS_URL_ARCHIVER" "https://ais-eng-srv-ta.cnpem.br"
+defvar "SIRIUS_URL_ARCHIVER_OFFLINE_DATA" "https://archiver-temp.cnpem.br"
 defvar "EPICS_CA_MAX_ARRAY_BYTES" "10000000"
 defvar "CONDA_EPICS_BIN" "${EPICS_BASE}/bin/${EPICS_HOST_ARCH}"
 defvar "PATH" "${CONDA_EPICS_BIN}:${PATH}"
@@ -519,6 +524,7 @@ undefvar "SIRIUS_URL_CONFIGDB"
 undefvar "SIRIUS_URL_CONFIGDB_2"
 undefvar "SIRIUS_URL_LOGBOOK"
 undefvar "SIRIUS_URL_ARCHIVER"
+undefvar "SIRIUS_URL_ARCHIVER_OFFLINE_DATA"
 undefvar "EPICS_CA_MAX_ARRAY_BYTES"
 # PyDM
 # ====
@@ -550,29 +556,29 @@ sudo chmod -R g+w /opt/mamba_files/mamba/pkgs/cache/*.json
 printf_yellow "Create scripts to access apps in conda environment\n"
 
 cd /usr/local/bin
-printf_yellow_clear " - jupyter-mamba-sirius \n"
-sudo tee jupyter-mamba-sirius >/dev/null <<'EOM'
+printf_yellow_clear " - jupyter-mamba-${ENV_NAME} \n"
+sudo tee jupyter-mamba-${ENV_NAME} >/dev/null <<'EOM'
 #!/bin/bash
-bash -c "source /opt/mamba_files/mamba/etc/profile.d/conda.sh && conda activate sirius && jupyter notebook"
+bash -c "source /opt/mamba_files/mamba/etc/profile.d/conda.sh && conda activate ${ENV_NAME} && jupyter notebook"
 EOM
 
-printf_yellow_clear " - ipython-mamba-sirius \n"
-sudo tee ipython-mamba-sirius >/dev/null <<'EOM'
+printf_yellow_clear " - ipython-mamba-${ENV_NAME} \n"
+sudo tee ipython-mamba-${ENV_NAME} >/dev/null <<'EOM'
 #!/bin/bash
-bash -c "source /opt/mamba_files/mamba/etc/profile.d/conda.sh && conda activate sirius && ipython"
+bash -c "source /opt/mamba_files/mamba/etc/profile.d/conda.sh && conda activate ${ENV_NAME} && ipython"
 EOM
 
-printf_yellow_clear " - designer-mamba-sirius \n"
-sudo tee designer-mamba-sirius >/dev/null <<'EOM'
+printf_yellow_clear " - designer-mamba-${ENV_NAME} \n"
+sudo tee designer-mamba-${ENV_NAME} >/dev/null <<'EOM'
 #!/bin/bash
-bash -c "source /opt/mamba_files/mamba/etc/profile.d/conda.sh && conda activate sirius && designer"
+bash -c "source /opt/mamba_files/mamba/etc/profile.d/conda.sh && conda activate ${ENV_NAME} && designer"
 EOM
 
-printf_yellow_clear " - sirius-hla-as-ap-launcher-mamba-sirius \n"
-sudo tee sirius-hla-as-ap-launcher-mamba-sirius >/dev/null <<'EOM'
+printf_yellow_clear " - sirius-hla-as-ap-launcher-mamba-${ENV_NAME} \n"
+sudo tee sirius-hla-as-ap-launcher-mamba-${ENV_NAME} >/dev/null <<'EOM'
 #!/bin/bash
-bash -c "source /opt/mamba_files/mamba/etc/profile.d/conda.sh && conda activate sirius && sirius-hla-as-ap-launcher.py"
+bash -c "source /opt/mamba_files/mamba/etc/profile.d/conda.sh && conda activate ${ENV_NAME} && sirius-hla-as-ap-launcher.py"
 EOM
 
-sudo chmod +x jupyter-mamba-sirius ipython-mamba-sirius designer-mamba-sirius \
-    sirius-hla-as-ap-launcher-mamba-sirius
+sudo chmod +x jupyter-mamba-${ENV_NAME} ipython-mamba-${ENV_NAME} designer-mamba-${ENV_NAME} \
+    sirius-hla-as-ap-launcher-mamba-${ENV_NAME}
