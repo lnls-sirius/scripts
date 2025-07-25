@@ -29,12 +29,13 @@ function help
             <packagei>:<branchi>,all:<def_branch>
         If nothing is passed or if some package is missing in this definition,
         the current branch will be installed.
+    [ -e | --env-name ] Mamba env name. Default: \"sirius\".
     [ -h | --help  ] Print help and exit."
 }
 
-SHORT=ndh
-LONG+=no-clone-repos,develop,no-sim,no-ioc,no-ima,no-colleff,root-lnls-fac:,
-LONG+=root-lnls-sirius:,root-lnls-ima:,branches:,help
+SHORT="ndb:e:h"
+LONG+="no-clone-repos,develop,no-sim,no-ioc,no-ima,no-colleff,root-lnls-fac:,"
+LONG+="root-lnls-sirius:,root-lnls-ima:,branches:,env-name:,help"
 OPTS=$(getopt -a -n sirius-script-mamba-env-create.bash \
     --options $SHORT --longoptions $LONG -- "$@")
 
@@ -57,6 +58,7 @@ ROOT_SIR="/"
 ROOT_FAC="/"
 ROOT_IMA="/"
 BRANCHES="Radia:lnls-sirius"
+ENV_NAME="sirius"
 # now enjoy the options in order and nicely split until we see --
 while true; do
     case "$1" in
@@ -100,6 +102,10 @@ while true; do
             BRANCHES="$2,$BRANCHES"
             # split string in array at delimiter ",":
             BRANCHES=(${BRANCHES//,/ })
+            shift 2
+            ;;
+        -e|--env-name)
+            ENV_NAME="$2"
             shift 2
             ;;
         -h|--help)
@@ -314,18 +320,18 @@ fi
 
 ##############################################################################
 printf_yellow "Create and prepare mamba enviroment\n"
-printf_yellow_clear "Create new mamba python environment named sirius: "
-if ! mamba env list | grep -q sirius
+printf_yellow_clear "Create new mamba python environment named $ENV_NAME: "
+if ! mamba env list | grep -q $ENV_NAME
 then
-    mamba create --name sirius python=3.9.2 -y
+    mamba create --name $ENV_NAME python=3.9.2 -y
     printf_green "done!\n"
 else
     printf_blue "environment already exists. Skipping...\n"
 fi
 
 ### Activate Environment and do stuff
-printf_yellow_clear "Activate sirius enviroment\n"
-mamba activate sirius
+printf_yellow_clear "Activate $ENV_NAME enviroment\n"
+mamba activate $ENV_NAME
 
 printf_yellow_clear "create link for python-sirius inside the enviroment: "
 cd $CONDA_PREFIX/bin
@@ -337,7 +343,7 @@ else
     printf_blue "link already exists. Skipping...\n"
 fi
 
-printf_yellow "Install some mamba packages in sirius environment.\n"
+printf_yellow "Install some mamba packages in $ENV_NAME environment.\n"
 COMM="mamba install --freeze-installed -y"
 
 printf_yellow_clear "- System and generic python packages:\n"
@@ -550,29 +556,29 @@ sudo chmod -R g+w /opt/mamba_files/mamba/pkgs/cache/*.json
 printf_yellow "Create scripts to access apps in conda environment\n"
 
 cd /usr/local/bin
-printf_yellow_clear " - jupyter-mamba-sirius \n"
-sudo tee jupyter-mamba-sirius >/dev/null <<'EOM'
+printf_yellow_clear " - jupyter-mamba-${ENV_NAME} \n"
+sudo tee jupyter-mamba-${ENV_NAME} >/dev/null <<'EOM'
 #!/bin/bash
-bash -c "source /opt/mamba_files/mamba/etc/profile.d/conda.sh && conda activate sirius && jupyter notebook"
+bash -c "source /opt/mamba_files/mamba/etc/profile.d/conda.sh && conda activate ${ENV_NAME} && jupyter notebook"
 EOM
 
-printf_yellow_clear " - ipython-mamba-sirius \n"
-sudo tee ipython-mamba-sirius >/dev/null <<'EOM'
+printf_yellow_clear " - ipython-mamba-${ENV_NAME} \n"
+sudo tee ipython-mamba-${ENV_NAME} >/dev/null <<'EOM'
 #!/bin/bash
-bash -c "source /opt/mamba_files/mamba/etc/profile.d/conda.sh && conda activate sirius && ipython"
+bash -c "source /opt/mamba_files/mamba/etc/profile.d/conda.sh && conda activate ${ENV_NAME} && ipython"
 EOM
 
-printf_yellow_clear " - designer-mamba-sirius \n"
-sudo tee designer-mamba-sirius >/dev/null <<'EOM'
+printf_yellow_clear " - designer-mamba-${ENV_NAME} \n"
+sudo tee designer-mamba-${ENV_NAME} >/dev/null <<'EOM'
 #!/bin/bash
-bash -c "source /opt/mamba_files/mamba/etc/profile.d/conda.sh && conda activate sirius && designer"
+bash -c "source /opt/mamba_files/mamba/etc/profile.d/conda.sh && conda activate ${ENV_NAME} && designer"
 EOM
 
-printf_yellow_clear " - sirius-hla-as-ap-launcher-mamba-sirius \n"
-sudo tee sirius-hla-as-ap-launcher-mamba-sirius >/dev/null <<'EOM'
+printf_yellow_clear " - sirius-hla-as-ap-launcher-mamba-${ENV_NAME} \n"
+sudo tee sirius-hla-as-ap-launcher-mamba-${ENV_NAME} >/dev/null <<'EOM'
 #!/bin/bash
-bash -c "source /opt/mamba_files/mamba/etc/profile.d/conda.sh && conda activate sirius && sirius-hla-as-ap-launcher.py"
+bash -c "source /opt/mamba_files/mamba/etc/profile.d/conda.sh && conda activate ${ENV_NAME} && sirius-hla-as-ap-launcher.py"
 EOM
 
-sudo chmod +x jupyter-mamba-sirius ipython-mamba-sirius designer-mamba-sirius \
-    sirius-hla-as-ap-launcher-mamba-sirius
+sudo chmod +x jupyter-mamba-${ENV_NAME} ipython-mamba-${ENV_NAME} designer-mamba-${ENV_NAME} \
+    sirius-hla-as-ap-launcher-mamba-${ENV_NAME}
