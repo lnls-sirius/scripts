@@ -134,8 +134,8 @@ def main():
         "--ref_orb",
         type=str,
         required=True,
-        help="Name of reference orbit for BBA measurement ."
-        "Use SOFB Window to correct orbit and save it in servconf."
+        help="Name of reference orbit for BBA measurement. "
+        "Use SOFB Window to correct orbit and save it in servconf. "
         "Use the same orbit name.",
     )
 
@@ -147,9 +147,9 @@ def main():
              "(1) comma-separated list of BPM names (e.g. BPM1,BPM2,BPM3); "
              "(2) regexp pattern to match BPM names; "
              "(3) path to .txt file containing BPM names (one per line); "
-             "(4) 'all' to select all BPMs."
-             "If passed, overrides automatic BPMs selection"
-             " considering previous measurements progress."
+             "(4) 'all' to select all BPMs. "
+             "If passed, overrides automatic BPMs selection "
+             "considering previous measurements progress. "
              "Defaults to None.",
     )
 
@@ -165,8 +165,8 @@ def main():
         "-i",
         "--ignore_previous",
         action="store_true",
-        help="Ignore data from previous BBA measurements with same filename"
-        "in the working directory. Default: False, set to True if flag"
+        help="Ignore data from previous BBA measurements with same filename "
+        "in the working directory. Default: False, set to True if flag "
         "is given.",
     )
 
@@ -182,7 +182,7 @@ def main():
         "--deltaorby",
         type=float,
         default=100,
-        help="Range for vertical orbit offset scan, in micrometers ."
+        help="Range for vertical orbit offset scan, in micrometers. "
         "Defaults to 100 um.",
     )
 
@@ -205,7 +205,7 @@ def main():
         "--sofb_maxorberr",
         type=int,
         default=5,
-        help="Maximum number of failed attempts at placing a BPM at a given"
+        help="Maximum number of failed attempts at placing a BPM at a given "
         "offset. Defaults to 5.",
     )
 
@@ -219,7 +219,7 @@ def main():
         if previous_bpms2dobba is False:
             print(
                 "Previous BBA meas. already completed for given filename. \n" +
-                "If you want to repeat the measurement, launch it again" +
+                "If you want to repeat the measurement, launch it again " +
                 "with the '-i'/'--ignore_previous' arg. or different filename."
             )
             sys.exit(0)
