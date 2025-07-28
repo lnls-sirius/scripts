@@ -807,20 +807,30 @@ class MachineShutdown(_DeviceSet, LogCallback):
             props2init=('DsblGamma-Cmd', 'AlarmGammaShutter-Mon'))
 
         # IDs
-        devices['apu22_06SB'] = IDParking(
-            _ID.DEVICES.APU.APU22_06SB, log_callback=self._log_callback)
-        devices['apu22_07SP'] = IDParking(
-            _ID.DEVICES.APU.APU22_07SP, log_callback=self._log_callback)
-        devices['apu22_08SB'] = IDParking(
-            _ID.DEVICES.APU.APU22_08SB, log_callback=self._log_callback)
+        devices['vpu29_06SB'] = IDParking(
+            _ID.DEVICES.VPU.VPU29_06SB, log_callback=self._log_callback
+        )  # CNB
+        devices['vpu29_07SP'] = IDParking(
+            _ID.DEVICES.VPU.VPU29_07SP, log_callback=self._log_callback
+        )  # CAT
+        devices['ivu18_08SB'] = IDParking(
+            _ID.DEVICES.IVU.IVU18_08SB, log_callback=self._log_callback
+        )  # EMA
         devices['apu22_09SA'] = IDParking(
-            _ID.DEVICES.APU.APU22_09SA, log_callback=self._log_callback)
-        devices['apu58_11SP'] = IDParking(
-            _ID.DEVICES.APU.APU58_11SP, log_callback=self._log_callback)
+            _ID.DEVICES.APU.APU22_09SA, log_callback=self._log_callback
+        )  # MNC
         devices['delta52_10SB'] = IDParking(
-            _ID.DEVICES.DELTA.DELTA52_10SB, log_callback=self._log_callback)
-        devices['papu50_17SA'] = IDParking(
-            _ID.DEVICES.PAPU.PAPU50_17SA, log_callback=self._log_callback)
+            _ID.DEVICES.DELTA.DELTA52_10SB, log_callback=self._log_callback
+        )  # SAB
+        devices['apu58_11SP'] = IDParking(
+            _ID.DEVICES.APU.APU58_11SP, log_callback=self._log_callback
+        )  # IPÊ
+        devices['ivu18_14SB'] = IDParking(
+            _ID.DEVICES.IVU.IVU18_14SB, log_callback=self._log_callback
+        )  # PNR
+        devices['apu22_17SA'] = IDParking(
+            _ID.DEVICES.APU.APU22_17SA, log_callback=self._log_callback
+        )  # SPU
 
         # SOFB
         devices['fofb'] = _HLFOFB(
