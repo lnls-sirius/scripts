@@ -186,8 +186,8 @@ def main():
         "-i",
         "--ignore-previous",
         action="store_true",
-        help="Ignore data from previous BBA measurements with same filename"
-        "in the working directory. Default: False, set to True if flag"
+        help="Ignore data from previous BBA measurements with same filename "
+        "in the working directory. Default: False, set to True if flag "
         "is given.",
     )
 
@@ -210,7 +210,7 @@ def main():
         "--deltaorby",
         type=float,
         default=100,
-        help="Range for vertical orbit offset scan, in micrometers ."
+        help="Range for vertical orbit offset scan, in micrometers. "
         "Defaults to 100 um.",
     )
 
