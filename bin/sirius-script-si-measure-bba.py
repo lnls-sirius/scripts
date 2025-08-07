@@ -4,11 +4,12 @@
 import os
 import sys
 import time
+import re
 
 import numpy as np
 
 from mathphys.functions import load
-from apsuite.commisslib.measure_bba import DoBBA
+from apsuite.commisslib.measure_bba import DoBBA, BBAParams
 from siriuspy.clientconfigdb import ConfigDBClient
 
 
@@ -54,45 +55,53 @@ def bba_run(dobba, fname):
     dobba.save_data(fname, overwrite=True)
 
 
-def process_bpms2dobba(bpms2dobba, dobba=None):
-    """Process BPMs input.
-
-    Accepts:
-    - String: direct BPM name.
-    - Regexp string: matches against dobba.params.BPMNAMES.
-    - Path to .txt file: reads BPM names from file.
-    - None: selects all BPMs.
-    """
-    if not isinstance(bpms2dobba, str):
-        return bpms2dobba
-
-    # if all BPMS
-    if bpms2dobba.lower() == "all":
+def process_bpms2dobba(bpms2dobba_args, all_bpms):
+    """."""
+    if not bpms2dobba_args:
         return None
 
-    # if comma-separated list
-    if "," in bpms2dobba:
-        return [bpm.strip() for bpm in bpms2dobba.split(",")]
+    if len(bpms2dobba_args) == 1:
+        # only one item and it's a keyword or file
+        arg = bpms2dobba_args[0]
 
-    # if path+file
-    if os.path.isfile(bpms2dobba):
-        with open(bpms2dobba) as f:
-            bpms2dobba = [line.strip() for line in f if line.strip()]
-        return bpms2dobba
+        # all
+        if arg.lower() == "all":
+            return all_bpms
 
-    # if regexp or single BPM name (exact regexp match)
-    import re
-    pattern = re.compile(bpms2dobba)
-    bpms2dobba = [
-        bpm for bpm in dobba.params.BPMNAMES
-        if pattern.search(bpm)
-    ]
+        # file
+        if os.path.isfile(arg):
+            with open(arg) as f:
+                bpms = [line.strip() for line in f if line.strip()]
+            bpms2dobba = [bpm for bpm in bpms if bpm in all_bpms]
+
+            if len(bpms) != len(bpms2dobba):
+                print(
+                    f"Warning: {len(bpms2dobba)} BPMs identified" +
+                    f" out of {len(bpms)} BPMs indicated in file."
+                )
+            return bpms2dobba
+
+    bpms2dobba = []
+    for arg in bpms2dobba_args:
+        if arg in all_bpms:  # BPM name
+            bpms2dobba.append(arg)
+        else:  # regexp pattern
+            try:
+                pattern = re.compile(arg)
+                matches = [
+                    bpm for bpm in all_bpms if pattern.search(bpm)
+                ]
+                bpms2dobba.extend(matches)
+            except re.error:
+                pass
+
+    # order-preserving removal of duplicates
+    bpms2dobba = list(dict.fromkeys(bpms2dobba))
+
     if bpms2dobba:
         return bpms2dobba
-    else:
-        print(f"No BPMs matched regexp pattern '{pattern.pattern}'.")
 
-    print("bpms2dobba input could not be interpreted. Exiting")
+    print("Error processing bpms2dobba: no matches! Exiting.")
     sys.exit(1)
 
 
@@ -137,44 +146,37 @@ def main():
         "-f",
         "--filename",
         type=str,
-        required=True,
         help="Filename for BBA measurement data.",
     )
 
     parser.add_argument(
         "-r",
-        "--ref_orb",
+        "--ref-orb",
         type=str,
-        required=True,
         help="Name of reference orbit for BBA measurement ."
         "Use SOFB Window to correct orbit and save it in servconf."
         "Use the same orbit name.",
     )
 
-    # TODO: argparse native list parsing
-    # TODO: list + regexp + names inputs
     parser.add_argument(
         "-b",
         "--bpms2dobba",
+        nargs="+",
         help=(
-            "BPMs to include in the BBA measurement. Accepted input formats:\n"
-            "  (1) Comma-separated list of BPM names, e.g.:\n"
-            "      SI-17C3:DI-BPM-2,SI-17C4:DI-BPM\n"
-            "  (2) Regular expression pattern to match BPM names, e.g.:\n"
-            "      'M1' or 'M1|C1'\n"
-            "  (3) Path to a .txt file listing BPM names (one per line)\n"
-            "  (4) 'all' to include all BPMs (default behavior)\n\n"
-            "Priority:\n"
-            "- If this argument is given, it overrides previous progress.\n"
-            "- If not provided:\n"
-            "     • Previous progress (if found) resumes measurement.\n"
-            "     • Otherwise, all BPMs are measured."
+            "BPMs to include in the BBA measurement. Accepted inputs:"
+            "(1) Space-separated list of BPMs names: SI-17C3:DI-BPM-2"
+            " SI-17C4:DI-BPM. "
+            "(2) Space-separated list of regexp patterns: 17 C3 M1|C1."
+            "(3) Path to text file with one BPM name per line. "
+            "(4) 'all' to include all BPMs (default). "
+            "If provided, overrides automatic BPM selection from any previous"
+            "measurement progress. "
         )
     )
 
     parser.add_argument(
         "-p",
-        "--print",
+        "--print-setup",
         action="store_true",
         help="Print measurement setup only, w/o launching the measurement. "
         "Default is False, set to True if flag is given.",
@@ -187,6 +189,13 @@ def main():
         help="Ignore data from previous BBA measurements with same filename"
         "in the working directory. Default: False, set to True if flag"
         "is given.",
+    )
+
+    parser.add_argument(
+        "--print-bpms",
+        action="store_true",
+        help="Print BPMS names/indices only, w/o launching the measurement. "
+        "Default is False, set to True if flag is given.",
     )
 
     parser.add_argument(
@@ -225,10 +234,18 @@ def main():
         type=int,
         default=5,
         help="Maximum number of failed attempts at placing a BPM at a given"
-        "offset. Defaults to 5.",
+        " offset. Defaults to 5.",
     )
 
     args = parser.parse_args()
+
+    all_bpms = BBAParams.BPMNAMES
+
+    if args.print_bpms:
+        print("Index      BPM name")
+        for i, bpm in enumerate(all_bpms):
+            print(f" {i:03d}     {bpm}")
+        sys.exit(0)
 
     fname = args.filename
     ref_orb = args.ref_orb
@@ -237,11 +254,10 @@ def main():
     if not args.ignore_previous:
         previous_bpms2dobba = load_previous_progress(fname)
 
-    dobba = DoBBA()
     # If user provides BPMs explicitly, they override selection
     # from previous progress.
     if args.bpms2dobba:
-        bpms2dobba = process_bpms2dobba(args.bpms2dobba, dobba)
+        bpms2dobba = process_bpms2dobba(args.bpms2dobba, all_bpms)
     elif previous_bpms2dobba is not None:
         bpms2dobba = previous_bpms2dobba
         print(f"Starting BBA from BPM {bpms2dobba[0]}")
@@ -249,6 +265,7 @@ def main():
     else:
         bpms2dobba = None
 
+    dobba = DoBBA()
     dobba = bba_configure(
         dobba=dobba,
         ref_orb=ref_orb,
@@ -260,7 +277,7 @@ def main():
         sofb_maxorberr=args.sofb_maxorberr,
     )
 
-    if not args.print:
+    if not args.print_setup:
         bba_run(dobba, fname)
 
 
