@@ -450,12 +450,13 @@ then
 fi
 
 printf_yellow_clear "Deactivate conda enviroment\n"
+CONDA_PREF=$CONDA_PREFIX
 mamba deactivate
 
 printf_yellow "Add enviroment variables to conda environment\n"
 
 #### Create file to configure environment activation
-cat > $CONDA_PREFIX/etc/conda/activate.d/sirius_env.sh <<'EOM'
+cat > $CONDA_PREF/etc/conda/activate.d/sirius_env.sh <<'EOM'
 # Define function to set variable and save previous state
 defvar()
 {
@@ -502,7 +503,7 @@ alias g-conda="cd $CONDA_PREFIX"
 EOM
 
 #### Cria arquivo para configurar desativação do ambiente
-cat > $CONDA_PREFIX/etc/conda/deactivate.d/sirius_env.sh <<'EOM'
+cat > $CONDA_PREF/etc/conda/deactivate.d/sirius_env.sh <<'EOM'
 # Define function to unset variable with previous state
 undefvar()
 {
@@ -550,6 +551,8 @@ undefvar "PYQTDESIGNERPATH"
 # =======
 unalias g-conda
 EOM
+
+unset CONDA_PREF
 
 ##############################################################################
 printf_yellow "Fix permissions of some files\n"
