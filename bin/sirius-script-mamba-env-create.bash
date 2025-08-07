@@ -592,3 +592,5 @@ EOM
 
 sudo chmod +x jupyter-mamba-${ENV_NAME} ipython-mamba-${ENV_NAME} designer-mamba-${ENV_NAME} \
     sirius-hla-as-ap-launcher-mamba-${ENV_NAME}
+
+printf_yellow "Finished!"
