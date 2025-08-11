@@ -2,14 +2,11 @@
 """Script for running BBA measurements."""
 
 import os
-import sys
-import time
 import re
-
-import numpy as np
+import sys
 
 from mathphys.functions import load
-from apsuite.commisslib.measure_bba import DoBBA, BBAParams
+from apsuite.commisslib.measure_bba import BBAParams, DoBBA
 from siriuspy.clientconfigdb import ConfigDBClient
 
 
