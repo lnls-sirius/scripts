@@ -17,7 +17,22 @@ def bba_configure(
     dobba, ref_orb, bpms2dobba, deltaorbx, deltaorby,
     quad_deltakl, sofb_nrpoints, sofb_maxorberr
 ):
-    """."""
+    """Configures the BBA measurement parameters and loads the reference orbit.
+
+    Args:
+        dobba (DoBBA): The DoBBA object to configure.
+        ref_orb (str): Name of the reference orbit to load.
+        bpms2dobba (list): List of BPMs to include in the measurement.
+        deltaorbx (float): Horizontal orbit offset scan range.
+        deltaorby (float): Vertical orbit offset scan range.
+        quad_deltakl (float): Integrated quadrupole strength variation.
+        sofb_nrpoints (int): Number of points for offset scan.
+        sofb_maxorberr (int): Maximum number of failed attempts for BPM
+            offset placement.
+
+    Returns:
+        DoBBA: The configured DoBBA object.
+    """
     print("Configuring BBA measurement.")
     print(f"\tLoading si_orbit: {ref_orb}")
     cltorb = ConfigDBClient(config_type="si_orbit")
@@ -45,7 +60,12 @@ def bba_configure(
 
 
 def bba_run(dobba, fname):
-    """."""
+    """Runs the BBA measurement and saves the data.
+
+    Args:
+        dobba (DoBBA): The configured DoBBA object.
+        fname (str): Filename to save the measurement data.
+    """
     print(80 * "#")
     print("Starting BBA measurement.")
 
@@ -56,10 +76,19 @@ def bba_run(dobba, fname):
 
 
 def process_bpms2dobba(bpms2dobba_args, all_bpms):
-    """."""
-    if not bpms2dobba_args:
-        return None
+    """Processes the BPMs arguments for the BBA measurement.
 
+    Exits the script if no BPMs match the provided arguments.
+
+    Args:
+        bpms2dobba_args (list):  Either a list of BPM names and/or regex
+            patterns, or a path to file containing a BPM names per line.
+        all_bpms (list): List of all available BPM names.
+
+    Returns:
+        A list of BPMs to be used in the measurement, or None if no arguments
+        are provided.
+    """
     if len(bpms2dobba_args) == 1:
         # only one item and it's a keyword or file
         arg = bpms2dobba_args[0]
@@ -73,7 +102,6 @@ def process_bpms2dobba(bpms2dobba_args, all_bpms):
             with open(arg) as f:
                 bpms = [line.strip() for line in f if line.strip()]
             bpms2dobba = [bpm for bpm in bpms if bpm in all_bpms]
-
             if len(bpms) != len(bpms2dobba):
                 print(
                     f"Warning: {len(bpms2dobba)} BPMs identified" +
@@ -98,15 +126,25 @@ def process_bpms2dobba(bpms2dobba_args, all_bpms):
     # order-preserving removal of duplicates
     bpms2dobba = list(dict.fromkeys(bpms2dobba))
 
-    if bpms2dobba:
-        return bpms2dobba
+    if not bpms2dobba:
+        print("Error: no BPMs matched the provided arguments.")
+        return None
 
-    print("Error processing bpms2dobba: no matches! Exiting.")
-    sys.exit(1)
+    return bpms2dobba
 
 
 def load_previous_progress(fname):
-    """."""
+    """Loads previous BBA measurement progress from a file.
+
+    Exits the script if the previous measurement is already completed.
+
+    Args:
+        fname (str): Filename of the previous measurement data.
+
+    Returns:
+        list w/ remaining BPMs to be measured, or None if no previous progress
+        is found.
+    """
     try:
         last_bba = load(fname)
     except Exception as e:
@@ -119,8 +157,8 @@ def load_previous_progress(fname):
     print("Previous BBA measurement w/ same filename found!")
     bpms2dobba = last_bba["data"]["bpms2dobba"]
     measured_bpms = list(last_bba["data"]["measure"].keys())
-    # TODO: verify if previous measurements finished ok using
-    # logic to verify if nrpoints match saved orbits dimensions
+
+    # If previous measurement is already completed, exit
     if len(measured_bpms) == len(bpms2dobba):
         print(
               "\tPrevious BBA meas. already completed for given filename. \n" +
@@ -129,13 +167,53 @@ def load_previous_progress(fname):
         )
         sys.exit(0)
 
-    idx = bpms2dobba.index(measured_bpms[-1])
-    bpms2dobba = bpms2dobba[idx:]
-    return bpms2dobba
+    idx = bpms2dobba.index(measured_bpms[-1])  # THIS ASSUMES ORDERING!
+    return bpms2dobba[idx:]
+
+
+def print_bpms(all_bpms):
+    """Prints BPM names and quits execution.
+
+    Args:
+        all_bpms (list): List of all available BPM names.
+    """
+    print("BPM index      BPM name")
+    for i, bpm in enumerate(all_bpms):
+        print(f"  {i:03d}       {bpm}")
+    sys.exit(0)
+
+
+def get_bpms_for_bba(args, all_bpms, fname):
+    """Determines the list of BPMs to be used for the BBA measurement.
+
+    Args:
+        args (argparse.Namespace): Parsed command-line arguments.
+        all_bpms (list): List of all available BPM names.
+        fname (str): Filename for BBA measurement data.
+
+    Returns:
+        tuple: the list of BPMs for BBA and the updated filename.
+        Exits the script if process_bpms2dobba returns None.
+    """
+    bpms2dobba = None
+    if not args.ignore_previous:
+        bpms2dobba = load_previous_progress(fname)
+
+    if args.bpms2dobba:
+        bpms2dobba = process_bpms2dobba(args.bpms2dobba, all_bpms)
+        if bpms2dobba is None:  # Handle error from process_bpms2dobba
+            sys.exit(1)
+    elif bpms2dobba is not None:
+        print(f"Starting BBA from BPM {bpms2dobba[0]}")
+        fname += f"_started_from_{bpms2dobba[0].replace(':', '-')}"
+    else:
+        bpms2dobba = all_bpms
+
+    return bpms2dobba, fname
 
 
 def main():
-    """."""
+    """Parse arguments, configure, and run the BBA measurement."""
     import argparse as _argparse
 
     parser = _argparse.ArgumentParser(
@@ -153,9 +231,9 @@ def main():
         "-r",
         "--ref-orb",
         type=str,
-        help="Name of reference orbit for BBA measurement ."
-        "Use SOFB Window to correct orbit and save it in servconf."
-        "Use the same orbit name.",
+        help="Name of reference orbit for BBA measurement. "
+        "Use SOFB Window to correct orbit and save it in servconf. "
+        "Use the same orbit name here.",
     )
 
     parser.add_argument(
@@ -163,14 +241,14 @@ def main():
         "--bpms2dobba",
         nargs="+",
         help=(
-            "BPMs to include in the BBA measurement. Accepted inputs:"
+            "BPMs to include in the BBA measurement. Accepted inputs: "
             "(1) Space-separated list of BPMs names: SI-17C3:DI-BPM-2"
             " SI-17C4:DI-BPM. "
             "(2) Space-separated list of regexp patterns: 17 C3 M1|C1."
             "(3) Path to text file with one BPM name per line. "
-            "(4) 'all' to include all BPMs (default). "
+            "(4) 'all' to include all BPMs. "
             "If provided, overrides automatic BPM selection from any previous"
-            "measurement progress. "
+            " measurement progress. "
         )
     )
 
@@ -179,6 +257,8 @@ def main():
         "--print-setup",
         action="store_true",
         help="Print measurement setup only, w/o launching the measurement. "
+        "Ideal for testing connections, getting the ref. orb. and checking the"
+        " measurement BPMs selection. "
         "Default is False, set to True if flag is given.",
     )
 
@@ -194,7 +274,8 @@ def main():
     parser.add_argument(
         "--print-bpms",
         action="store_true",
-        help="Print BPMS names/indices only, w/o launching the measurement. "
+        help="Print BPMS names/indices only, w/o establishing connections nor"
+        " launching the measurement. "
         "Default is False, set to True if flag is given.",
     )
 
@@ -242,28 +323,12 @@ def main():
     all_bpms = BBAParams.BPMNAMES
 
     if args.print_bpms:
-        print("Index      BPM name")
-        for i, bpm in enumerate(all_bpms):
-            print(f" {i:03d}     {bpm}")
-        sys.exit(0)
+        print_bpms(all_bpms)
 
     fname = args.filename
     ref_orb = args.ref_orb
 
-    previous_bpms2dobba = None
-    if not args.ignore_previous:
-        previous_bpms2dobba = load_previous_progress(fname)
-
-    # If user provides BPMs explicitly, they override selection
-    # from previous progress.
-    if args.bpms2dobba:
-        bpms2dobba = process_bpms2dobba(args.bpms2dobba, all_bpms)
-    elif previous_bpms2dobba is not None:
-        bpms2dobba = previous_bpms2dobba
-        print(f"Starting BBA from BPM {bpms2dobba[0]}")
-        fname += f"_started_from_{bpms2dobba[0].replace(':', '-')}"
-    else:
-        bpms2dobba = None
+    bpms2dobba, fname = get_bpms_for_bba(args, all_bpms, fname)
 
     dobba = DoBBA()
     dobba = bba_configure(
