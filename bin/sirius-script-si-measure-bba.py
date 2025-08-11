@@ -167,8 +167,7 @@ def load_previous_progress(fname):
         )
         sys.exit(0)
 
-    idx = bpms2dobba.index(measured_bpms[-1])  # THIS ASSUMES ORDERING!
-    return bpms2dobba[idx:]
+    return [bpm for bpm in bpms2dobba if bpm not in measured_bpms]
 
 
 def print_bpms(all_bpms):
