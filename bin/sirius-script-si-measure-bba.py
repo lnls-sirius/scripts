@@ -70,6 +70,7 @@ def get_bpms_for_bba(args, all_bpms, fname):
             sys.exit(1)
     elif bpms2dobba is not None:
         print(f"Starting BBA from BPM {bpms2dobba[0]}")
+        fname, _ = os.path.splitext(fname)
         fname += f"_started_from_{bpms2dobba[0].replace(':', '-')}"
     else:
         bpms2dobba = all_bpms
