@@ -3,11 +3,26 @@
 
 import os
 import re
+import signal
 import sys
+import time
 
 from mathphys.functions import load
 from apsuite.commisslib.measure_bba import BBAParams, DoBBA
 from siriuspy.clientconfigdb import ConfigDBClient
+
+STOP_EVENT = False
+
+
+def _stop_now(signum, frame):
+    _ = frame
+    sname = signal.Signals(signum).name
+    tstamp = time.strftime("%Y-%m-%d %H:%M:%S")
+    print(f"{sname} received at {tstamp}")
+    sys.stdout.flush()
+    sys.stderr.flush()
+    global STOP_EVENT
+    STOP_EVENT = True
 
 
 def bba_run(dobba, fname):
@@ -21,8 +36,15 @@ def bba_run(dobba, fname):
     print("Starting BBA measurement.")
 
     dobba.start()
-    while not dobba.wait_measurement(2 * 60):
+    while not STOP_EVENT and not dobba.wait_measurement(2 * 60):
         dobba.save_data(fname, overwrite=True)
+
+    if STOP_EVENT:
+        print("User requested stop. Sending stop command to BBA meas.")
+        dobba.stop()
+        if dobba.wait_measurement():
+            print("Measurement safely stopped.")
+
     dobba.save_data(fname, overwrite=True)
 
 
@@ -346,4 +368,6 @@ def main():
 
 
 if __name__ == "__main__":
+    signal.signal(signal.SIGINT, _stop_now)
+    signal.signal(signal.SIGTERM, _stop_now)
     main()
