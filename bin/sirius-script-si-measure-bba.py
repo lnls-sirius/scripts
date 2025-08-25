@@ -216,8 +216,8 @@ def main():
         action="store_true",
         help="Run the BBA measurement. If not set, the script only "
         "connects to devices/ref-orb and sets-up the measurement, w/o running "
-        "it. Set this flag once you are conviced the measurement has been "
-        "correclty set up. "
+        "it. Set this flag once you are convinced the measurement has been "
+        "correctly set up. "
     )
 
     parser.add_argument(
@@ -225,8 +225,8 @@ def main():
         "--print-setup",
         action="store_true",
         help="Print measurement setup. Ideal for checking if meas. params. "
-        "have been correclty set and PVs connections have been succesfully "
-        "established, as well as if the desired BPMs have been correclty "
+        "have been correctly set and PVs connections have been successfully "
+        "established, as well as if the desired BPMs have been correctly "
         "selected. ",
     )
 
@@ -259,7 +259,7 @@ def main():
         "--quad_deltakl",
         type=float,
         default=0.02,
-        help="Integrated duadrupole strength variation during measurements, "
+        help="Integrated quadrupole strength variation during measurements, "
         "in 1/m. Defaults to 0.02 1/m. "
         "Not needed if resuming a previous measurement.",
     )
