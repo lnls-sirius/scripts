@@ -75,12 +75,8 @@ def _initialize_config_and_model():
 
 def _configure_cavity_and_radiation(config):
     """Configures cavity and radiation settings based on tracking dimension."""
-    if not config.use6dtrack:
-        config.model.cavity_on = False
-        config.model.radiation_on = False
-    elif config.use6dtrack:
-        config.model.cavity_on = True
-        config.model.radiation_on = False
+    config.model.cavity_on = config.use6dtrack
+    config.model.radiation_on = False
 
 
 def _configure_jacobian_elements(config):
