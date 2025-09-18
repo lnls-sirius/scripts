@@ -47,15 +47,23 @@ def bba_run(dobba, fname):
     dobba.save_data(fname, overwrite=True)
 
 
-def print_bpms(all_bpms):
-    """Prints BPM indices & names, quits execution.
+def print_bpms_quads(bpms_names, quads_names):
+    """Prints BPM & Quads names and meas indices.
 
     Args:
-        all_bpms (list): List of all available BPM names.
+        bpms_names (iterable): List/tuple of all BPM names.
+        quads_names (iterable): List/tuple of all quads names.
+
     """
-    print("BPM index      BPM name")
-    for i, bpm in enumerate(all_bpms):
-        print(f"  {i:03d}       {bpm}")
+    stn = "     {:^20s} {:^20s}\n".format("BPM", "Quad")
+    tmplt = "{:03d}: {:^20s} {:^20s}\n"
+    for idx, (bpm, quad) in enumerate(zip(bpms_names, quads_names)):
+        stn += tmplt.format(
+            idx,
+            bpm,
+            quad,
+        )
+    print(stn)
 
 
 def get_scancenter_orb(ref_orb):
@@ -172,10 +180,11 @@ def main():
     )
 
     parser.add_argument(
-        "--print-all-bpms",
+        "--print-bpms-quads",
         action="store_true",
-        help="Print all BPMS names/indices only, w/o establishing connections "
-        "nor launching the measurement. Print and exit. ",
+        help="Print all BPMs & quads names/indices only, "
+        "w/o establishing connections nor launching the measurement. "
+        "Print and exit. ",
     )
 
     parser.add_argument(
@@ -303,9 +312,10 @@ def main():
     args = parser.parse_args()
 
     all_bpms = BBAParams.BPMNAMES
+    all_quads = BBAParams.QUADNAMES
 
-    if args.print_all_bpms:
-        print_bpms(all_bpms)
+    if args.print_bpms_quads:
+        print_bpms_quads(all_bpms, all_quads)
         sys.exit(0)
 
     fname = args.filename
