@@ -179,6 +179,8 @@ def main():
     """Parse arguments, configure, and run the BBA measurement."""
     import argparse as _argparse
 
+    par = BBAParams()
+
     parser = _argparse.ArgumentParser(description='Measure BBA.')
 
     parser.add_argument(
@@ -263,51 +265,55 @@ def main():
     parser.add_argument(
         '--deltaorbx',
         type=float,
-        default=100,
+        default=par.deltaorbx,
         help='Range for horizontal orbit offset scan, in micrometers. '
-        'Defaults to 100 um. Not needed if resuming a previous measurement. ',
+        f'Defaults to {par.deltaorbx:.0f} um. '
+        'Not needed if resuming a previous measurement. ',
     )
 
     parser.add_argument(
         '--deltaorby',
         type=float,
-        default=100,
+        default=par.deltaorby,
         help='Range for vertical orbit offset scan, in micrometers. '
-        'Defaults to 100 um. Not needed if resuming a previous measurement. ',
+        f'Defaults to {par.deltaorby:.0f} um. '
+        'Not needed if resuming a previous measurement. ',
     )
 
     parser.add_argument(
         '--quad_deltakl',
         type=float,
-        default=0.02,
+        default=par.quad_deltakl,
         help='Integrated quadrupole strength variation during measurements, '
-        'in 1/m. Defaults to 0.02 1/m. '
+        f'in 1/m. Defaults to {par.quad_deltakl:.3f} 1/m. '
         'Not needed if resuming a previous measurement.',
     )
 
     parser.add_argument(
         '--sofb_nrpoints',
         type=int,
-        default=20,
-        help='Number of points for offset scan. Defaults to 20. '
+        default=par.sofb_nrpoints,
+        help='Number of points for offset scan. '
+        f'Defaults to {par.sofb_nrpoints:d}. '
         'Not needed if resuming a previous measurement.',
     )
 
     parser.add_argument(
         '--sofb_maxorberr',
         type=float,
-        default=5,
+        default=par.sofb_maxorberr,
         help='Tolerated orbit error when placing a BPM at a given '
-        'offset, in micrometers. Defaults to 5 um. '
+        'offset, in micrometers. '
+        f'Defaults to {par.sofb_maxorberr:.1f} um. '
         'Not needed if resuming a previous measurement. ',
     )
 
     parser.add_argument(
         '--sofb_maxcorriter',
         type=int,
-        default=5,
+        default=par.sofb_maxcorriter,
         help='Maximum number of failed attempts at placing a BPM at a given '
-        'offset. Defaults to 5. '
+        f'offset. Defaults to {par.sofb_maxcorriter:d}. '
         'Not needed if resuming a previous measurement. ',
     )
 
