@@ -182,7 +182,9 @@ def main():
         "-f",
         "--filename",
         type=str,
-        help="Filename for BBA measurement data. ",
+        help="Filename for BBA measurement data. "
+        "Default name of 'bba_data_yyy-dd-mm-hh-ss´ used if not given"
+        "Mandatory if --resume-meas is given",
     )
 
     parser.add_argument(
@@ -222,7 +224,7 @@ def main():
         "-r",
         "--run-meas",
         action="store_true",
-        help="Run the BBA measurement. If not set, the script only "
+        help="Run the BBA measurement. If not given, the script only "
         "connects to devices/ref-orb and sets-up the measurement, w/o running "
         "it. Set this flag once you are convinced the measurement has been "
         "correctly set up and is ready to be launched. "
