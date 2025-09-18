@@ -223,6 +223,7 @@ def main():
         '-b',
         '--bpms2dobba',
         nargs='+',
+        default=['all'],
         help='BPMs to include in the BBA measurement. Accepted inputs: '
         '(1) Space-separated list of BPMs names: SI-17C3:DI-BPM-2'
         ' SI-17C4:DI-BPM. '
@@ -329,10 +330,7 @@ def main():
     fname = args.filename
     orb = get_scancenter_orb(args.ref_orb)
 
-    if args.bpms2dobba:
-        bpms2dobba = process_bpms2dobba(args.bpms2dobba, all_bpms)
-    else:
-        bpms2dobba = all_bpms
+    bpms2dobba = process_bpms2dobba(args.bpms2dobba, all_bpms)
 
     dobba = DoBBA(isonline=True)
     print('Configuring BBA measurement.')
