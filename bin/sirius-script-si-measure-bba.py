@@ -16,8 +16,8 @@ STOP_EVENT = False
 def _stop_now(signum, frame):
     _ = frame
     sname = signal.Signals(signum).name
-    tstamp = time.strftime("%Y-%m-%d %H:%M:%S")
-    print(f"{sname} received at {tstamp}")
+    tstamp = time.strftime('%Y-%m-%d %H:%M:%S')
+    print(f'{sname} received at {tstamp}')
     sys.stdout.flush()
     sys.stderr.flush()
     global STOP_EVENT
@@ -31,18 +31,18 @@ def bba_run(dobba, fname):
         dobba (DoBBA): The configured DoBBA object.
         fname (str): Filename to save the measurement data.
     """
-    print(80 * "#")
-    print("Starting BBA measurement.")
+    print(80 * '#')
+    print('Starting BBA measurement.')
 
     dobba.start()
     while not STOP_EVENT and not dobba.wait_measurement(2 * 60):
         dobba.save_data(fname, overwrite=True)
 
     if STOP_EVENT:
-        print("User requested stop. Sending stop command to BBA meas.")
+        print('User requested stop. Sending stop command to BBA meas.')
         dobba.stop()
         if dobba.wait_measurement():
-            print("Measurement safely stopped.")
+            print('Measurement safely stopped.')
 
     dobba.save_data(fname, overwrite=True)
 
@@ -55,8 +55,8 @@ def print_bpms_quads(bpms_names, quads_names):
         quads_names (iterable): List/tuple of all quads names.
 
     """
-    stn = "     {:^20s} {:^20s}\n".format("BPM", "Quad")
-    tmplt = "{:03d}: {:^20s} {:^20s}\n"
+    stn = '     {:^20s} {:^20s}\n'.format('BPM', 'Quad')
+    tmplt = '{:03d}: {:^20s} {:^20s}\n'
     for idx, (bpm, quad) in enumerate(zip(bpms_names, quads_names)):
         stn += tmplt.format(
             idx,
@@ -68,8 +68,8 @@ def print_bpms_quads(bpms_names, quads_names):
 
 def get_scancenter_orb(ref_orb):
     """Get scan center ref. orb. for BBA."""
-    print(f"Loading si_orbit: {ref_orb}")
-    cltorb = ConfigDBClient(config_type="si_orbit")
+    print(f'Loading si_orbit: {ref_orb}')
+    cltorb = ConfigDBClient(config_type='si_orbit')
     return cltorb.get_config_value(ref_orb)
 
 
@@ -88,20 +88,20 @@ def load_previous_progress(dobba, fname):
     try:
         dobba.load_and_apply(fname)
     except Exception as e:
-        print(f"Failed to load previous measurement file: {e}")
+        print(f'Failed to load previous measurement file: {e}')
         sys.exit(1)
 
-    print("Previous BBA measurement found and loaded!")
-    bpms2dobba = dobba.data["bpms2dobba"]
-    measured_bpms = list(dobba.data["measure"].keys())
+    print('Previous BBA measurement found and loaded!')
+    bpms2dobba = dobba.data['bpms2dobba']
+    measured_bpms = list(dobba.data['measure'].keys())
 
     dobba.bpms2dobba = [bpm for bpm in bpms2dobba if bpm not in measured_bpms]
     # If previous measurement is already completed, exit
     if len(measured_bpms) == len(bpms2dobba):
         print(
-              "\tPrevious BBA meas. already completed for given filename. \n" +
-              "If you want to repeat the measurement, launch it again" +
-              "without the '--resume-meas' arg. or different filename."
+            '\tPrevious BBA meas. already completed for given filename. \n'
+            + 'If you want to repeat the measurement, launch it again'
+            + "without the '--resume-meas' arg. or different filename."
         )
         sys.exit(0)
 
@@ -125,7 +125,7 @@ def process_bpms2dobba(bpms2dobba_args, all_bpms):
         arg = bpms2dobba_args[0]
 
         # all
-        if arg.lower() == "all":
+        if arg.lower() == 'all':
             return all_bpms
 
         # file
@@ -135,8 +135,8 @@ def process_bpms2dobba(bpms2dobba_args, all_bpms):
             bpms2dobba = [bpm for bpm in bpms if bpm in all_bpms]
             if len(bpms) != len(bpms2dobba):
                 print(
-                    f"Warning: {len(bpms2dobba)} BPMs identified" +
-                    f" out of {len(bpms)} BPMs indicated in file."
+                    f'Warning: {len(bpms2dobba)} BPMs identified'
+                    + f' out of {len(bpms)} BPMs indicated in file.'
                 )
             return bpms2dobba
 
@@ -147,9 +147,7 @@ def process_bpms2dobba(bpms2dobba_args, all_bpms):
         else:  # regexp pattern
             try:
                 pattern = re.compile(arg)
-                matches = [
-                    bpm for bpm in all_bpms if pattern.search(bpm)
-                ]
+                matches = [bpm for bpm in all_bpms if pattern.search(bpm)]
                 bpms2dobba.extend(matches)
             except re.error:
                 pass
@@ -158,7 +156,7 @@ def process_bpms2dobba(bpms2dobba_args, all_bpms):
     bpms2dobba = list(dict.fromkeys(bpms2dobba))
 
     if not bpms2dobba:
-        print("Error: no BPMs matched the provided arguments.")
+        print('Error: no BPMs matched the provided arguments.')
         sys.exit(1)
 
     return bpms2dobba
@@ -166,8 +164,8 @@ def process_bpms2dobba(bpms2dobba_args, all_bpms):
 
 def get_default_fname():
     """."""
-    fname = "bba_data_"
-    fname += time.strftime("%Y-%m-%d-%H-%M")
+    fname = 'bba_data_'
+    fname += time.strftime('%Y-%m-%d-%H-%M')
     return fname
 
 
@@ -175,138 +173,136 @@ def main():
     """Parse arguments, configure, and run the BBA measurement."""
     import argparse as _argparse
 
-    parser = _argparse.ArgumentParser(
-        description="Measure BBA."
+    parser = _argparse.ArgumentParser(description='Measure BBA.')
+
+    parser.add_argument(
+        '--print-bpms-quads',
+        action='store_true',
+        help='Print all BPMs & quads names/indices only, '
+        'w/o establishing connections nor launching the measurement. '
+        'Print and exit. ',
     )
 
     parser.add_argument(
-        "--print-bpms-quads",
-        action="store_true",
-        help="Print all BPMs & quads names/indices only, "
-        "w/o establishing connections nor launching the measurement. "
-        "Print and exit. ",
-    )
-
-    parser.add_argument(
-        "-f",
-        "--filename",
+        '-f',
+        '--filename',
         type=str,
-        help="Filename for BBA measurement data. "
+        help='Filename for BBA measurement data. '
         "Default name of 'bba_data_yyy-dd-mm-hh-ss´ used if not given"
-        "Mandatory if --resume-meas is given",
+        'Mandatory if --resume-meas is given',
     )
 
     parser.add_argument(
-        "--resume-meas",
-        action="store_true",
-        help="Resume from a previous measurement. If given, all other "
-        "args are ignored and params from previous measurement are used."
+        '--resume-meas',
+        action='store_true',
+        help='Resume from a previous measurement. If given, all other '
+        'args are ignored and params from previous measurement are used.',
     )
 
     parser.add_argument(
-        "-o",
-        "--ref-orb",
+        '-o',
+        '--ref-orb',
         type=str,
-        default="ref_orb",
-        help="Name of reference orbit for BBA measurement. "
-        "If you want to carry out the measurement around the current machine "
-        "orbit, use the SOFB Window to correct orbit and save it in servconf "
-        "with a desired orbit name. Use the same orbit name here. "
-        "Not needed if resuming a previous measurement. ",
+        default='ref_orb',
+        help='Name of reference orbit for BBA measurement. '
+        'If you want to carry out the measurement around the current machine '
+        'orbit, use the SOFB Window to correct orbit and save it in servconf '
+        'with a desired orbit name. Use the same orbit name here. '
+        'Not needed if resuming a previous measurement. ',
     )
 
     parser.add_argument(
-        "-b",
-        "--bpms2dobba",
-        nargs="+",
-        help="BPMs to include in the BBA measurement. Accepted inputs: "
-        "(1) Space-separated list of BPMs names: SI-17C3:DI-BPM-2"
-        " SI-17C4:DI-BPM. "
-        "(2) Space-separated list of regexp patterns: 17 C3 M1|C1."
-        "(3) Path to text file with one BPM name per line. "
+        '-b',
+        '--bpms2dobba',
+        nargs='+',
+        help='BPMs to include in the BBA measurement. Accepted inputs: '
+        '(1) Space-separated list of BPMs names: SI-17C3:DI-BPM-2'
+        ' SI-17C4:DI-BPM. '
+        '(2) Space-separated list of regexp patterns: 17 C3 M1|C1.'
+        '(3) Path to text file with one BPM name per line. '
         "(4) 'all' to include all BPMs. "
         "If not given, 'all' is assumed. "
-        "Not needed if resuming from a previous measurement. ",
+        'Not needed if resuming from a previous measurement. ',
     )
 
     parser.add_argument(
-        "-r",
-        "--run-meas",
-        action="store_true",
-        help="Run the BBA measurement. If not given, the script only "
-        "connects to devices/ref-orb and sets-up the measurement, w/o running "
-        "it. Set this flag once you are convinced the measurement has been "
-        "correctly set up and is ready to be launched. "
+        '-r',
+        '--run-meas',
+        action='store_true',
+        help='Run the BBA measurement. If not given, the script only '
+        'connects to devices/ref-orb and sets-up the measurement, w/o running '
+        'it. Set this flag once you are convinced the measurement has been '
+        'correctly set up and is ready to be launched. ',
     )
 
     parser.add_argument(
-        "-p",
-        "--print-setup",
-        action="store_true",
-        help="Print measurement setup. Ideal for checking if meas. params. "
-        "have been correctly set and PVs connections have been successfully "
-        "established, as well as if the desired BPMs have been correctly "
-        "selected. ",
+        '-p',
+        '--print-setup',
+        action='store_true',
+        help='Print measurement setup. Ideal for checking if meas. params. '
+        'have been correctly set and PVs connections have been successfully '
+        'established, as well as if the desired BPMs have been correctly '
+        'selected. ',
     )
 
     parser.add_argument(
-        "-t",
-        "--timeout",
+        '-t',
+        '--timeout',
         type=int,
         default=15,
-        help="Connection timeout for quads and SOFB PVs, in seconds. "
-        "Defaults to 15 s. "
+        help='Connection timeout for quads and SOFB PVs, in seconds. '
+        'Defaults to 15 s. ',
     )
 
     parser.add_argument(
-        "--deltaorbx",
+        '--deltaorbx',
         type=float,
         default=100,
-        help="Range for horizontal orbit offset scan, in micrometers. "
-        "Defaults to 100 um. Not needed if resuming a previous measurement. ",
+        help='Range for horizontal orbit offset scan, in micrometers. '
+        'Defaults to 100 um. Not needed if resuming a previous measurement. ',
     )
 
     parser.add_argument(
-        "--deltaorby",
+        '--deltaorby',
         type=float,
         default=100,
-        help="Range for vertical orbit offset scan, in micrometers. "
-        "Defaults to 100 um. Not needed if resuming a previous measurement. ",
+        help='Range for vertical orbit offset scan, in micrometers. '
+        'Defaults to 100 um. Not needed if resuming a previous measurement. ',
     )
 
     parser.add_argument(
-        "--quad_deltakl",
+        '--quad_deltakl',
         type=float,
         default=0.02,
-        help="Integrated quadrupole strength variation during measurements, "
-        "in 1/m. Defaults to 0.02 1/m. "
-        "Not needed if resuming a previous measurement.",
+        help='Integrated quadrupole strength variation during measurements, '
+        'in 1/m. Defaults to 0.02 1/m. '
+        'Not needed if resuming a previous measurement.',
     )
 
     parser.add_argument(
-        "--sofb_nrpoints",
+        '--sofb_nrpoints',
         type=int,
         default=20,
-        help="Number of points for offset scan. Defaults to 20. "
-        "Not needed if resuming a previous measurement.",
+        help='Number of points for offset scan. Defaults to 20. '
+        'Not needed if resuming a previous measurement.',
     )
 
     parser.add_argument(
-        "--sofb_maxorberr",
+        '--sofb_maxorberr',
         type=float,
         default=5,
-        help="Tolerated orbit error when placing a BPM at a given "
-        "offset, in micrometers. Defaults to 5 um. "
-        "Not needed if resuming a previous measurement. ",
+        help='Tolerated orbit error when placing a BPM at a given '
+        'offset, in micrometers. Defaults to 5 um. '
+        'Not needed if resuming a previous measurement. ',
     )
 
     parser.add_argument(
-        "--sofb_maxcorriter",
+        '--sofb_maxcorriter',
         type=int,
         default=5,
-        help="Maximum number of failed attempts at placing a BPM at a given "
-        "offset. Defaults to 5. "
-        "Not needed if resuming a previous measurement. ",
+        help='Maximum number of failed attempts at placing a BPM at a given '
+        'offset. Defaults to 5. '
+        'Not needed if resuming a previous measurement. ',
     )
 
     args = parser.parse_args()
@@ -327,23 +323,23 @@ def main():
         bpms2dobba = all_bpms
 
     dobba = DoBBA(isonline=True)
-    print("Configuring BBA measurement.")
+    print('Configuring BBA measurement.')
 
     if args.resume_meas:
         if fname is None:
             print(
-                "ERROR: " +
-                "Can't resume from a previous meas! " +
-                "No filename was given. \n"
+                'ERROR: '
+                + "Can't resume from a previous meas! "
+                + 'No filename was given. \n'
             )
             sys.exit(1)
 
         load_previous_progress(dobba, fname)
         print(
-            "Warning! " +
-            "Measurement configured according to last " +
-            "measurement params. Ignoring any other args. passed." +
-            "\n"
+            'Warning! '
+            + 'Measurement configured according to last '
+            + 'measurement params. Ignoring any other args. passed.'
+            + '\n'
         )
     else:
         dobba.params.deltaorbx = args.deltaorbx
@@ -352,23 +348,23 @@ def main():
         dobba.params.sofb_nrpoints = args.sofb_nrpoints
         dobba.params.sofb_maxcorriter = args.sofb_maxcorriter
         dobba.params.sofb_maxorberr = args.sofb_maxorberr
-        dobba.data["scancenterx"] = orb["x"]
-        dobba.data["scancentery"] = orb["y"]
+        dobba.data['scancenterx'] = orb['x']
+        dobba.data['scancentery'] = orb['y']
         dobba.bpms2dobba = bpms2dobba
 
     if fname is None:
         fname = get_default_fname()
 
-    print("Waiting PVs to connect...")
+    print('Waiting PVs to connect...')
     if not dobba.wait_for_connection(timeout=args.timeout):
-        print("\tSome PVs did not connect! Disconnected PVs:\n")
+        print('\tSome PVs did not connect! Disconnected PVs:\n')
         for pvname in dobba.disconnected_pvnames:
-            print(f"\t{pvname}")
-        print("\tExiting.")
+            print(f'\t{pvname}')
+        print('\tExiting.')
         sys.exit(1)
-    print("\tDone!")
+    print('\tDone!')
 
-    print("Measurement configured.")
+    print('Measurement configured.')
 
     if args.print_setup:
         print(dobba)
@@ -377,7 +373,7 @@ def main():
         bba_run(dobba, fname)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     signal.signal(signal.SIGINT, _stop_now)
     signal.signal(signal.SIGTERM, _stop_now)
     main()
