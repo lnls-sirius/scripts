@@ -214,6 +214,7 @@ def main():
         "(2) Space-separated list of regexp patterns: 17 C3 M1|C1."
         "(3) Path to text file with one BPM name per line. "
         "(4) 'all' to include all BPMs. "
+        "If not given, 'all' is assumed. "
         "Not needed if resuming from a previous measurement. ",
     )
 
@@ -224,7 +225,7 @@ def main():
         help="Run the BBA measurement. If not set, the script only "
         "connects to devices/ref-orb and sets-up the measurement, w/o running "
         "it. Set this flag once you are convinced the measurement has been "
-        "correctly set up. "
+        "correctly set up and is ready to be launched. "
     )
 
     parser.add_argument(
@@ -243,7 +244,7 @@ def main():
         type=int,
         default=15,
         help="Connection timeout for quads and SOFB PVs, in seconds. "
-        "Defaults to 15 s. Not needed if resuming a previous measurement. "
+        "Defaults to 15 s. "
     )
 
     parser.add_argument(
@@ -310,6 +311,8 @@ def main():
 
     if args.bpms2dobba:
         bpms2dobba = process_bpms2dobba(args.bpms2dobba, all_bpms)
+    else:
+        bpms2dobba = all_bpms
 
     dobba = DoBBA(isonline=True)
     print("Configuring BBA measurement.")
@@ -346,9 +349,9 @@ def main():
 
     print("Waiting PVs to connect...")
     if not dobba.wait_for_connection(timeout=args.timeout):
-        print("\tSome PVs did not connect! Disconnected PVs:")
+        print("\tSome PVs did not connect! Disconnected PVs:\n")
         for pvname in dobba.disconnected_pvnames:
-            print(f"\t\t{pvname}")
+            print(f"\t{pvname}")
         print("\tExiting.")
         sys.exit(1)
     print("\tDone!")
