@@ -13,9 +13,10 @@ GENERALSCRIPTS = \
 		sirius-script-li-egun-ramp.py \
 		sirius-script-ps-wfmupdateauto-off.py \
 		sirius-script-clientarch-checkpv.py \
-		sirius-script-si-acquire-bpm-triggered-data.py \
-		sirius-script-si-run-loco-fitting.py \
-		sirius-script-si-set-loco-strengths.py \
+		sirius-script-si-bpm-acquire-triggered-data.py \
+		sirius-script-si-loco-run-fitting.py \
+		sirius-script-si-loco-set-strengths.py \
+		sirius-script-si-bba-measure.py \
 		sirius-script-clientconfigdb-compare-configs.py \
 		sirius-script-install-openocd.sh \
 		sirius-script-afc-boot-from-flash.sh \

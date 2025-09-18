@@ -4,8 +4,13 @@
 from datetime import datetime
 
 from apsuite.commisslib.meas_bpms_signals import AcqBPMsSignals
-from siriuspy.devices import BOPSRampStandbyHandler, BORFRampStandbyHandler, \
-    BunchbyBunch, HLFOFB, SOFB
+from siriuspy.devices import (
+    BOPSRampStandbyHandler,
+    BORFRampStandbyHandler,
+    BunchbyBunch,
+    HLFOFB,
+    SOFB,
+)
 
 
 def configure_acquisition_params(orbacq, parse_args):
@@ -23,7 +28,7 @@ def configure_acquisition_params(orbacq, parse_args):
     params.trigbpm_nrpulses = 1
 
     params.timing_event = args.eventname  # Default: 'Linac'
-    params.event_mode = args.eventmode   # Default: 'Injection'
+    params.event_mode = args.eventmode  # Default: 'Injection'
     params.event_delay = None
     params.do_pulse_evg = args.pulseevg  # Default: False
     print('--- orbit acquisition configuration ---')
@@ -36,18 +41,24 @@ def measure(orbacq):
     orbacq.prepare_timing()
     event_mode = orbacq.params.event_mode
     if event_mode.lower() == 'external':
-        print((
-            'Please check BPM acquisition status, or wait a few seconds, '
-            ' before triggering event!'))
+        print(
+            (
+                'Please check BPM acquisition status, or wait a few seconds, '
+                ' before triggering event!'
+            )
+        )
     else:
         print('Waiting for next injection pulse')
-        print((
-            'Take a look at Injection Control Log to check for next '
-            'injection'))
+        print(
+            (
+                'Take a look at Injection Control Log to check for next '
+                'injection'
+            )
+        )
     try:
         orbacq.acquire_data()
     except Exception as e:
-        print(f"An error occurred during acquisition: {e}")
+        print(f'An error occurred during acquisition: {e}')
     # Restore initial timing state, regardless acquisition status
     orbacq.recover_timing_state(init_state)
     return orbacq.data is not None
@@ -86,43 +97,81 @@ def read_feedback_status(devs, orbacq):
     orbacq.data['bo_rf_ramp_state'] = borfrmp.is_on
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     """."""
     import argparse as _argparse
 
     parser = _argparse.ArgumentParser(
         description=(
-            "BPM triggered acquisition script. "
-            "By default the script is configured to acquire injection "
-            "perturbations during top-up."))
+            'BPM triggered acquisition script. '
+            'By default the script is configured to acquire injection '
+            'perturbations during top-up.'
+        )
+    )
     parser.add_argument(
-        '-f', '--filename', type=str, default='',
-        help='name of the file to save (Default: acqrate_YY-MM-DD_HHhMMmSSs)')
+        '-f',
+        '--filename',
+        type=str,
+        default='',
+        help='name of the file to save (Default: acqrate_YY-MM-DD_HHhMMmSSs)',
+    )
     parser.add_argument(
-        '-s', '--signals2acq', type=str, default='XY',
-        help='signals to acquire (Default: XY)')
+        '-s',
+        '--signals2acq',
+        type=str,
+        default='XY',
+        help='signals to acquire (Default: XY)',
+    )
     parser.add_argument(
-        '-r', '--acqrate', type=str, default='TbT',
-        help='acquisition Rate (Default: TbT)')
+        '-r',
+        '--acqrate',
+        type=str,
+        default='TbT',
+        help='acquisition Rate (Default: TbT)',
+    )
     # 3 minutes between top-up injections, timeout > 3*60s
     parser.add_argument(
-        '-t', '--timeout', type=float, default=200,
-        help='acquisition timeout [s] (Default: 200 [s])')
+        '-t',
+        '--timeout',
+        type=float,
+        default=200,
+        help='acquisition timeout [s] (Default: 200 [s])',
+    )
     parser.add_argument(
-        '-b', '--nrptsbefore', type=int, default=1_000,
-        help='nr points before trigger (Default: 1000)')
+        '-b',
+        '--nrptsbefore',
+        type=int,
+        default=1_000,
+        help='nr points before trigger (Default: 1000)',
+    )
     parser.add_argument(
-        '-a', '--nrptsafter', type=int, default=10_000,
-        help='nr points after trigger (Default: 10000)')
+        '-a',
+        '--nrptsafter',
+        type=int,
+        default=10_000,
+        help='nr points after trigger (Default: 10000)',
+    )
     parser.add_argument(
-        '-e', '--eventname', type=str, default='Linac',
-        help='timing event name (Default: Linac)')
+        '-e',
+        '--eventname',
+        type=str,
+        default='Linac',
+        help='timing event name (Default: Linac)',
+    )
     parser.add_argument(
-        '-m', '--eventmode', type=str, default='Injection',
-        help='timing event mode (Default: Injection)')
+        '-m',
+        '--eventmode',
+        type=str,
+        default='Injection',
+        help='timing event mode (Default: Injection)',
+    )
     parser.add_argument(
-        '-p', '--pulseevg', default=False, action='store_true',
-        help='pulse EVG? (Default: False)')
+        '-p',
+        '--pulseevg',
+        default=False,
+        action='store_true',
+        help='pulse EVG? (Default: False)',
+    )
 
     args = parser.parse_args()
     orbacq = initialize(args)
