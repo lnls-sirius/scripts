@@ -6,22 +6,35 @@ import re
 import signal
 import sys
 import time
+from functools import partial
+from threading import Lock
 
 from apsuite.commisslib.measure_bba import BBAParams, DoBBA
 from siriuspy.clientconfigdb import ConfigDBClient
 
-STOP_EVENT = False
+lock_stop = Lock()
 
 
-def _stop_now(signum, frame):
+def _stop_now(dobba, signum, frame):
     _ = frame
+    if lock_stop.locked():
+        print('There is another stop request running. Please wait a little.')
+        return
+    lock_stop.acquire()
+
     sname = signal.Signals(signum).name
     tstamp = time.strftime('%Y-%m-%d %H:%M:%S')
     print(f'{sname} received at {tstamp}')
     sys.stdout.flush()
     sys.stderr.flush()
-    global STOP_EVENT
-    STOP_EVENT = True
+    dobba.stop()
+    print('Waiting measurement to stop smoothly')
+    if dobba.wait_measurement(60):
+        print('Measurement safely stopped.')
+    else:
+        print('Measurement did not stop within 60 seconds.')
+
+    lock_stop.release()
 
 
 def bba_run(dobba, fname):
@@ -35,15 +48,8 @@ def bba_run(dobba, fname):
     print('Starting BBA measurement.')
 
     dobba.start()
-    while not STOP_EVENT and not dobba.wait_measurement(2 * 60):
+    while not dobba.wait_measurement(2 * 60):
         dobba.save_data(fname, overwrite=True)
-
-    if STOP_EVENT:
-        print('User requested stop. Sending stop command to BBA meas.')
-        dobba.stop()
-        if dobba.wait_measurement():
-            print('Measurement safely stopped.')
-
     dobba.save_data(fname, overwrite=True)
 
 
@@ -325,6 +331,9 @@ def main():
     dobba = DoBBA(isonline=True)
     print('Configuring BBA measurement.')
 
+    signal.signal(signal.SIGINT, partial(_stop_now, dobba))
+    signal.signal(signal.SIGTERM, partial(_stop_now, dobba))
+
     if args.resume_meas:
         if fname is None:
             print(
@@ -374,6 +383,4 @@ def main():
 
 
 if __name__ == '__main__':
-    signal.signal(signal.SIGINT, _stop_now)
-    signal.signal(signal.SIGTERM, _stop_now)
     main()
