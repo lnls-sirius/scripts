@@ -156,6 +156,13 @@ def process_bpms2dobba(bpms2dobba_args, all_bpms):
     return bpms2dobba
 
 
+def get_default_fname():
+    """."""
+    fname = "bba_data_"
+    fname += time.strftime("%Y-%m-%d-%H-%M")
+    return fname
+
+
 def main():
     """Parse arguments, configure, and run the BBA measurement."""
     import argparse as _argparse
@@ -308,6 +315,14 @@ def main():
     print("Configuring BBA measurement.")
 
     if args.resume_meas:
+        if fname is None:
+            print(
+                "ERROR: " +
+                "Can't resume from a previous meas! " +
+                "No filename was given. \n"
+            )
+            sys.exit(1)
+
         load_previous_progress(dobba, fname)
         print(
             "Warning! " +
@@ -325,6 +340,9 @@ def main():
         dobba.data["scancenterx"] = orb["x"]
         dobba.data["scancentery"] = orb["y"]
         dobba.bpms2dobba = bpms2dobba
+
+    if fname is None:
+        fname = get_default_fname()
 
     print("Waiting PVs to connect...")
     if not dobba.wait_for_connection(timeout=args.timeout):
