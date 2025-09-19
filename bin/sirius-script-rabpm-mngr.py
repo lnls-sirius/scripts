@@ -10,10 +10,10 @@ def execute_ssh(hostname, *command):
 
 
 def get_hostname_with_suffix(rack, suffix):
-    if rack == "21":
+    if rack == 21:
         prefix = "ia-20rabpmtl-co-"
-    elif rack.isdigit() and 1 <= int(rack) <= 20:
-        prefix = f"ia-{rack.zfill(2)}rabpm-co-"
+    elif 1 <= rack <= 20:
+        prefix = f"ia-{rack:02d}rabpm-co-"
     else:
         raise ValueError("Invalid rack number")
 
@@ -61,8 +61,28 @@ def run_boot_from_flash(rack, slot):
 
 
 def add_rack_arg(command):
-    command.add_argument("-r", "--rack", required=True,
-                         help="Rack number {01..20} or 21 for transport line")
+    command.add_argument("-r", "--racks", required=True,
+                         nargs="+", action=ValidateDeviceListAction, all_devices=list(range(1, 22)),
+                         help="Rack numbers {01..21} (21 for transport line) or 'all'")
+
+
+class ValidateDeviceListAction(argparse.Action):
+    def __init__(self, all_devices, *args, **kwargs):
+        self._all_devices = all_devices
+        super(ValidateDeviceListAction, self).__init__(*args, **kwargs)
+
+    def __call__(self, parser, namespace, values, option_string=None):
+        if len(values) == 1 and values[0] == "all":
+            values = self._all_devices
+
+        else:
+            try:
+                values = list(map(int, values))
+            except ValueError as err:
+                parser.print_help()
+                parser.exit(
+                    status=1, message=f"Invalid device argument: {err}\n")
+        setattr(namespace, self.dest, values)
 
 
 def main():
@@ -108,18 +128,20 @@ def main():
     add_rack_arg(parser_boot_from_flash)
 
     args = parser.parse_args()
-    if args.command == "afc-list":
-        run_pcie_list(args.rack)
-    elif args.command == "afc-rescan":
-        run_pcie_rescan(args.rack)
-    elif args.command == "afc-remove":
-        run_pcie_remove(args.rack, args.slot)
-    elif args.command == "ioc-restart":
-        run_ioc_restart(args.rack, args.ioc, args.slot)
-    elif args.command == "rffe-reset":
-        run_rffe_reset(args.rack, args.vslot)
-    elif args.command == "afc-reset":
-        run_boot_from_flash(args.rack, args.slot)
+
+    for rack in args.racks:
+        if args.command == "afc-list":
+            run_pcie_list(rack)
+        elif args.command == "afc-rescan":
+            run_pcie_rescan(rack)
+        elif args.command == "afc-remove":
+            run_pcie_remove(rack, args.slot)
+        elif args.command == "ioc-restart":
+            run_ioc_restart(rack, args.ioc, args.slot)
+        elif args.command == "rffe-reset":
+            run_rffe_reset(rack, args.vslot)
+        elif args.command == "afc-reset":
+            run_boot_from_flash(rack, args.slot)
 
 
 if __name__ == "__main__":
