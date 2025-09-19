@@ -3,6 +3,29 @@
 import argparse
 import subprocess
 import sys
+import os
+import shlex
+
+
+class SSHAgent():
+    def __enter__(self):
+        self.agent = subprocess.Popen(
+            ['ssh-agent', '-D'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+        agent_output = self.agent.stdout.readline().decode('ascii')
+        ssh_auth_sock = shlex.split(agent_output)[0].strip(';').split('=')
+
+        os.environ.update({ssh_auth_sock[0]: ssh_auth_sock[1]})
+
+        # Use shell=True, so the tilde (~) is correctly expanded by having the
+        # shell interpret the command. The command must be a string instead of a
+        # list so it becomes a single argument to `/bin/sh -c`.
+        # This is needed for ssh-add but not ssh, since it expands ~.
+        subprocess.run("ssh-add ~/.ssh/id_ed25519_rabpm", shell=True)
+
+    def __exit__(self, *args, **kwargs):
+        self.agent.terminate()
+        self.agent.wait()
 
 
 def execute_ssh(hostname, *command):
@@ -158,19 +181,20 @@ def main():
 
     args = parser.parse_args()
 
-    for rack in args.racks:
-        if args.command == "afc-list":
-            run_pcie_list(rack)
-        elif args.command == "afc-rescan":
-            run_pcie_rescan(rack)
-        elif args.command == "afc-remove":
-            run_pcie_remove(rack, args.slot)
-        elif args.command == "ioc-restart":
-            run_ioc_restart(rack, args.ioc, args.slot)
-        elif args.command == "rffe-reset":
-            run_rffe_reset(rack, args.vslots)
-        elif args.command == "afc-reset":
-            run_boot_from_flash(rack, args.slots)
+    with SSHAgent():
+        for rack in args.racks:
+            if args.command == "afc-list":
+                run_pcie_list(rack)
+            elif args.command == "afc-rescan":
+                run_pcie_rescan(rack)
+            elif args.command == "afc-remove":
+                run_pcie_remove(rack, args.slot)
+            elif args.command == "ioc-restart":
+                run_ioc_restart(rack, args.ioc, args.slot)
+            elif args.command == "rffe-reset":
+                run_rffe_reset(rack, args.vslots)
+            elif args.command == "afc-reset":
+                run_boot_from_flash(rack, args.slots)
 
 
 if __name__ == "__main__":
