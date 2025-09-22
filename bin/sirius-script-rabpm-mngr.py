@@ -2,6 +2,7 @@
 
 import argparse
 import subprocess
+import sys
 
 
 def execute_ssh(hostname, *command):
@@ -48,16 +49,40 @@ def run_ioc_restart(rack, ioc, slot):
     execute_ssh(hostname, "ioc-restart", ioc, slot)
 
 
-def run_rffe_reset(rack, virtual_slot):
+def run_rffe_reset(rack, virtual_slots):
     hostname = get_cpu_hostname(rack)
-    execute_ssh(hostname, "rffe-reset", virtual_slot)
+    for vslot in virtual_slots:
+        execute_ssh(hostname, "rffe-reset", str(vslot))
 
 
-def run_boot_from_flash(rack, slot):
+def run_boot_from_flash(rack, slots):
+    try:
+        if isinstance(slots, str):
+            slots = conv_device_2_slots(slots)
+    except ValueError as err:
+        print("Unable to perform boot from flash:", err)
+        sys.exit(1)
+
     hostname = get_mch_hostname(rack)
-    board = "afcv4-sfp" if slot == 2 else "afcv3"
-    subprocess.run(
-        ["sirius-script-afc-boot-from-flash.sh", board, hostname, str(slot)])
+    for slot in slots:
+        board = "afcv4-sfp" if slot == 2 else "afcv3"
+        subprocess.run(
+            ["sirius-script-afc-boot-from-flash.sh", board, hostname, str(slot)])
+
+
+def conv_device_2_slots(dev):
+    if dev == "timing":
+        slots = [1]
+    elif dev == "fofb":
+        slots = [2]
+    elif dev == "bpm":
+        slots = range(4, 13)
+    elif dev == "all":
+        slots = range(1, 13)
+    else:
+        raise ValueError(f'Unsupported device type: {dev}')
+
+    return slots
 
 
 def add_rack_arg(command):
@@ -116,15 +141,19 @@ def main():
 
     parser_reset = subparsers.add_parser("rffe-reset",
                                          help="Reset RFFE")
-    parser_reset.add_argument("-v", "--vslot", required=True,
-                              help="Virtual slot number to reset(calculated as "
+    parser_reset.add_argument("-v", "--vslots", required=True,
+                              nargs="+", action=ValidateDeviceListAction, all_devices=list(range(11, 24)),
+                              help="Virtual slot numbers to reset(calculated as "
                               "(2*physical_slot-1) or (2*physical_slot))")
     add_rack_arg(parser_reset)
 
     parser_boot_from_flash = subparsers.add_parser(
         "afc-reset", help="Boot the AFC from flash memory")
-    parser_boot_from_flash.add_argument("-s", "--slot", required=True,
-                                        help="Slot number")
+    group = parser_boot_from_flash.add_mutually_exclusive_group(required=True)
+    group.add_argument("-s", "--slots", nargs="+", type=int,
+                       help="Slot numbers")
+    group.add_argument("--device", choices=['timing', 'fofb', 'bpm', 'all'], dest='slots',
+                       help="Reset a batch of specified afc devices (timing, fofb or bpm) or all")
     add_rack_arg(parser_boot_from_flash)
 
     args = parser.parse_args()
@@ -139,9 +168,9 @@ def main():
         elif args.command == "ioc-restart":
             run_ioc_restart(rack, args.ioc, args.slot)
         elif args.command == "rffe-reset":
-            run_rffe_reset(rack, args.vslot)
+            run_rffe_reset(rack, args.vslots)
         elif args.command == "afc-reset":
-            run_boot_from_flash(rack, args.slot)
+            run_boot_from_flash(rack, args.slots)
 
 
 if __name__ == "__main__":
