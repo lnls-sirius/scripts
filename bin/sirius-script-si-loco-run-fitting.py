@@ -5,17 +5,16 @@ import os
 import sys
 import time
 
-from mathphys.functions import save, load
+import apsuite.commisslib as commisslib
 import numpy as np
-
-import siriuspy.clientconfigdb as servconf
-from pymodels import si
 import pyaccel as pyac
+import siriuspy.clientconfigdb as servconf
 from apsuite.loco.config import LOCOConfigSI
 from apsuite.loco.main import LOCO
 from apsuite.loco.report import LOCOReport
 from apsuite.optics_analysis.tune_correction import TuneCorr
-import apsuite.commisslib as commisslib
+from mathphys.functions import load, save
+from pymodels import si
 
 # --- Constants ---
 TUNE_X_INTEGER = 49
@@ -34,8 +33,8 @@ DIP_NUMBER = 100
 
 SVD_SELECTION_VALUE = -1
 
-JACOBIAN_KL_QUAD_FNAME = "6d_KL_quadrupoles_trims"
-JACOBIAN_KSL_SKEWQUAD_FNAME = "6d_KsL_skew_quadrupoles"
+JACOBIAN_KL_QUAD_FNAME = '6d_KL_quadrupoles_trims'
+JACOBIAN_KSL_SKEWQUAD_FNAME = '6d_KsL_skew_quadrupoles'
 
 DEFAULT_NRITERS = 20
 DEFAULT_DELTAKL_WEIGHT = 1000
@@ -44,17 +43,17 @@ DEFAULT_LAMBDA_LM = 0.001
 
 def load_data(fname):
     """Loads LOCO data from a file."""
-    sys.modules["apsuite.commissioning_scripts"] = commisslib
+    sys.modules['apsuite.commissioning_scripts'] = commisslib
     return load(fname)
 
 
 def move_tunes(model, tunex_goal, tuney_goal):
     """Adjusts the tunes of the model to match measured values."""
     tunecorr = TuneCorr(
-        model, "SI", method="Proportional", grouping="TwoKnobs"
+        model, 'SI', method='Proportional', grouping='TwoKnobs'
     )
     tunecorr.get_tunes(model)
-    print(f"    tunes init  : {str(tunecorr.get_tunes(model))}")
+    print(f'    tunes init  : {str(tunecorr.get_tunes(model))}')
     tunemat = tunecorr.calc_jacobian_matrix()
     tunecorr.correct_parameters(
         model=model,
@@ -62,7 +61,7 @@ def move_tunes(model, tunex_goal, tuney_goal):
         jacobian_matrix=tunemat,
         tol=1e-10,
     )
-    print(f"    tunes final  : {str(tunecorr.get_tunes(model))}")
+    print(f'    tunes final  : {str(tunecorr.get_tunes(model))}')
 
 
 def _initialize_config_and_model():
@@ -117,7 +116,7 @@ def _configure_elements_to_fit(config):
     config.quadrupoles_to_fit = None
     config.sextupoles_to_fit = None
     config.skew_quadrupoles_to_fit = config.famname_skewquadset.copy()
-    fc2_idx = config.skew_quadrupoles_to_fit.index("FC2")
+    fc2_idx = config.skew_quadrupoles_to_fit.index('FC2')
     config.skew_quadrupoles_to_fit.pop(fc2_idx)
     config.dipoles_to_fit = None
 
@@ -191,7 +190,7 @@ def create_loco_config(
     _configure_weights(config)
     _configure_svd(config)
 
-    print("--- changing tunes for nominal model...")
+    print('--- changing tunes for nominal model...')
     move_tunes(
         config.model,
         TUNE_X_INTEGER + goal_tunes[0],
@@ -205,7 +204,7 @@ def create_loco(
     loco_setup,
     load_jacobian=False,
     save_jacobian=False,
-    folder_jacobian="",
+    folder_jacobian='',
     goal_tunes=None,
     deltakl_weight=DEFAULT_DELTAKL_WEIGHT,
     lambda_lm=DEFAULT_LAMBDA_LM,
@@ -217,30 +216,30 @@ def create_loco(
         lambda_lm=lambda_lm,
     )
 
-    if "orbmat_name" in loco_setup:
-        client = servconf.ConfigDBClient(config_type="si_orbcorr_respm")
+    if 'orbmat_name' in loco_setup:
+        client = servconf.ConfigDBClient(config_type='si_orbcorr_respm')
         orbmat_meas = np.array(
-            client.get_config_value(name=loco_setup["orbmat_name"])
+            client.get_config_value(name=loco_setup['orbmat_name'])
         )
-        print("loading respmat from ServConf")
-    elif "respmat" in loco_setup:
-        orbmat_meas = loco_setup["respmat"]
-        print("loading respmat from LOCO input file")
+        print('loading respmat from ServConf')
+    elif 'respmat' in loco_setup:
+        orbmat_meas = loco_setup['respmat']
+        print('loading respmat from LOCO input file')
     else:
-        raise Exception("LOCO input file do not have matrix or config name.")
+        raise Exception('LOCO input file do not have matrix or config name.')
 
     orbmat_meas[:, -1] *= 1e-6  # convert dispersion column from um to m
     config.goalmat = orbmat_meas
 
     alpha = pyac.optics.get_mcf(config.model)
-    rf_frequency = loco_setup["rf_frequency"]
+    rf_frequency = loco_setup['rf_frequency']
     config.measured_dispersion = -1 * alpha * rf_frequency * orbmat_meas[:, -1]
 
     config.update()
-    print("")
+    print('')
     print(config)
 
-    print("[create loco object]")
+    print('[create loco object]')
     loco = LOCO(config=config, save_jacobian_matrices=save_jacobian)
 
     if load_jacobian:
@@ -271,12 +270,12 @@ def run_and_save(
 ):
     """Runs the LOCO fitting and saves the results."""
     setup = load_data(setup_name)
-    if "data" in setup.keys():
-        setup = setup["data"]
+    if 'data' in setup.keys():
+        setup = setup['data']
 
     t0 = time.time()
     if goal_tunes is None:
-        tunex_goal, tuney_goal = setup["tunex"], setup["tuney"]
+        tunex_goal, tuney_goal = setup['tunex'], setup['tuney']
     else:
         tunex_goal, tuney_goal = goal_tunes
 
@@ -291,7 +290,7 @@ def run_and_save(
     )
     loco.run_fit(niter=nriters)
     if force_tunes:
-        print("--- changing tunes for fitted model...")
+        print('--- changing tunes for fitted model...')
         move_tunes(
             loco.fitmodel,
             TUNE_X_INTEGER + tunex_goal,
@@ -312,26 +311,26 @@ def run_and_save(
         ksldelta_history=loco.ksldelta_history,
     )
     save(loco_data, file_name)
-    print(f"{file_name} saved!")
+    print(f'{file_name} saved!')
     dt = time.time() - t0
-    print("running time: {:.1f} minutes".format(dt / 60))
+    print('running time: {:.1f} minutes'.format(dt / 60))
 
 
 def cleanup_png_files(folder):
     """Cleans up generated PNG plot files."""
     lst = [
-        "histogram",
-        "3dplot",
-        "quad_by_family",
-        "quad_by_s",
-        "skewquad_by_s",
-        "gains",
-        "beta_beating",
-        "dispersion_function",
+        'histogram',
+        '3dplot',
+        'quad_by_family',
+        'quad_by_s',
+        'skewquad_by_s',
+        'gains',
+        'beta_beating',
+        'dispersion_function',
     ]
     for name in lst:
         try:
-            os.remove(os.path.join(folder, name + ".png"))
+            os.remove(os.path.join(folder, name + '.png'))
         except FileNotFoundError:
             pass  # silently ignore missing files
 
@@ -341,86 +340,86 @@ def main():
     import argparse as _argparse
 
     parser = _argparse.ArgumentParser(
-        description="Run LOCO fitting and save files in the specified folder."
+        description='Run LOCO fitting and save files in the specified folder.'
     )
     parser.add_argument(
-        "filename_setup",
+        'filename_setup',
         type=str,
-        help="Name of the LOCO setup file (.pickle)",
+        help='Name of the LOCO setup file (.pickle)',
     )
     parser.add_argument(
-        "-f",
-        "--folder",
+        '-f',
+        '--folder',
         type=str,
         default=os.getcwd(),
-        help="Path to the folder for output files. "
-        "Default is the current directory.",
+        help='Path to the folder for output files. '
+        'Default is the current directory.',
     )
     parser.add_argument(
-        "-j",
-        "--jacobianfolder",
+        '-j',
+        '--jacobianfolder',
         type=str,
         default=None,
-        help="Optional path to a folder containing precomputed Jacobians. "
-        "Default is to compute and save in current directory.",
+        help='Optional path to a folder containing precomputed Jacobians. '
+        'Default is to compute and save in current directory.',
     )
     parser.add_argument(
-        "-t",
-        "--tunes",
+        '-t',
+        '--tunes',
         nargs=2,
         type=float,
-        metavar=("NUX", "NUY"),
+        metavar=('NUX', 'NUY'),
         default=None,
-        help="Optional fractional tunes (nux nuy). "
-        "Example: --tunes 0.16 0.22. Default is the measured ones.",
+        help='Optional fractional tunes (nux nuy). '
+        'Example: --tunes 0.16 0.22. Default is the measured ones.',
     )
     parser.add_argument(
-        "-ft",
-        "--forcetunes",
-        action="store_true",
-        help="Force fitted model to have the initial tunes. "
-        "Default: False, set to True if flag is given.",
+        '-ft',
+        '--forcetunes',
+        action='store_true',
+        help='Force fitted model to have the initial tunes. '
+        'Default: False, set to True if flag is given.',
     )
     parser.add_argument(
-        "-n",
-        "--nriters",
+        '-n',
+        '--nriters',
         type=int,
         default=DEFAULT_NRITERS,
-        help="Option of Nr. of Iters. Default is 20.",
+        help='Option of Nr. of Iters. Default is 20.',
     )
     parser.add_argument(
-        "-w",
-        "--deltakl_weight",
+        '-w',
+        '--deltakl_weight',
         type=float,
         default=DEFAULT_DELTAKL_WEIGHT,
-        help="Weight for DeltaKL variation constraint. Default is 0.1.",
+        help='Weight for DeltaKL variation constraint. Default is 0.1.',
     )
     parser.add_argument(
-        "-l",
-        "--lambda_lm",
+        '-l',
+        '--lambda_lm',
         type=float,
         default=DEFAULT_LAMBDA_LM,
-        help="Lambda parameter for LevenbergMarquardt. Default is 0.001",
+        help='Lambda parameter for LevenbergMarquardt. Default is 0.001',
     )
     parser.add_argument(
-        "-r",
-        "--report",
-        action="store_true",
-        help="Create report. Default: False, set to True if flag is given.",
+        '-r',
+        '--report',
+        action='store_true',
+        help='Create report. Default: False, set to True if flag is given.',
     )
     parser.add_argument(
-        "-c",
-        "--cleanup",
-        action="store_true",
-        help="Cleanup .png files. "
-        "Default: False, set to True if flag is given.",
+        '-c',
+        '--cleanup',
+        action='store_true',
+        help='Cleanup .png files. '
+        'Default: False, set to True if flag is given.',
     )
 
     args = parser.parse_args()
 
     fname_setup = args.filename_setup
     if not os.path.isfile(fname_setup):
-        raise ValueError(f"LOCO setup {fname_setup} not in current directory!")
+        raise ValueError(f'LOCO setup {fname_setup} not in current directory!')
 
     folder = args.folder
     folder_jac = args.jacobianfolder
@@ -428,13 +427,13 @@ def main():
     save_jac = False if load_jac else True
 
     if not os.path.exists(folder):
-        print(f"Creating {folder} directory to put files...")
+        print(f'Creating {folder} directory to put files...')
         os.makedirs(folder)
 
-    if not folder.endswith("/"):
-        folder += "/"
+    if not folder.endswith('/'):
+        folder += '/'
 
-    fname_fit = "fitting_" + os.path.splitext(fname_setup)[0]
+    fname_fit = 'fitting_' + os.path.splitext(fname_setup)[0]
     fname_fit_path = os.path.join(folder, fname_fit)
 
     run_and_save(
@@ -451,17 +450,17 @@ def main():
     )
 
     if args.report:
-        print("Creating report...")
+        print('Creating report...')
         report = LOCOReport()
         report.create_report(
             folder=folder, fname_fit=fname_fit, fname_setup=fname_setup
         )
-        print(f"{folder}report.pdf created!")
+        print(f'{folder}report.pdf created!')
 
         if args.cleanup:
             cleanup_png_files(folder)
-            print("All .png files deleted!")
+            print('All .png files deleted!')
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
