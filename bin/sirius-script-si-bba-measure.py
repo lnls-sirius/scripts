@@ -10,6 +10,7 @@ from functools import partial
 from threading import Lock
 
 from apsuite.commisslib.measure_bba import BBAParams, DoBBA
+from mathphys.functions import load
 from siriuspy.clientconfigdb import ConfigDBClient
 
 lock_stop = Lock()
@@ -168,13 +169,6 @@ def process_bpms2dobba(bpms2dobba_args, all_bpms):
     return bpms2dobba
 
 
-def get_default_fname():
-    """."""
-    fname = 'bba_data_'
-    fname += time.strftime('%Y-%m-%d-%H-%M')
-    return fname
-
-
 def main():
     """Parse arguments, configure, and run the BBA measurement."""
     import argparse as _argparse
@@ -195,9 +189,9 @@ def main():
         '-f',
         '--filename',
         type=str,
+        default='bba_data',
         help='Filename for BBA measurement data. '
-        "Default name of 'bba_data_yyy-dd-mm-hh-ss´ used if not given"
-        'Mandatory if --resume-meas is given',
+        "Default name of 'bba_data' is used if not given."
     )
 
     parser.add_argument(
@@ -339,14 +333,6 @@ def main():
     signal.signal(signal.SIGTERM, partial(_stop_now, dobba))
 
     if args.resume_meas:
-        if fname is None:
-            print(
-                'ERROR: '
-                + "Can't resume from a previous meas! "
-                + 'No filename was given. \n'
-            )
-            sys.exit(1)
-
         load_previous_progress(dobba, fname)
         print(
             'Warning! '
@@ -355,6 +341,18 @@ def main():
             + '\n'
         )
     else:
+        try:
+            _ = load(fname)
+            print(
+                f'There already is a file named {fname}. \nIf you want to '
+                'continue a measurement, run the script again with '
+                '--resume-meas.\nIf you want to start a new measurement, '
+                'define a new file name or delete/rename the existing file.'
+            )
+            sys.exit(1)
+        except FileNotFoundError:
+            pass
+
         dobba.params.deltaorbx = args.deltaorbx
         dobba.params.deltaorby = args.deltaorby
         dobba.params.quad_deltakl = args.quad_deltakl
@@ -364,9 +362,6 @@ def main():
         dobba.data['scancenterx'] = orb['x']
         dobba.data['scancentery'] = orb['y']
         dobba.bpms2dobba = bpms2dobba
-
-    if fname is None:
-        fname = get_default_fname()
 
     print('Waiting PVs to connect...')
     if not dobba.wait_for_connection(timeout=args.timeout):
