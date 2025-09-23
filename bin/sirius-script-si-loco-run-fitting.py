@@ -68,18 +68,14 @@ def _initialize_config_and_model():
     """Initializes LOCOConfigSI and the accelerator model."""
     config = LOCOConfigSI()
     config.model = si.create_accelerator()
-    config.dim = '6d'
+    config.use6dtrack = True
     return config
 
 
 def _configure_cavity_and_radiation(config):
-    """Configures cavity and radiation settings based on dimension."""
-    if config.dim == '4d':
-        config.model.cavity_on = False
-        config.model.radiation_on = False
-    elif config.dim == '6d':
-        config.model.cavity_on = True
-        config.model.radiation_on = False
+    """Configures cavity and radiation settings based on tracking dimension."""
+    config.model.cavity_on = config.use6dtrack
+    config.model.radiation_on = False
 
 
 def _configure_jacobian_elements(config):
