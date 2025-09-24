@@ -32,9 +32,14 @@ class RABPMMngr():
     def __enter__(self):
         return self
 
-    def _execute_ssh(self, hostname, *command):
-        subprocess.run(["ssh", "-i", "~/.ssh/id_ed25519_rabpm",
-                       f"lnls-bpm@{hostname}", *command])
+    def __init__(self):
+        self.procs = []
+
+    def _launch_ssh(self, hostname, *command):
+        self.procs.append(subprocess.Popen(
+            ["ssh", "-i", "~/.ssh/id_ed25519_rabpm",
+                f"lnls-bpm@{hostname}", *command],
+            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL))
 
     def _get_hostname_with_suffix(self, rack, suffix):
         if rack == 21:
@@ -54,24 +59,24 @@ class RABPMMngr():
 
     def run_pcie_list(self, rack):
         hostname = self._get_cpu_hostname(rack)
-        self._execute_ssh(hostname, "pcie-list-slots")
+        self._launch_ssh(hostname, "pcie-list-slots")
 
     def run_pcie_rescan(self, rack):
         hostname = self._get_cpu_hostname(rack)
-        self._execute_ssh(hostname, "pcie-rescan")
+        self._launch_ssh(hostname, "pcie-rescan")
 
     def run_pcie_remove(self, rack, slot):
         hostname = self._get_cpu_hostname(rack)
-        self._execute_ssh(hostname, "pcie-remove", slot)
+        self._launch_ssh(hostname, "pcie-remove", slot)
 
     def run_ioc_restart(self, rack, ioc, slot):
         hostname = self._get_cpu_hostname(rack)
-        self._execute_ssh(hostname, "ioc-restart", ioc, slot)
+        self._launch_ssh(hostname, "ioc-restart", ioc, slot)
 
     def run_rffe_reset(self, rack, virtual_slots):
         hostname = self._get_cpu_hostname(rack)
         for vslot in virtual_slots:
-            self._execute_ssh(hostname, "rffe-reset", str(vslot))
+            self._launch_ssh(hostname, "rffe-reset", str(vslot))
 
     def _conv_device_2_slots(self, dev):
         if dev == "timing":
@@ -101,6 +106,10 @@ class RABPMMngr():
             board = "afcv4-sfp" if slot == 2 else "afcv3"
             subprocess.run(
                 ["sirius-script-afc-boot-from-flash.sh", board, hostname, str(slot)])
+
+    def __exit__(self, *args, **kwargs):
+        for p in self.procs:
+            p.wait()
 
 
 def add_rack_arg(command):
