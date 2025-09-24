@@ -32,14 +32,17 @@ class RABPMMngr():
     def __enter__(self):
         return self
 
-    def __init__(self):
+    def __init__(self, verbose):
         self.procs = []
+        self.verbose = verbose
 
-    def _launch_ssh(self, hostname, *command):
+    def _launch_ssh(self, show_output, hostname, *command):
+        output = subprocess.DEVNULL if not show_output else None
+
         self.procs.append(subprocess.Popen(
             ["ssh", "-i", "~/.ssh/id_ed25519_rabpm",
                 f"lnls-bpm@{hostname}", *command],
-            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL))
+            stdout=output, stderr=output))
 
     def _get_hostname_with_suffix(self, rack, suffix):
         if rack == 21:
@@ -59,24 +62,24 @@ class RABPMMngr():
 
     def run_pcie_list(self, rack):
         hostname = self._get_cpu_hostname(rack)
-        self._launch_ssh(hostname, "pcie-list-slots")
+        self._launch_ssh(True, hostname, "pcie-list-slots")
 
     def run_pcie_rescan(self, rack):
         hostname = self._get_cpu_hostname(rack)
-        self._launch_ssh(hostname, "pcie-rescan")
+        self._launch_ssh(self.verbose, hostname, "pcie-rescan")
 
     def run_pcie_remove(self, rack, slot):
         hostname = self._get_cpu_hostname(rack)
-        self._launch_ssh(hostname, "pcie-remove", slot)
+        self._launch_ssh(self.verbose, hostname, "pcie-remove", slot)
 
     def run_ioc_restart(self, rack, ioc, slot):
         hostname = self._get_cpu_hostname(rack)
-        self._launch_ssh(hostname, "ioc-restart", ioc, slot)
+        self._launch_ssh(self.verbose, hostname, "ioc-restart", ioc, slot)
 
     def run_rffe_reset(self, rack, virtual_slots):
         hostname = self._get_cpu_hostname(rack)
         for vslot in virtual_slots:
-            self._launch_ssh(hostname, "rffe-reset", str(vslot))
+            self._launch_ssh(self.verbose, hostname, "rffe-reset", str(vslot))
 
     def _conv_device_2_slots(self, dev):
         if dev == "timing":
@@ -101,11 +104,14 @@ class RABPMMngr():
             sys.exit(1)
 
         hostname = self._get_mch_hostname(rack)
+        output = subprocess.DEVNULL if not self.verbose else None
 
         for slot in slots:
             board = "afcv4-sfp" if slot == 2 else "afcv3"
             subprocess.run(
-                ["sirius-script-afc-boot-from-flash.sh", board, hostname, str(slot)])
+                ["sirius-script-afc-boot-from-flash.sh",
+                    board, hostname, str(slot)],
+                stdout=output, stderr=output)
 
     def __exit__(self, *args, **kwargs):
         for p in self.procs:
@@ -140,6 +146,9 @@ class ValidateDeviceListAction(argparse.Action):
 def main():
     parser = argparse.ArgumentParser(prog="sirius-script-rabpm-mngr",
                                      description="BPM Rack Management Utility")
+
+    parser.add_argument("--verbose", action='store_true',
+                        help="Show executed commands output")
 
     subparsers = parser.add_subparsers(dest="command",
                                        help="Available commands")
@@ -190,7 +199,7 @@ def main():
         sys.exit(1)
 
     with SSHAgent():
-        with RABPMMngr() as mngr:
+        with RABPMMngr(args.verbose) as mngr:
             for rack in args.racks:
                 if args.command == "afc-list":
                     mngr.run_pcie_list(rack)
