@@ -29,14 +29,17 @@ class RABPMMngr():
     def __enter__(self):
         return self
 
-    def __init__(self):
+    def __init__(self, verbose):
         self.procs = []
+        self.verbose = verbose
 
     def _launch_ssh(self, hostname, *command):
+        output = subprocess.DEVNULL if not self.verbose else None
+
         self.procs.append(subprocess.Popen(
             ["ssh", "-i", "~/.ssh/id_ed25519_rabpm",
                 f"lnls-bpm@{hostname}", *command],
-            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL))
+            stdout=output, stderr=output))
 
     def _get_hostname_with_suffix(self, rack, suffix):
         if rack == 21:
@@ -134,6 +137,9 @@ def main():
     parser = argparse.ArgumentParser(prog="sirius-script-rabpm-mngr",
                                      description="BPM Rack Management Utility")
 
+    parser.add_argument("--verbose", action='store_true',
+                        help="Show executed commands output")
+
     subparsers = parser.add_subparsers(dest="command", required=True,
                                        help="Available commands")
 
@@ -179,7 +185,7 @@ def main():
     args = parser.parse_args()
 
     with SSHAgent():
-        with RABPMMngr() as mngr:
+        with RABPMMngr(args.verbose) as mngr:
             for rack in args.racks:
                 if args.command == "afc-list":
                     mngr.run_pcie_list(rack)
