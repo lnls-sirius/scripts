@@ -28,84 +28,79 @@ class SSHAgent():
         self.agent.wait()
 
 
-def execute_ssh(hostname, *command):
-    subprocess.run(["ssh", "-i", "~/.ssh/id_ed25519_rabpm",
-                   f"lnls-bpm@{hostname}", *command])
+class RABPMMngr():
+    def __enter__(self):
+        return self
 
+    def _execute_ssh(self, hostname, *command):
+        subprocess.run(["ssh", "-i", "~/.ssh/id_ed25519_rabpm",
+                       f"lnls-bpm@{hostname}", *command])
 
-def get_hostname_with_suffix(rack, suffix):
-    if rack == 21:
-        prefix = "ia-20rabpmtl-co-"
-    elif 1 <= rack <= 20:
-        prefix = f"ia-{rack:02d}rabpm-co-"
-    else:
-        raise ValueError("Invalid rack number")
+    def _get_hostname_with_suffix(self, rack, suffix):
+        if rack == 21:
+            prefix = "ia-20rabpmtl-co-"
+        elif 1 <= rack <= 20:
+            prefix = f"ia-{rack:02d}rabpm-co-"
+        else:
+            raise ValueError("Invalid rack number")
 
-    return prefix + suffix
+        return prefix + suffix
 
+    def _get_cpu_hostname(self, rack):
+        return self._get_hostname_with_suffix(rack, "iocsrv")
 
-def get_cpu_hostname(rack):
-    return get_hostname_with_suffix(rack, "iocsrv")
+    def _get_mch_hostname(self, rack):
+        return self._get_hostname_with_suffix(rack, "cratectrl")
 
+    def run_pcie_list(self, rack):
+        hostname = self._get_cpu_hostname(rack)
+        self._execute_ssh(hostname, "pcie-list-slots")
 
-def get_mch_hostname(rack):
-    return get_hostname_with_suffix(rack, "cratectrl")
+    def run_pcie_rescan(self, rack):
+        hostname = self._get_cpu_hostname(rack)
+        self._execute_ssh(hostname, "pcie-rescan")
 
+    def run_pcie_remove(self, rack, slot):
+        hostname = self._get_cpu_hostname(rack)
+        self._execute_ssh(hostname, "pcie-remove", slot)
 
-def run_pcie_list(rack):
-    hostname = get_cpu_hostname(rack)
-    execute_ssh(hostname, "pcie-list-slots")
+    def run_ioc_restart(self, rack, ioc, slot):
+        hostname = self._get_cpu_hostname(rack)
+        self._execute_ssh(hostname, "ioc-restart", ioc, slot)
 
+    def run_rffe_reset(self, rack, virtual_slots):
+        hostname = self._get_cpu_hostname(rack)
+        for vslot in virtual_slots:
+            self._execute_ssh(hostname, "rffe-reset", str(vslot))
 
-def run_pcie_rescan(rack):
-    hostname = get_cpu_hostname(rack)
-    execute_ssh(hostname, "pcie-rescan")
+    def _conv_device_2_slots(self, dev):
+        if dev == "timing":
+            slots = [1]
+        elif dev == "fofb":
+            slots = [2]
+        elif dev == "bpm":
+            slots = range(4, 13)
+        elif dev == "all":
+            slots = range(1, 13)
+        else:
+            raise ValueError(f'Unsuported device type: {dev}')
 
+        return slots
 
-def run_pcie_remove(rack, slot):
-    hostname = get_cpu_hostname(rack)
-    execute_ssh(hostname, "pcie-remove", slot)
+    def run_boot_from_flash(self, rack, slots):
+        try:
+            if isinstance(slots, str):
+                slots = self._conv_device_2_slots(slots)
+        except ValueError as err:
+            print("Unable to perform boot from flash:", err)
+            sys.exit(1)
 
+        hostname = self._get_mch_hostname(rack)
 
-def run_ioc_restart(rack, ioc, slot):
-    hostname = get_cpu_hostname(rack)
-    execute_ssh(hostname, "ioc-restart", ioc, slot)
-
-
-def run_rffe_reset(rack, virtual_slots):
-    hostname = get_cpu_hostname(rack)
-    for vslot in virtual_slots:
-        execute_ssh(hostname, "rffe-reset", str(vslot))
-
-
-def run_boot_from_flash(rack, slots):
-    try:
-        if isinstance(slots, str):
-            slots = conv_device_2_slots(slots)
-    except ValueError as err:
-        print("Unable to perform boot from flash:", err)
-        sys.exit(1)
-
-    hostname = get_mch_hostname(rack)
-    for slot in slots:
-        board = "afcv4-sfp" if slot == 2 else "afcv3"
-        subprocess.run(
-            ["sirius-script-afc-boot-from-flash.sh", board, hostname, str(slot)])
-
-
-def conv_device_2_slots(dev):
-    if dev == "timing":
-        slots = [1]
-    elif dev == "fofb":
-        slots = [2]
-    elif dev == "bpm":
-        slots = range(4, 13)
-    elif dev == "all":
-        slots = range(1, 13)
-    else:
-        raise ValueError(f'Unsupported device type: {dev}')
-
-    return slots
+        for slot in slots:
+            board = "afcv4-sfp" if slot == 2 else "afcv3"
+            subprocess.run(
+                ["sirius-script-afc-boot-from-flash.sh", board, hostname, str(slot)])
 
 
 def add_rack_arg(command):
@@ -182,19 +177,20 @@ def main():
     args = parser.parse_args()
 
     with SSHAgent():
-        for rack in args.racks:
-            if args.command == "afc-list":
-                run_pcie_list(rack)
-            elif args.command == "afc-rescan":
-                run_pcie_rescan(rack)
-            elif args.command == "afc-remove":
-                run_pcie_remove(rack, args.slot)
-            elif args.command == "ioc-restart":
-                run_ioc_restart(rack, args.ioc, args.slot)
-            elif args.command == "rffe-reset":
-                run_rffe_reset(rack, args.vslots)
-            elif args.command == "afc-reset":
-                run_boot_from_flash(rack, args.slots)
+        with RABPMMngr() as mngr:
+            for rack in args.racks:
+                if args.command == "afc-list":
+                    mngr.run_pcie_list(rack)
+                elif args.command == "afc-rescan":
+                    mngr.run_pcie_rescan(rack)
+                elif args.command == "afc-remove":
+                    mngr.run_pcie_remove(rack, args.slot)
+                elif args.command == "ioc-restart":
+                    mngr.run_ioc_restart(rack, args.ioc, args.slot)
+                elif args.command == "rffe-reset":
+                    mngr.run_rffe_reset(rack, args.vslots)
+                elif args.command == "afc-reset":
+                    mngr.run_boot_from_flash(rack, args.slots)
 
 
 if __name__ == "__main__":
