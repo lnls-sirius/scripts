@@ -49,6 +49,10 @@ def load_data(fname):
 
 def move_tunes(model, tunex_goal, tuney_goal):
     """Adjusts the tunes of the model to match measured values."""
+    cav = model.cavity_on
+    rad = model.radiation_on
+    model.cavity_on = False
+    model.radiation_on = False
     tunecorr = TuneCorr(
         model, 'SI', method='Proportional', grouping='TwoKnobs'
     )
@@ -62,6 +66,8 @@ def move_tunes(model, tunex_goal, tuney_goal):
         tol=1e-10,
     )
     print(f'    tunes final  : {str(tunecorr.get_tunes(model))}')
+    model.cavity_on = cav
+    model.radiation_on = rad
 
 
 def _initialize_config_and_model():
