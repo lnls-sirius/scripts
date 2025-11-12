@@ -7,18 +7,17 @@ set -e
 # Parse arguments.
 # Adapted from: https://stackabuse.com/how-to-parse-command-line-arguments-in-bash/
 
-function help
+help()
 {
     echo "Usage: sirius-script-mamba-env-create.bash
-    [ -n | --no-clone-repos ] Instead of cloning, find repos in system.
+    [ -c | --clone-repos ] Instead of finding repos in system, clone them inside environment folder.
+    [ -f | --clone-folder ] If repos will be cloned, clone them in this folder. Default: ~/repos.
     [ -d | --develop ] Install sirius packages in develop mode.
     [ --no-sim ] Do not install simulation packages.
     [ --no-ioc ] Do not install IOC related packages.
     [ --no-ima ] Do not install magnets simulation packages.
     [ --no-colleff ] Do not install collective effects packages.
-    [ --root-lnls-fac ] Root folder for lnls-fac repos. Default: \"/\".
-    [ --root-lnls-sirius ] Root folder for lnls-sirius repos. Default: \"/\".
-    [ --root-lnls-ima ] Root folder for lnls-imas repos. Default: \"/\".
+    [ -r | --root-lnls-repos ] Root folder for lnls repos. Default: \"/\".
     [ -b | --branches ] Branches to install. For each package you want to force a branch you must provide:
             <package1>:<branch1>,<package2>:<branch2>,...,<packagen>:<branchn>
         Please note there is no spaces in the string.
@@ -33,9 +32,9 @@ function help
     [ -h | --help  ] Print help and exit."
 }
 
-SHORT="ndb:e:h"
-LONG+="no-clone-repos,develop,no-sim,no-ioc,no-ima,no-colleff,root-lnls-fac:,"
-LONG+="root-lnls-sirius:,root-lnls-ima:,branches:,env-name:,help"
+SHORT="cf:dr:b:e:h"
+LONG+="clone-repos,clone-folder:,develop,no-sim,no-ioc,no-ima,no-colleff,"
+LONG+="root-lnls-repos:,branches:,env-name:,help"
 OPTS=$(getopt -a -n sirius-script-mamba-env-create.bash \
     --options $SHORT --longoptions $LONG -- "$@")
 
@@ -48,23 +47,26 @@ fi
 
 eval set -- "$OPTS"
 
-CLONE="yes"
+CLONE="no"
+CLONE_FOL="~/repos"
 DEVELOP="no"
 INST_SIM="yes"
 INST_IOC="yes"
 INST_IMA="yes"
 INST_COL="yes"
-ROOT_SIR="/"
-ROOT_FAC="/"
-ROOT_IMA="/"
-BRANCHES="Radia:lnls-sirius"
+ROOT_REP="/"
+BRANCHES=""
 ENV_NAME="sirius"
 # now enjoy the options in order and nicely split until we see --
 while true; do
     case "$1" in
-        -n|--no-clone-repos)
-            CLONE="no"
+        -c|--clone-repos)
+            CLONE="yes"
             shift
+            ;;
+        -f|--clone-folder)
+            CLONE_FOL="$2"
+            shift 2
             ;;
         -d|--develop)
             DEVELOP="yes"
@@ -86,16 +88,8 @@ while true; do
             INST_COL="no"
             shift
             ;;
-        --root-lnls-fac)
-            ROOT_FAC="$2"
-            shift 2
-            ;;
-        --root-lnls-sirius)
-            ROOT_SIR="$2"
-            shift 2
-            ;;
-        --root-lnls-ima)
-            ROOT_IMA="$2"
+        -r|--root-lnls-repos)
+            ROOT_REP="$2"
             shift 2
             ;;
         -b|--branches)
@@ -127,22 +121,28 @@ done
 
 ##############################################################################
 # Define some useful functions
-function printf_yellow {
+printf_yellow()
+{
   printf "\e[1;33m$1\e[0m"
 }
-function printf_yellow_clear {
+printf_yellow_clear()
+{
   printf "\e[0;33m$1\e[0m"
 }
-function printf_blue {
+printf_blue()
+{
   printf "\e[1;34m$1\e[0m"
 }
-function printf_green {
+printf_green()
+{
   printf "\e[1;32m$1\e[0m"
 }
-function printf_red {
+printf_red()
+{
   printf "\e[1;31m$1\e[0m"
 }
-function _abort {
+_abort()
+{
   printf_red "SIGINT received. Aborting...\n"
   exit
 }
@@ -150,11 +150,11 @@ function _abort {
 # Trap SIG INT to abort exectution:
 trap _abort SIGINT;
 
-function get_branch
+get_branch()
 {
     for BRAN in "${BRANCHES[@]}"
     do
-        BR=(${BRAN//:/ })  # split string in array in delimiter ":"
+        local BR=(${BRAN//:/ })  # split string in array in delimiter ":"
         if [ "${BR[0]}" == "$1" ]
         then
             echo ${BR[1]}
@@ -163,14 +163,31 @@ function get_branch
     done
 }
 
+# This function extracts the organization and repo name from a
+# remote.origin.url of a given repository.
+# It was done by Microsoft Windows Copilot and works for urls such as:
+#    - git@github.com:org/repo.git
+#    - https://gitlab.com/org/repo.git
+#    - git@bitbucket.org:org/repo.git
+#    - lnls-sirius/scripts.git
+extract_info_git()
+{
+    local url="$1"
+    local path=$(echo "$url" | sed -E 's|.*[:/]([^/]+/[^/]+)$|\1|')
+    path=${path%.git}
+    local org=$(echo "$path" | cut -d'/' -f1)
+    local repo=$(echo "$path" | cut -d'/' -f2)
+    echo "$org" "$repo"
+}
+
 # takes three input variables: repo name, organization, and repo tag/branch
-function clone_or_find
+clone_or_find()
 {
     printf_yellow " - $1\n"
     if [ "$CLONE" == "yes" ]
     then
-        printf_yellow_clear "Cloning repo $1 in $CONDA_PREFIX/repos: \n"
-        cd $CONDA_PREFIX/repos
+        printf_yellow_clear "Cloning repo $1 in $CLONE_FOL: \n"
+        cd $CLONE_FOL
         if ! [ -d "$1" ]
         then
             git clone https://github.com/$2/$1.git
@@ -180,29 +197,20 @@ function clone_or_find
         fi
         cd $1
     else
-        ROO=$ROOT_SIR
-        if [ $2 == "lnls-fac" ]
-        then
-            ROO=$ROOT_FAC
-        elif [ $2 == "lnls-ima" ]
-        then
-            ROO=$ROOT_IMA
-        fi
-
-        printf_yellow_clear "Searching repo $1 in $ROO: "
-        VAR="$(find $ROO -path */$1 2>/dev/null)"
+        printf_yellow_clear "Searching repo $1 in $ROOT_REP: "
+        local PTH=
+        local VAR="$(find "$ROOT_REP" -path */$1 2>/dev/null)"
         VAR=($VAR)
-        PTH=
         for V in "${VAR[@]}"
         do
             cd $V
             if git rev-parse --is-inside-work-tree 1>/dev/null 2>&1
             then
-                PH=`git rev-parse --show-toplevel`
-                NAME="$(basename $PH)"
-                if [ "$NAME" == "$1" ]
+                local NAME=$(git config --get remote.origin.url)
+                NAME=$(extract_info_git "$NAME")
+                if [ "$NAME" == "$2 $1" ]
                 then
-                    PTH="$PH"
+                    PTH=$(git rev-parse --show-toplevel)
                     break
                 fi
             fi
@@ -217,7 +225,7 @@ function clone_or_find
             return 1
         fi
     fi
-    BRAN="$(get_branch $1)"
+    local BRAN="$(get_branch $1)"
     if ! [ "$BRAN" ]
     then
         BRAN="$(get_branch all)"
@@ -227,7 +235,6 @@ function clone_or_find
         printf_yellow_clear "Checking out to branch $BRAN.\n"
         git checkout $BRAN
     fi
-    # wont be nice to fetch and pull the latest updates of the branch? Instead of only "checkouting" it.
 }
 
 ##############################################################################
@@ -281,9 +288,10 @@ printf_yellow_clear "Install mamba in path /opt/mamba_files/mamba: "
 cd /opt/mamba_files
 if ! [ -d mamba ]
 then
-    wget https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-Linux-x86_64.sh
-    sh Mambaforge-Linux-x86_64.sh -b -p /opt/mamba_files/mamba
-    rm Mambaforge-Linux-x86_64.sh
+    fname="Miniforge3-Linux-x86_64.sh"
+    wget https://github.com/conda-forge/miniforge/releases/latest/download/$fname
+    sh $fname -b -p /opt/mamba_files/mamba
+    rm $fname
     printf_green "done!\n"
 else
     printf_blue "there already is a mamba installation. Skipping...\n"
@@ -296,22 +304,21 @@ sudo chown -R $USER:mamba ~/.conda
 
 printf_yellow_clear "Adding mamba and conda to path\n"
 source /opt/mamba_files/mamba/etc/profile.d/conda.sh
-source /opt/mamba_files/mamba/etc/profile.d/mamba.sh
+export MAMBA_ROOT_PREFIX='/opt/mamba_files/mamba'
+eval "$(mamba shell hook --shell bash)"
 
 printf_yellow_clear "Adding mamba and conda paths to .bashrc: "
 cd ~/
-if ! grep -q "MAMBA_ADD" .bashrc;
+if ! grep -q "CONDA_ADD" .bashrc;
 then
     cat >> ~/.bashrc <<'EOM'
 # add conda and mamba to path
-MAMBA_ADD=/opt/mamba_files/mamba/etc/profile.d/mamba.sh
-if [ -f "$MAMBA_ADD" ] ; then
-    source "$MAMBA_ADD"
-fi
 CONDA_ADD=/opt/mamba_files/mamba/etc/profile.d/conda.sh
 if [ -f "$CONDA_ADD" ] ; then
     source "$CONDA_ADD"
 fi
+export MAMBA_ROOT_PREFIX='/opt/mamba_files/mamba'
+eval "$(mamba shell hook --shell bash)"
 EOM
     printf_green "done!\n"
 else
@@ -347,18 +354,20 @@ printf_yellow "Install some mamba packages in $ENV_NAME environment.\n"
 COMM="mamba install --freeze-installed -y"
 
 printf_yellow_clear "- System and generic python packages:\n"
-$COMM gxx make binutils swig=4.2.0 libxcrypt build gsl libblas wmctrl fftw \
+pip install build
+# No not use freeze installed here, since it's the first time it is called.
+mamba install -y gxx make binutils swig=4.2.0 libxcrypt gsl libblas wmctrl fftw \
     pyparsing bottleneck aiohttp==3.7.4 numpy=1.23 scipy matplotlib \
     pytest mpmath entrypoints requests pyqt=5.12.3 pandas pyqtgraph=0.11.0 \
     qtpy=2.3.1 QtAwesome=0.7.2 numexpr tk sh pywavelets scikit-image \
     scikit-learn pydocstyle pycodestyle pylama openpyxl gpy gpyopt fpdf sympy \
-    h5py scienceplots
+    h5py scienceplots seaborn
 
 printf_yellow_clear "- Install EPICS Base:\n"
 $COMM -c conda-forge/label/cf202003 epics-base=3.15.6
 
 printf_yellow_clear "- And some other EPICS packages:\n"
-$COMM pyepics=3.5.0 pcaspy==0.7.3 pydm=1.10.3 timechart=1.2.3
+$COMM pyepics=3.5.7 pcaspy==0.7.3 pydm=1.10.3 timechart=1.2.3
 # remove the activate and deactivate files created by pyepics and pydm:
 cd $CONDA_PREFIX/etc/conda/activate.d
 if [ -f "pydm.bat" ]
@@ -379,10 +388,10 @@ mamba update jupyter_client
 if [ "$CLONE" == "yes" ]
 then
     printf_yellow "Clone and install our applications.\n"
-    printf_yellow_clear "Creating folder $CONDA_PREFIX/repos: "
-    if ! [ -d $CONDA_PREFIX/repos ]
+    printf_yellow_clear "Creating folder $CLONE_FOL: "
+    if ! [ -d $CLONE_FOL ]
     then
-        mkdir $CONDA_PREFIX/repos
+        mkdir $CLONE_FOL
         printf_green "done!\n"
     else
         printf_blue "already exists. Skipping...\n"
@@ -437,15 +446,19 @@ then
     clone_or_find fieldmaptrack lnls-fac && make $TARGET
     clone_or_find Radia lnls-sirius && make install 2>/dev/null
     clone_or_find idanalysis lnls-fac && make $TARGET
-    clone_or_find insertion-devices lnls-ima && make $TARGET
+    clone_or_find insertion-devices lnls-ids && make $TARGET
 fi
+
+printf_yellow_clear "Deactivate conda enviroment\n"
+CONDA_PREF=$CONDA_PREFIX
+mamba deactivate
 
 printf_yellow "Add enviroment variables to conda environment\n"
 
-#### Cria arquivo para configurar ativação do ambiente
-cat > $CONDA_PREFIX/etc/conda/activate.d/sirius_env.sh <<'EOM'
+#### Create file to configure environment activation
+cat > $CONDA_PREF/etc/conda/activate.d/sirius_env.sh <<'EOM'
 # Define function to set variable and save previous state
-function defvar ()
+defvar()
 {
     tmp="${1}"
     if ! [ -z "${!tmp+x}" ]
@@ -487,13 +500,12 @@ defvar "PYQTDESIGNERPATH" "$CONDA_PREFIX/repos/hla/pyqt-apps"
 # Aliases
 # ======="
 alias g-conda="cd $CONDA_PREFIX"
-alias g-conda-repos="cd $CONDA_PREFIX/repos"
 EOM
 
 #### Cria arquivo para configurar desativação do ambiente
-cat > $CONDA_PREFIX/etc/conda/deactivate.d/sirius_env.sh <<'EOM'
+cat > $CONDA_PREF/etc/conda/deactivate.d/sirius_env.sh <<'EOM'
 # Define function to unset variable with previous state
-function undefvar ()
+undefvar()
 {
     tmp="${1}"
     old="${tmp}_OLD"
@@ -538,11 +550,9 @@ undefvar "PYQTDESIGNERPATH"
 # Aliases
 # =======
 unalias g-conda
-unalias g-conda-repos
 EOM
 
-printf_yellow_clear "Deactivate conda enviroment\n"
-mamba deactivate
+unset CONDA_PREF
 
 ##############################################################################
 printf_yellow "Fix permissions of some files\n"
@@ -557,28 +567,30 @@ printf_yellow "Create scripts to access apps in conda environment\n"
 
 cd /usr/local/bin
 printf_yellow_clear " - jupyter-mamba-${ENV_NAME} \n"
-sudo tee jupyter-mamba-${ENV_NAME} >/dev/null <<'EOM'
+sudo tee jupyter-mamba-${ENV_NAME} >/dev/null <<EOM
 #!/bin/bash
 bash -c "source /opt/mamba_files/mamba/etc/profile.d/conda.sh && conda activate ${ENV_NAME} && jupyter notebook"
 EOM
 
 printf_yellow_clear " - ipython-mamba-${ENV_NAME} \n"
-sudo tee ipython-mamba-${ENV_NAME} >/dev/null <<'EOM'
+sudo tee ipython-mamba-${ENV_NAME} >/dev/null <<EOM
 #!/bin/bash
 bash -c "source /opt/mamba_files/mamba/etc/profile.d/conda.sh && conda activate ${ENV_NAME} && ipython"
 EOM
 
 printf_yellow_clear " - designer-mamba-${ENV_NAME} \n"
-sudo tee designer-mamba-${ENV_NAME} >/dev/null <<'EOM'
+sudo tee designer-mamba-${ENV_NAME} >/dev/null <<EOM
 #!/bin/bash
 bash -c "source /opt/mamba_files/mamba/etc/profile.d/conda.sh && conda activate ${ENV_NAME} && designer"
 EOM
 
 printf_yellow_clear " - sirius-hla-as-ap-launcher-mamba-${ENV_NAME} \n"
-sudo tee sirius-hla-as-ap-launcher-mamba-${ENV_NAME} >/dev/null <<'EOM'
+sudo tee sirius-hla-as-ap-launcher-mamba-${ENV_NAME} >/dev/null <<EOM
 #!/bin/bash
 bash -c "source /opt/mamba_files/mamba/etc/profile.d/conda.sh && conda activate ${ENV_NAME} && sirius-hla-as-ap-launcher.py"
 EOM
 
 sudo chmod +x jupyter-mamba-${ENV_NAME} ipython-mamba-${ENV_NAME} designer-mamba-${ENV_NAME} \
     sirius-hla-as-ap-launcher-mamba-${ENV_NAME}
+
+printf_yellow "Finished!"
