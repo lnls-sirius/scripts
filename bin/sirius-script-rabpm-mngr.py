@@ -134,7 +134,7 @@ def main():
     parser = argparse.ArgumentParser(prog="sirius-script-rabpm-mngr",
                                      description="BPM Rack Management Utility")
 
-    subparsers = parser.add_subparsers(dest="command",
+    subparsers = parser.add_subparsers(dest="command", required=True,
                                        help="Available commands")
 
     parser_list = subparsers.add_parser("afc-list",
