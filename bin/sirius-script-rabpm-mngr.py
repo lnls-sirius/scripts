@@ -185,6 +185,10 @@ def main():
 
     args = parser.parse_args()
 
+    if not args.command:
+        parser.print_usage()
+        sys.exit(1)
+
     with SSHAgent():
         with RABPMMngr() as mngr:
             for rack in args.racks:
