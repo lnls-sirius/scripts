@@ -3,13 +3,14 @@
 
 import argparse
 import signal
+import os
 import sys
 import time
 from functools import partial
 from threading import Lock
 
 import numpy as np
-from apsuite.commisslib.meas_ac_orm import ACORMParams, MeasACORM
+from apsuite.commisslib.meas_ac_orm import ACORMParams, MeasACORM, ORMReport
 from mathphys.functions import load
 
 MEAS_TIMEOUT_DEFAULT = 6 * 60  # [s]
@@ -49,13 +50,21 @@ def parse_args():
     )
 
     parser.add_argument(
-        '-n',
-        '--name',
+        'orm_name',
         type=str,
-        default='acorm_' + time.strftime('%Y-%m-%d-%H-%M'),
-        help='ORM nickname (without extension) used for saving measurement '
-        'acquisitions data, LOCO input data and for saving the ORM to the '
-        'configDB. Defaults to "acorm_<year-month-day-hour-minute>".',
+        help='ORM nickname or keyword (without extension). Used for saving '
+        'the measurement acquisitions data, the LOCO input data and saving '
+        'the ORM to the configDB. '
+    )
+
+    parser.add_argument(
+        '-f',
+        '--folder',
+        type=str,
+        default=os.getcwd(),
+        help='Path to the folder for output files (acquisition, LOCO input, '
+        'figures of the analysis and the measurement report). '
+        'Default is the current directory.',
     )
 
     parser.add_argument(
@@ -67,9 +76,9 @@ def parse_args():
     parser.add_argument(
         '--run-meas',
         action='store_true',
-        help='Run the measurement. If not set, the script will only attempt '
-        'to connect to PVs and print the measurement setup if '
-        '--print-setup is set.',
+        help='Run the measurement. If not set, the script will do a dry-run: '
+        'will only connect to PVs and print the measurement setup (if '
+        '--print-setup is set).',
     )
 
     parser.add_argument(
@@ -129,6 +138,21 @@ def parse_args():
         'magnets excitations. If this flag is set, the orbit will be '
         'corrected to SOFBs current reference orbit in between acquisitions'
         f'Defaults to {params.correct_orbit_between_acqs}.',
+    )
+
+    parser.add_argument(
+        '-r',
+        '--report',
+        action='store_true',
+        help='Create report. Default False, set to True if flag is given.'
+    )
+
+    parser.add_argument(
+        '-c',
+        '--cleanup',
+        action='store_true',
+        help='Cleanup .png files. '
+        'Default: False, set to True if flag is given.',
     )
 
     return parser.parse_args()
@@ -230,6 +254,24 @@ def run_measurement(meas_orm, timeout):
     return True
 
 
+def cleanup_png_files(folder):
+    """Cleans up generated PNG plot files."""
+    lst = [
+        'scale_factors',
+        'correlation',
+        'least_corr_ch',
+        'least_corr_cv',
+        'best_corr_ch',
+        'best_corr_cv',
+        'rf_column',
+    ]
+    for name in lst:
+        try:
+            os.remove(os.path.join(folder, name + '.png'))
+        except FileNotFoundError:
+            pass  # silently ignore missing files
+
+
 def main():
     """."""
     args = parse_args()
@@ -252,6 +294,7 @@ def main():
     signal.signal(signal.SIGTERM, partial(_stop_now, meas_orm))
 
     if not ensure_connection(meas_orm, args.conn_timeout):
+        print('Exiting.')
         sys.exit(1)
 
     if args.print_setup:
@@ -273,15 +316,17 @@ def main():
     print(f'\tFinished OK? {meas_orm.check_measurement_finished_ok()}')
     print(f'\tQuality? {meas_orm.check_measurement_quality()}')
 
+    folder = args.folder.strip('/') + '/'
+
     if args.save_acq_data:
         print('Saving acquisitions data...')
         fname = f'{args.name}_acq_data.pickle'
-        meas_orm.save_data(fname)
+        meas_orm.save_data(folder + fname)
         print(f'Saved: {fname}')
 
     print('Saving LOCO input data...')
     loco_fname = f'{args.name}_loco_input_data.pickle'
-    meas_orm.save_loco_input_data(loco_fname)
+    meas_orm.save_loco_input_data(folder + loco_fname)
     print(f'Saved: {loco_fname}')
     print(
         'Use `sirius-script-si-loco-run-fitting.py` to fit model to this data.'
@@ -295,7 +340,15 @@ def main():
             meas_orm.save_respmat_to_configdb(args.name)
             print('Saved.')
 
-    # TODO: analysis & analysis report
+    if args.report:
+        print('Creating report...')
+        report = ORMReport()
+        report.create_report(meas_orm=meas_orm, folder=folder)
+
+    if args.cleanup:
+        cleanup_png_files(folder)
+        print('All .png files have been deleted.')
+
 
 if __name__ == '__main__':
     main()
