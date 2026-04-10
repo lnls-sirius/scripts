@@ -176,8 +176,6 @@ def configure_measurement(meas_orm, args):
 
     nrsecs = 1
     primes = p.find_primes(2 * 8 * nrsecs + 2, 3)
-    # TODO: do we still need to exclude frequencies close to 60 Hz even
-    # now without the PetraVII Cavity?
     primes = np.array(sorted(set(primes) - {59, 61}))
     cv_freqs = primes[: 8 * nrsecs]
     primes = np.array(sorted(set(primes) - set(cv_freqs)))
