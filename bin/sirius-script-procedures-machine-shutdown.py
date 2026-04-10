@@ -822,8 +822,8 @@ class MachineShutdown(_DeviceSet, LogCallback):
         devices['delta52_10SB'] = IDParking(
             _ID.DEVICES.DELTA.DELTA52_10SB, log_callback=self._log_callback
         )  # SAB
-        devices['apu58_11SP'] = IDParking(
-            _ID.DEVICES.APU.APU58_11SP, log_callback=self._log_callback
+        devices['ue44_11SP'] = IDParking(
+            _ID.DEVICES.UE44.UE44_11SP, log_callback=self._log_callback
         )  # IPÊ
         devices['ivu18_14SB'] = IDParking(
             _ID.DEVICES.IVU.IVU18_14SB, log_callback=self._log_callback
