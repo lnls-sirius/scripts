@@ -70,7 +70,8 @@ def parse_args():
     parser.add_argument(
         '--print-setup',
         action='store_true',
-        help='Print measurement setup (parameters) and try to connect to PVs.',
+        help='Print measurement setup (parameters) and try to connect to PVs. '
+        'Default is False.',
     )
 
     parser.add_argument(
@@ -101,18 +102,17 @@ def parse_args():
         '--save-acq-data',
         '--sa',
         action='store_true',
-        default=False,
-        help='Save BPMs acquisition data (unprocessed data) to a pickle file '
-        'named <name>_acq_data.pickle. This can be useful for investigating '
-        'issues w/ the measurement or for testing different data processing. '
-        'These files can be quite large (~1-2 GB) and are not required for '
-        'LOCO fitting. Defaults to False.',
+        help='''
+        Save BPMs acquisition data (unprocessed data) to a pickle file
+        named <orm_name>_acq_data.pickle. This can be useful for
+        investigating issues w/ the measurement or for testing different data
+        processing. These files can be quite large (~1-2 GB) and are not
+        required for LOCO fitting. Defaults to False.''',
     )
 
     parser.add_argument(
         '--save2configdb',
         action='store_true',
-        default=False,
         help='Save the measured AC ORM to the configDB server. '
         'Caution: this can overwrite existing ORMs with the same name! '
         'make sure to choose a unique ORM name.',
@@ -123,7 +123,7 @@ def parse_args():
         type=str,
         default=params.ref_respmat_name,
         help='Name of the reference ORM to be used during the AC ORM '
-        'measurement processing (determining scale factors and compare '
+        'measurement processing (determining scale factors and '
         'evaluate measurement quality). Make sure to input a valid '
         'name, existing in the machine database. Defaults to '
         f'"{params.ref_respmat_name}".',
@@ -133,10 +133,10 @@ def parse_args():
         '--correct_orbit_between_acqs',
         action='store_true',
         default=params.correct_orbit_between_acqs,
-        help='Correct orbit between acquisitions. An ACORM measurment '
+        help='Correct orbit between acquisitions. An ACORM measurement '
         'consists of several BPMs acquisitions for each set of corrector '
         'magnets excitations. If this flag is set, the orbit will be '
-        'corrected to SOFBs current reference orbit in between acquisitions'
+        'corrected to SOFBs current reference orbit in between acquisitions. '
         f'Defaults to {params.correct_orbit_between_acqs}.',
     )
 
@@ -144,7 +144,7 @@ def parse_args():
         '-r',
         '--report',
         action='store_true',
-        help='Create report. Default False, set to True if flag is given.'
+        help='Create report. Default: False, set to True if flag is given.'
     )
 
     parser.add_argument(
@@ -189,28 +189,14 @@ def configure_measurement(meas_orm, args):
     p.rf_step_delay = 0.2
 
 
-def config_exists(meas_orm, name, verbose=False):
+def config_exists(meas_orm, name):
     """."""
     try:
-        info = meas_orm.configdb.get_config_info(name)
+        meas_orm.configdb.get_config_info(name)
     except Exception as e:
         print(f'ConfigDB error: {e}')
         return False
-
-    if verbose:
-        print(f'An ORM w/ name "{name}" already exists in confgDB:')
-        for k, v in info.items():
-            print(f'\t{k}: {convert_timestamps(v)}')
     return True
-
-
-def convert_timestamps(val):
-    """."""
-    if isinstance(val, float):
-        return time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(val))
-    if isinstance(val, list):
-        return [convert_timestamps(v) for v in val]
-    return val
 
 
 def loco_input_exists(name):
@@ -283,7 +269,11 @@ def main():
         )
         sys.exit(1)
 
-    if loco_input_exists(args.name):
+    if args.save2configdb and config_exists(meas_orm, args.orm_name):
+        print(f'An ORM w/ name "{args.orm_name}" already exists in confgDB:')
+        sys.exit(1)
+
+    if loco_input_exists(args.orm_name):
         sys.exit(1)
 
     configure_measurement(meas_orm, args)
@@ -318,12 +308,12 @@ def main():
 
     if args.save_acq_data:
         print('Saving acquisitions data...')
-        fname = f'{args.name}_acq_data.pickle'
+        fname = f'{args.orm_name}_acq_data.pickle'
         meas_orm.save_data(folder + fname)
         print(f'Saved: {fname}')
 
     print('Saving LOCO input data...')
-    loco_fname = f'{args.name}_loco_input_data.pickle'
+    loco_fname = f'{args.orm_name}_loco_input_data.pickle'
     meas_orm.save_loco_input_data(folder + loco_fname)
     print(f'Saved: {loco_fname}')
     print(
@@ -331,12 +321,9 @@ def main():
     )
 
     if args.save2configdb:
-        if config_exists(meas_orm, args.name, verbose=True):
-            print('Aborting save.')
-        else:
-            print('Saving measured AC ORM to configDB...')
-            meas_orm.save_respmat_to_configdb(args.name)
-            print('Saved.')
+        print('Saving measured AC ORM to configDB...')
+        meas_orm.save_respmat_to_configdb(args.orm_name)
+        print('Saved.')
 
     if args.report:
         print('Creating report...')
