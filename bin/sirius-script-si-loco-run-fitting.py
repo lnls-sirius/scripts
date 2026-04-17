@@ -70,10 +70,13 @@ def move_tunes(model, tunex_goal, tuney_goal):
     model.radiation_on = rad
 
 
-def _initialize_config_and_model():
+def _initialize_config_and_model(init_fit_data=None):
     """Initializes LOCOConfigSI and the accelerator model."""
     config = LOCOConfigSI()
-    config.model = si.create_accelerator()
+    if init_fit_data is None:
+        config.model = si.create_accelerator()
+    else:
+        config.model = init_fit_data['fit_model']
     config.use6dtrack = True
     return config
 
@@ -114,12 +117,12 @@ def _configure_inversion_and_minimization(config, lambda_lm):
     config.fixed_lambda = False
 
 
-def _configure_elements_to_fit(config):
+def _configure_elements_to_fit(config, quadfams2fit=None):
     """Configures which elements to include in the fit."""
     config.fit_quadrupoles = True
     config.fit_sextupoles = False
     config.fit_dipoles = False
-    config.quadrupoles_to_fit = None
+    config.quadrupoles_to_fit = quadfams2fit
     config.sextupoles_to_fit = None
     config.skew_quadrupoles_to_fit = config.famname_skewquadset.copy()
     fc2_idx = config.skew_quadrupoles_to_fit.index('FC2')
@@ -127,7 +130,7 @@ def _configure_elements_to_fit(config):
     config.dipoles_to_fit = None
 
 
-def _configure_coupling_and_gains(config):
+def _configure_coupling_and_gains(config, init_fit_data=None):
     """Configures coupling, BPM, and corrector gains fitting."""
     config.fit_dipoles_kick = False
     if config.use_offdiagonal:
@@ -145,6 +148,11 @@ def _configure_coupling_and_gains(config):
     config.fit_energy_shift = False
     config.fit_gain_bpm = True
     config.fit_gain_corr = True
+
+    if init_fit_data is not None:
+        config.gain_bpm = init_fit_data['gain_bpm']
+        config.roll_bpm = init_fit_data['roll_bpm']
+        config.gain_corr = init_fit_data['gain_corr']
 
 
 def _configure_measurement_kicks(config):
@@ -180,17 +188,19 @@ def create_loco_config(
     goal_tunes,
     deltakl_weight=DEFAULT_DELTAKL_WEIGHT,
     lambda_lm=DEFAULT_LAMBDA_LM,
+    quadfams2fit=None,
+    init_fit_data=None,
 ):
     """Creates and configures the LOCO object."""
-    config = _initialize_config_and_model()
+    config = _initialize_config_and_model(init_fit_data)
 
     _configure_cavity_and_radiation(config)
     _configure_jacobian_elements(config)
     _configure_fitting_families(config)
     _configure_constraints(config, deltakl_weight)
     _configure_inversion_and_minimization(config, lambda_lm)
-    _configure_elements_to_fit(config)
-    _configure_coupling_and_gains(config)
+    _configure_elements_to_fit(config, quadfams2fit)
+    _configure_coupling_and_gains(config, init_fit_data)
     _configure_measurement_kicks(config)
     _configure_girder_shifts(config)
     _configure_weights(config)
@@ -214,12 +224,16 @@ def create_loco(
     goal_tunes=None,
     deltakl_weight=DEFAULT_DELTAKL_WEIGHT,
     lambda_lm=DEFAULT_LAMBDA_LM,
+    quadfams2fit=None,
+    init_fit_data=None,
 ):
     """Creates a LOCO object with the given setup."""
     config = create_loco_config(
         goal_tunes=goal_tunes,
         deltakl_weight=deltakl_weight,
         lambda_lm=lambda_lm,
+        quadfams2fit=quadfams2fit,
+        init_fit_data=init_fit_data,
     )
 
     if 'orbmat_name' in loco_setup:
@@ -273,6 +287,8 @@ def run_and_save(
     lambda_lm=DEFAULT_LAMBDA_LM,
     goal_tunes=None,
     force_tunes=False,
+    quadfams2fit=None,
+    init_fit_data=None,
 ):
     """Runs the LOCO fitting and saves the results."""
     setup = load_data(setup_name)
@@ -293,6 +309,8 @@ def run_and_save(
         goal_tunes=[tunex_goal, tuney_goal],
         deltakl_weight=deltakl_weight,
         lambda_lm=lambda_lm,
+        quadfams2fit=quadfams2fit,
+        init_fit_data=init_fit_data,
     )
     loco.run_fit(niter=nriters)
     if force_tunes:
@@ -354,6 +372,11 @@ def main():
         help='Name of the LOCO setup file (.pickle)',
     )
     parser.add_argument(
+        '--filename-init-fit',
+        type=str,
+        help='File name of a previous LOCO fit.',
+    )
+    parser.add_argument(
         '-f',
         '--folder',
         type=str,
@@ -408,6 +431,12 @@ def main():
         help='Lambda parameter for LevenbergMarquardt. Default is 0.001',
     )
     parser.add_argument(
+        '--quadfams2fit',
+        nargs='+',
+        help='Names of quadrupoles families to include in the fitting. '
+        'Should be a space separeted list of families names, e.g.: QFP1 Q1...',
+    )
+    parser.add_argument(
         '-r',
         '--report',
         action='store_true',
@@ -426,6 +455,16 @@ def main():
     fname_setup = args.filename_setup
     if not os.path.isfile(fname_setup):
         raise ValueError(f'LOCO setup {fname_setup} not in current directory!')
+
+    if args.filename_init_fit:
+        fname_init_fit = args.filename_init_fit
+        if not os.path.isfile(fname_init_fit):
+            raise ValueError(
+                f'Initial fit file {fname_init_fit} not in current directory!'
+            )
+        init_fit_data = load_data(fname_init_fit)
+    else:
+        init_fit_data = None
 
     folder = args.folder
     folder_jac = args.jacobianfolder
@@ -453,6 +492,8 @@ def main():
         deltakl_weight=args.deltakl_weight,
         lambda_lm=args.lambda_lm,
         force_tunes=args.forcetunes,
+        quadfams2fit=args.quadfams2fit,
+        init_fit_data=init_fit_data,
     )
 
     if args.report:
