@@ -1,5 +1,9 @@
 #!/usr/bin/env python-sirius
 """Script for running LOCO algorithm."""
+# TODO: when selecting particular quads to fit, the saved jacobian should
+# be named accordingly and signal or encode the fams selection
+# an user may attempt to re-use a previously calculated jacobian and run
+# into issues.
 
 import os
 import sys
@@ -117,17 +121,26 @@ def _configure_inversion_and_minimization(config, lambda_lm):
     config.fixed_lambda = False
 
 
-def _configure_elements_to_fit(config, quadfams2fit=None):
+def _configure_elements_to_fit(config, quadfams2fit=None, id_name=None):
     """Configures which elements to include in the fit."""
     config.fit_quadrupoles = True
     config.fit_sextupoles = False
     config.fit_dipoles = False
-    config.quadrupoles_to_fit = quadfams2fit
-    config.sextupoles_to_fit = None
-    config.skew_quadrupoles_to_fit = config.famname_skewquadset.copy()
-    fc2_idx = config.skew_quadrupoles_to_fit.index('FC2')
-    config.skew_quadrupoles_to_fit.pop(fc2_idx)
     config.dipoles_to_fit = None
+    config.sextupoles_to_fit = None
+
+    if id_name is None:
+        config.quadrupoles_to_fit = quadfams2fit
+        config.skew_quadrupoles_to_fit = config.famname_skewquadset.copy()
+        fc2_idx = config.skew_quadrupoles_to_fit.index('FC2')
+        config.skew_quadrupoles_to_fit.pop(fc2_idx)
+        return
+
+    config.quadrupoles_to_fit = []
+    config.skew_quadrupoles_to_fit = []
+    config.quad_indices_kl, config.skew_quad_indices_ksl = _select_id_quads(
+        id_name, config
+    )
 
 
 def _configure_coupling_and_gains(config, init_fit_data=None):
@@ -146,13 +159,18 @@ def _configure_coupling_and_gains(config, init_fit_data=None):
         config.fit_roll_bpm = False
         config.fit_skew_quadrupoles = False
     config.fit_energy_shift = False
-    config.fit_gain_bpm = True
-    config.fit_gain_corr = True
-
     if init_fit_data is not None:
         config.gain_bpm = init_fit_data['gain_bpm']
         config.roll_bpm = init_fit_data['roll_bpm']
         config.gain_corr = init_fit_data['gain_corr']
+        config.fit_gain_bpm = False  # frozen params if
+        config.fit_gain_corr = False  # starting from previous fit
+        config.fit_roll_bpm = False
+        return
+
+    config.fit_gain_bpm = True
+    config.fit_gain_corr = True
+
 
 
 def _configure_measurement_kicks(config):
@@ -184,12 +202,45 @@ def _configure_svd(config):
     config.parallel = True
 
 
+def _select_id_quads(id_name, config):
+    """."""
+    from pymodels import si
+
+    model = config.model
+    famdata = si.get_family_data(model)
+
+    if id_name not in famdata.keys():
+        raise ValueError(f'ID family {id_name} not found in the model!')
+
+    id_idc = pyac.lattice.find_indices(model, 'fam_name', id_name)[0]
+    id_subsec_type = famdata[id_name]['subsection'][0][-1]  # A, B or P
+    quad_fams = [
+        fam for fam in config.famname_quadset if id_subsec_type in fam
+    ]
+    quad_indices_kl = []
+    for fam in quad_fams:
+        idcs = get_idcs(fam, model, id_idc)
+        for i in idcs:
+            quad_indices_kl.append([i])
+    quad_indices_ksl = get_idcs('IDQS', model, id_idc)
+    quad_indices_ksl = [[idx] for idx in quad_indices_ksl]
+    return quad_indices_kl, quad_indices_ksl
+
+
+def get_idcs(fam_name, mod, idc_delta):
+    """."""
+    idc = np.array(pyac.lattice.find_indices(mod, 'fam_name', fam_name))
+    idx = np.argsort(np.abs(idc_delta - idc))[:2]
+    return idc[idx]
+
+
 def create_loco_config(
     goal_tunes,
     deltakl_weight=DEFAULT_DELTAKL_WEIGHT,
     lambda_lm=DEFAULT_LAMBDA_LM,
     quadfams2fit=None,
     init_fit_data=None,
+    id_name=None,
 ):
     """Creates and configures the LOCO object."""
     config = _initialize_config_and_model(init_fit_data)
@@ -199,7 +250,7 @@ def create_loco_config(
     _configure_fitting_families(config)
     _configure_constraints(config, deltakl_weight)
     _configure_inversion_and_minimization(config, lambda_lm)
-    _configure_elements_to_fit(config, quadfams2fit)
+    _configure_elements_to_fit(config, quadfams2fit, id_name)
     _configure_coupling_and_gains(config, init_fit_data)
     _configure_measurement_kicks(config)
     _configure_girder_shifts(config)
@@ -226,6 +277,7 @@ def create_loco(
     lambda_lm=DEFAULT_LAMBDA_LM,
     quadfams2fit=None,
     init_fit_data=None,
+    id_name=None,
 ):
     """Creates a LOCO object with the given setup."""
     config = create_loco_config(
@@ -234,6 +286,7 @@ def create_loco(
         lambda_lm=lambda_lm,
         quadfams2fit=quadfams2fit,
         init_fit_data=init_fit_data,
+        id_name=id_name,
     )
 
     if 'orbmat_name' in loco_setup:
@@ -289,6 +342,7 @@ def run_and_save(
     force_tunes=False,
     quadfams2fit=None,
     init_fit_data=None,
+    id_name=None,
 ):
     """Runs the LOCO fitting and saves the results."""
     setup = load_data(setup_name)
@@ -311,6 +365,7 @@ def run_and_save(
         lambda_lm=lambda_lm,
         quadfams2fit=quadfams2fit,
         init_fit_data=init_fit_data,
+        id_name=id_name,
     )
     loco.run_fit(niter=nriters)
     if force_tunes:
@@ -437,6 +492,16 @@ def main():
         'Should be a space separeted list of families names, e.g.: QFP1 Q1...',
     )
     parser.add_argument(
+        '--id-name',
+        type=str,
+        help="""
+        ID name to perform fitting with local normal & skew quads. Should be
+        the name of the ID family in the model, e.g. 'DELTA52', 'UE44', ...
+        If provided, `--quadfams2fit` will be overridden to include only
+        the quadrupoles adjacent to the specified ID.
+        """,
+    )
+    parser.add_argument(
         '-r',
         '--report',
         action='store_true',
@@ -481,6 +546,8 @@ def main():
     fname_fit = 'fitting_' + os.path.splitext(fname_setup)[0]
     fname_fit_path = os.path.join(folder, fname_fit)
 
+    id_name = args.id_name
+
     run_and_save(
         setup_name=fname_setup,
         file_name=fname_fit_path,
@@ -494,6 +561,7 @@ def main():
         force_tunes=args.forcetunes,
         quadfams2fit=args.quadfams2fit,
         init_fit_data=init_fit_data,
+        id_name=id_name,
     )
 
     if args.report:
