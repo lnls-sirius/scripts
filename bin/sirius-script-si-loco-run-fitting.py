@@ -241,6 +241,7 @@ def create_loco_config(
     quadfams2fit=None,
     init_fit_data=None,
     id_name=None,
+    no_tune_corr=False
 ):
     """Creates and configures the LOCO object."""
     config = _initialize_config_and_model(init_fit_data)
@@ -257,12 +258,13 @@ def create_loco_config(
     _configure_weights(config)
     _configure_svd(config)
 
-    print('--- changing tunes for nominal model...')
-    move_tunes(
-        config.model,
-        TUNE_X_INTEGER + goal_tunes[0],
-        TUNE_Y_INTEGER + goal_tunes[1],
-    )
+    if not no_tune_corr:
+        print('--- changing tunes for nominal model...')
+        move_tunes(
+            config.model,
+            TUNE_X_INTEGER + goal_tunes[0],
+            TUNE_Y_INTEGER + goal_tunes[1],
+        )
     config.update()
     return config
 
@@ -278,6 +280,7 @@ def create_loco(
     quadfams2fit=None,
     init_fit_data=None,
     id_name=None,
+    no_tune_corr=False
 ):
     """Creates a LOCO object with the given setup."""
     config = create_loco_config(
@@ -287,6 +290,7 @@ def create_loco(
         quadfams2fit=quadfams2fit,
         init_fit_data=init_fit_data,
         id_name=id_name,
+        no_tune_corr=no_tune_corr
     )
 
     if 'orbmat_name' in loco_setup:
@@ -343,6 +347,7 @@ def run_and_save(
     quadfams2fit=None,
     init_fit_data=None,
     id_name=None,
+    no_tune_corr=False
 ):
     """Runs the LOCO fitting and saves the results."""
     setup = load_data(setup_name)
@@ -366,6 +371,7 @@ def run_and_save(
         quadfams2fit=quadfams2fit,
         init_fit_data=init_fit_data,
         id_name=id_name,
+        no_tune_corr=no_tune_corr
     )
     loco.run_fit(niter=nriters)
     if force_tunes:
@@ -514,6 +520,11 @@ def main():
         help='Cleanup .png files. '
         'Default: False, set to True if flag is given.',
     )
+    parser.add_argument(
+        '--no-tune-corr',
+        action='store_true',
+        help='Do not change the model tunes to match the measured tunes.'
+    )
 
     args = parser.parse_args()
 
@@ -562,6 +573,7 @@ def main():
         quadfams2fit=args.quadfams2fit,
         init_fit_data=init_fit_data,
         id_name=id_name,
+        no_tune_corr=args.no_tune_corr
     )
 
     if args.report:
