@@ -831,6 +831,9 @@ class MachineShutdown(_DeviceSet, LogCallback):
         devices['apu22_17SA'] = IDParking(
             _ID.DEVICES.APU.APU22_17SA, log_callback=self._log_callback
         )  # SPU
+        devices['apu22_20SB'] = IDParking(
+            _ID.DEVICES.APU.APU22_20SB, log_callback=self._log_callback
+        )  # ARI
 
         # SOFB
         devices['fofb'] = _HLFOFB(
