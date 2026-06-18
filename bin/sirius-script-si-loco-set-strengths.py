@@ -114,13 +114,16 @@ def apply_family_average(folder, set_fams_avg):
         # no init. ref. 100% percentage, show current status.
 
         try:
-            usr_input = input("Enter percentage to apply (or 'q' to quit).")
-            if usr_input.strip().lower() == 'q':
-                print('Aborted by user.')
+            usr_input = input(
+                "Enter percentage to apply or 's' to skip families averages"
+                + " and proceed to trims srengths)."
+            )
+            if usr_input.strip().lower() == 's':
+                print('Families averages not applied. Skipped by user.')
                 break
             pct = float(usr_input)
         except ValueError:
-            print("Invalid input. Enter a number or 'q'.")
+            print("Invalid input. Enter a number or 's'.")
             continue
         except KeyboardInterrupt:
             print('Interrupted by user.')
