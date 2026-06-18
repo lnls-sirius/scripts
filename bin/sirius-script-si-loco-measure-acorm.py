@@ -314,14 +314,14 @@ def main():
 
     if args.save_acq_data:
         print('Saving acquisitions data...')
-        fname = f'{args.orm_name}_acq_data.pickle'
-        meas_orm.save_data(os.path.join(folder, fname))
-        print(f'Saved: {fname}')
+        fname_acq = f'{args.orm_name}_acquisition_data.pickle'
+        meas_orm.save_data(os.path.join(folder, fname_acq))
+        print(f'Saved: {fname_acq}')
 
     print('Saving LOCO input data...')
-    loco_fname = f'{args.orm_name}_loco_input_data.pickle'
-    meas_orm.save_loco_input_data(os.path.join(folder, loco_fname))
-    print(f'Saved: {loco_fname}')
+    fname_loco = f'{args.orm_name}_loco_input_data.pickle'
+    meas_orm.save_loco_input_data(os.path.join(folder, fname_loco))
+    print(f'Saved: {fname_loco}')
     print(
         'Use `sirius-script-si-loco-run-fitting.py` to fit model to this data.'
     )
@@ -334,7 +334,9 @@ def main():
     if args.report:
         print('Creating report...')
         report = ORMReport()
-        report.create_report(meas_orm=meas_orm, folder=folder)
+        report.create_report(meas_orm=meas_orm, folder=folder, orm_name=args.orm_name)
+        print(f'{folder}' + args.orm_name + '_ac_orm_report.pdf created!')
+
 
     if args.cleanup:
         cleanup_png_files(folder)

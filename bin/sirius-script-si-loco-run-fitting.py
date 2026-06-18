@@ -439,7 +439,9 @@ def main():
     if not folder.endswith('/'):
         folder += '/'
 
-    fname_fit = 'fitting_' + os.path.splitext(fname_setup)[0]
+    fname_fit = os.path.splitext(fname_setup.replace('_loco_input_data', ''))[0]
+    report_name = fname_fit
+    fname_fit += '_loco_fitting_data' 
     fname_fit_path = os.path.join(folder, fname_fit)
 
     run_and_save(
@@ -461,7 +463,7 @@ def main():
         report.create_report(
             folder=folder, fname_fit=fname_fit, fname_setup=fname_setup
         )
-        print(f'{folder}report.pdf created!')
+        print(f'{folder}' + report_name + '_loco_report.pdf created!')
 
         if args.cleanup:
             cleanup_png_files(folder)
