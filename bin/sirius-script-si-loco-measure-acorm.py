@@ -199,19 +199,22 @@ def config_exists(meas_orm, name):
     return True
 
 
-def loco_input_exists(name):
+def loco_input_exists(name, folder):
     """."""
-    fname = f'{name}_loco_input_data.pickle'
-    try:
-        load(fname)
+    fname = os.path.join(
+        folder,
+        f'{name}_loco_input_data.pickle'
+    )
+
+    if os.path.isfile(fname):
         print(
-            f'A LOCO input data file named {fname} already exists. '
-            + 'Please, choose a different ORM name or delete/rename the '
-            'existing file.'
+            f'A LOCO input data file named {os.path.basename(fname)} '
+            'already exists in the output directory. Please, choose a different ORM name or '
+            'delete/rename the existing file.'
         )
         return True
-    except FileNotFoundError:
-        return False
+
+    return False
 
 
 def ensure_connection(meas_orm, timeout):
@@ -273,7 +276,12 @@ def main():
         print(f'An ORM w/ name "{args.orm_name}" already exists in confgDB:')
         sys.exit(1)
 
-    if loco_input_exists(args.orm_name):
+    folder = os.path.abspath(args.folder)
+
+    if not os.path.isdir(folder):
+        os.makedirs(folder, exist_ok=True)
+
+    if loco_input_exists(args.orm_name, folder):
         sys.exit(1)
 
     configure_measurement(meas_orm, args)
@@ -304,17 +312,15 @@ def main():
     print(f'\tFinished OK? {meas_orm.check_measurement_finished_ok()}')
     print(f'\tQuality? {meas_orm.check_measurement_quality()}')
 
-    folder = args.folder.strip('/') + '/'
-
     if args.save_acq_data:
         print('Saving acquisitions data...')
         fname = f'{args.orm_name}_acq_data.pickle'
-        meas_orm.save_data(folder + fname)
+        meas_orm.save_data(os.path.join(folder, fname))
         print(f'Saved: {fname}')
 
     print('Saving LOCO input data...')
     loco_fname = f'{args.orm_name}_loco_input_data.pickle'
-    meas_orm.save_loco_input_data(folder + loco_fname)
+    meas_orm.save_loco_input_data(os.path.join(folder, loco_fname))
     print(f'Saved: {loco_fname}')
     print(
         'Use `sirius-script-si-loco-run-fitting.py` to fit model to this data.'
