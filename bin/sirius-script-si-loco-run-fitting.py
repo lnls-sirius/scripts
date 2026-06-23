@@ -206,6 +206,21 @@ def create_loco_config(
     return config
 
 
+def loco_fitting_exists(fname_fit, folder):
+    """."""
+    fname = os.path.join(folder, fname_fit)
+    if os.path.isfile(fname):
+        print('Warning! Data from a previous LOCO fitting found!')
+        print(
+            f'A LOCO fitting data file named {fname_fit}'
+            + ' already exists in the output directory. Please, delete/rename'
+            + ' the existing file or choose a different output folder.'
+        )
+        return True
+
+    return False
+
+
 def create_loco(
     loco_setup,
     load_jacobian=False,
@@ -317,7 +332,7 @@ def run_and_save(
         ksldelta_history=loco.ksldelta_history,
     )
     save(loco_data, file_name)
-    print(f'{file_name} saved!')
+    print(f'{os.path.basename(file_name)} saved!')
     dt = time.time() - t0
     print('running time: {:.1f} minutes'.format(dt / 60))
 
@@ -351,15 +366,15 @@ def main():
     parser.add_argument(
         'filename_setup',
         type=str,
-        help='Name of the LOCO setup file (.pickle)',
+        help='Name of the LOCO setup file (.pickle), i.e. LOCO input data.',
     )
     parser.add_argument(
         '-f',
         '--folder',
         type=str,
-        default=os.getcwd(),
+        default=None,
         help='Path to the folder for output files. '
-        'Default is the current directory.',
+        'Default is a directory named `<filename_setup>_loco_results`.',
     )
     parser.add_argument(
         '-j',
@@ -427,7 +442,13 @@ def main():
     if not os.path.isfile(fname_setup):
         raise ValueError(f'LOCO setup {fname_setup} not in current directory!')
 
+    keyword = os.path.splitext(fname_setup.replace('_loco_input_data', ''))[0]
+    # "_loco_input_data" is appended by the ACORM measurement script
+    if args.folder is None:
+        args.folder = keyword + '_loco_results'
     folder = args.folder
+    if not folder.endswith('/'):
+        folder += '/'
     folder_jac = args.jacobianfolder
     load_jac = True if folder_jac else False
     save_jac = False if load_jac else True
@@ -436,12 +457,10 @@ def main():
         print(f'Creating {folder} directory to put files...')
         os.makedirs(folder)
 
-    if not folder.endswith('/'):
-        folder += '/'
-
-    fname_fit = os.path.splitext(fname_setup.replace('_loco_input_data', ''))[0]
-    report_name = fname_fit
-    fname_fit += '_loco_fitting_data' 
+    fname_fit = keyword + '_loco_fitting_data.pickle'
+    if loco_fitting_exists(fname_fit, folder):
+        sys.exit(1)
+    fname_report = keyword + '_loco_report.pdf'
     fname_fit_path = os.path.join(folder, fname_fit)
 
     run_and_save(
@@ -461,9 +480,12 @@ def main():
         print('Creating report...')
         report = LOCOReport()
         report.create_report(
-            folder=folder, fname_fit=fname_fit, fname_setup=fname_setup
+            folder=folder,
+            fname_fit=fname_fit,
+            fname_setup=fname_setup,
+            fname_report=fname_report,
         )
-        print(f'{folder}' + report_name + '_loco_report.pdf created!')
+        print(f'Report {fname_report} created!')
 
         if args.cleanup:
             cleanup_png_files(folder)
