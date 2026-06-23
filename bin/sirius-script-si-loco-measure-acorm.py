@@ -54,7 +54,7 @@ def parse_args():
         type=str,
         help='ORM nickname or keyword (without extension). Used for saving '
         'the measurement acquisitions data, the LOCO input data and saving '
-        'the ORM to the configDB. '
+        'the ORM to the configDB. ',
     )
 
     parser.add_argument(
@@ -144,7 +144,7 @@ def parse_args():
         '-r',
         '--report',
         action='store_true',
-        help='Create report. Default: False, set to True if flag is given.'
+        help='Create report. Default: False, set to True if flag is given.',
     )
 
     parser.add_argument(
@@ -201,16 +201,14 @@ def config_exists(meas_orm, name):
 
 def loco_input_exists(name, folder):
     """."""
-    fname = os.path.join(
-        folder,
-        f'{name}_loco_input_data.pickle'
-    )
+    fname = os.path.join(folder, f'{name}_loco_input_data.pickle')
 
     if os.path.isfile(fname):
+        print('Warning! Data from a previous measurement found!')
         print(
             f'A LOCO input data file named {os.path.basename(fname)} '
-            'already exists in the output directory. Please, choose a different ORM name or '
-            'delete/rename the existing file.'
+            'already exists in the output directory. Please, choose a'
+            'different ORM name or delete/rename the existing file.'
         )
         return True
 
@@ -276,7 +274,9 @@ def main():
         print(f'An ORM w/ name "{args.orm_name}" already exists in confgDB:')
         sys.exit(1)
 
-    folder = os.path.abspath(args.folder)
+    folder = args.folder
+    if not folder.endswith('/'):
+        folder += '/'
 
     if not os.path.isdir(folder):
         os.makedirs(folder, exist_ok=True)
@@ -333,10 +333,16 @@ def main():
 
     if args.report:
         print('Creating report...')
+        fname_report = args.orm_name + '_ac_orm_report.pdf'
         report = ORMReport()
-        report.create_report(meas_orm=meas_orm, folder=folder, orm_name=args.orm_name)
-        print(f'{folder}' + args.orm_name + '_ac_orm_report.pdf created!')
-
+        report.create_report(
+            meas_orm=meas_orm,
+            folder=folder,
+            fname_report=fname_report,
+        )
+        print(
+            f'{fname_report} created!'
+        )
 
     if args.cleanup:
         cleanup_png_files(folder)
