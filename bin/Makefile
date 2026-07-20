@@ -14,6 +14,7 @@ GENERALSCRIPTS = \
 		sirius-script-ps-wfmupdateauto-off.py \
 		sirius-script-clientarch-checkpv.py \
 		sirius-script-si-bpm-acquire-triggered-data.py \
+		sirius-script-si-bpm-analyze-postmortem-data.py \
 		sirius-script-si-loco-run-fitting.py \
 		sirius-script-si-loco-set-strengths.py \
 		sirius-script-si-bba-measure.py \
