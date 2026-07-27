@@ -72,9 +72,11 @@ class RABPMMngr():
         hostname = self._get_cpu_hostname(rack)
         self._launch_ssh(self.verbose, hostname, "pcie-remove", slot)
 
-    def run_ioc_restart(self, rack, ioc, slot):
+    def run_ioc_restart(self, rack, ioc, slots):
         hostname = self._get_cpu_hostname(rack)
-        self._launch_ssh(self.verbose, hostname, "ioc-restart", ioc, slot)
+        for slot in slots:
+            self._launch_ssh(self.verbose, hostname,
+                             "ioc-restart", ioc, str(slot))
 
     def run_rffe_reset(self, rack, virtual_slots):
         hostname = self._get_cpu_hostname(rack)
@@ -143,6 +145,20 @@ class ValidateDeviceListAction(argparse.Action):
         setattr(namespace, self.dest, values)
 
 
+class ValidateIOCSlot(ValidateDeviceListAction):
+    def __init__(self, *args, **kwargs):
+        super(ValidateIOCSlot, self).__init__(None, *args, **kwargs)
+
+    def __call__(self, parser, namespace, values, option_string=None):
+        if len(values) == 1 and values[0] == "all":
+            if namespace.ioc == 'afc':
+                values = range(1, 13)
+            if namespace.ioc == 'rffe':
+                values = range(11, 24)
+
+        super(ValidateIOCSlot, self).__call__(parser, namespace, values)
+
+
 def main():
     parser = argparse.ArgumentParser(prog="sirius-script-rabpm-mngr",
                                      description="BPM Rack Management Utility")
@@ -171,8 +187,8 @@ def main():
                                            help="Restart AFC or RFFE IOCs")
     parser_restart.add_argument("ioc", choices=["afc", "rffe"],
                                 help="IOC to restart (afc or rffe)")
-    parser_restart.add_argument("-s", "--slot", required=True,
-                                help="Slot number")
+    parser_restart.add_argument("-s", "--slots", required=True,
+                                nargs="+", action=ValidateIOCSlot, help="Slot numbers or 'all'")
     add_rack_arg(parser_restart)
 
     parser_reset = subparsers.add_parser("rffe-reset",
@@ -208,7 +224,7 @@ def main():
                 elif args.command == "afc-remove":
                     mngr.run_pcie_remove(rack, args.slot)
                 elif args.command == "ioc-restart":
-                    mngr.run_ioc_restart(rack, args.ioc, args.slot)
+                    mngr.run_ioc_restart(rack, args.ioc, args.slots)
                 elif args.command == "rffe-reset":
                     mngr.run_rffe_reset(rack, args.vslots)
                 elif args.command == "afc-reset":
