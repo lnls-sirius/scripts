@@ -14,6 +14,7 @@ GENERALSCRIPTS = \
 		sirius-script-ps-wfmupdateauto-off.py \
 		sirius-script-clientarch-checkpv.py \
 		sirius-script-si-bpm-acquire-triggered-data.py \
+		sirius-script-si-loco-measure-acorm.py \
 		sirius-script-si-loco-run-fitting.py \
 		sirius-script-si-loco-set-strengths.py \
 		sirius-script-si-bba-measure.py \
@@ -27,7 +28,7 @@ REPOSSCRIPTS = \
 		sirius-script-repos-install-update.bash \
 		sirius-script-repos-install.bash \
 		sirius-script-repos-deletetags.bash \
-		sirius-script-repos-deploytag.bash
+		sirius-script-repos-deploytag.bash \
 		# sirius-script-deploy-tag.bash
 
 BBBSCRIPTS = \
